@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JABZEN | Creative Marketing Freelancer</title>
+  <meta name="description" content="JABZEN is a premium creative marketing freelancer agency helping brands scale through visual branding, high-converting Meta/Google Ads, viral Reels, AI videos, SEO, and performance marketing.">
+  <link rel="canonical" href="https://jabzen.com/">
+  <meta property="og:title" content="JABZEN | Creative Marketing Freelancer">
+  <meta property="og:description" content="Scale your brand through premium content, cinematic ads, SEO, and AI workflows. Book a free consultation call.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jabzen.com/">
+  <meta property="og:image" content="https://jabzen.com/assets/favicon.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JABZEN | Creative Marketing Freelancer">
+  <meta name="twitter:description" content="Scale your business through creative branding, viral content, AI-powered videos, performance marketing, and ads.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.min.css?v=10">
+  <!-- Firebase Compatibility SDK for App and Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "JABZEN",
+      "url": "https://jabzen.com/",
+      "description": "JABZEN offers high-end performance marketing, direct response Meta/Google ads, visual branding, cinematic Reels production, and AI-powered marketing solutions.",
+      "areaServed": "India",
+      "serviceType": ["Search Marketing", "Performance Marketing", "Creative Production", "AI Marketing Solutions"]
+    }
+  </script>
+<body class="landing-page">
+  <script>
+    if (localStorage.getItem("theme") === "light") {
+      document.body.classList.add("light-theme");
+    }
+  </script>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="JABZEN home">
+        <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
+          <picture>
+            <source srcset="assets/jabzen-logo.webp" type="image/webp">
+            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+          </picture>
+        </span>
+        <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+      </a>
+      <div class="nav-links" data-nav-links>
+        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <div class="nav-dropdown">
+          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-briefcase"></i> Services <span class="arrow"><i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 2px;"></i></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing (SEO, AEO, GEO)</a></li>
+            <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads & Funnels</a></li>
+            <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
+            <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+          </ul>
+        </div>
+        <a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a>
+        <a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a>
+        <a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a>
+      </div>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="home-title">
+      <!-- Canvas for animated golden particles -->
+      <canvas id="particles-canvas" class="hero-canvas" aria-hidden="true"></canvas>
+
+      <!-- Ambient light glow circles -->
+      <div class="glow-blob glow-blob-1" aria-hidden="true"></div>
+      <div class="glow-blob glow-blob-2" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1 id="home-title">Helping Brands Scale Through <span class="text-gradient">Content, Ads, SEO &amp; AI</span></h1>
+          <p class="lead">We deliver high-impact digital marketing solutions focused on visibility, lead generation, and performance growth.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#contact" aria-label="Book Free Consultation Call">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>Book Free Consultation</span>
+            </a>
+          </div>
+
+          <!-- Hero Client Logos Marquee Ticker -->
+          <div class="hero-logos-container">
+            <p class="hero-logos-title">Trusted By Scaling Brands</p>
+            <div class="hero-logos-slider">
+              <div class="hero-logos-track">
+                <!-- Group 1 -->
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.5l7 6.3V18H5v-6.2l7-6.3zm-2 5.5v4h4v-4h-4z"/></svg>
+                  <span>Horizon Real Estate</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2C8 7 4 10 4 14c0 4.4 3.6 8 8 8s8-3.6 8-8c0-4-4-7-8-12zm0 17.5c-3 0-5.5-2.5-5.5-5.5 0-2 2-4.5 5.5-8.5 3.5 4 5.5 6.5 5.5 8.5 0 3-2.5 5.5-5.5 5.5z"/></svg>
+                  <span>Apex Petroleum</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.2 1.8 4 4 4v9h2v-9c2.2 0 4-1.8 4-4V2h-2v7zm8-7v10h-2V2h-2v10c0 2.2 1.8 4 4 4v6h2v-6c2.2 0 4-1.8 4-4V2h-2z"/></svg>
+                  <span>Gourmet Bistro</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6c1.7 0 3 1.3 3 3s-1.3 3-3 3-3-1.3-3-3 1.3-3 3-3zm0 8.2c2.7 0 5.3 1.2 6 2.8H6c.7-1.6 3.3-2.8 6-2.8z"/></svg>
+                  <span>Vanguard Institute</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 15.5h-2v-2h2v2zm0-3.5h-2V7h2v7z"/></svg>
+                  <span>Nexus Tech</span>
+                </div>
+                <!-- Duplicate Group 1 for infinite scroll -->
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.5l7 6.3V18H5v-6.2l7-6.3zm-2 5.5v4h4v-4h-4z"/></svg>
+                  <span>Horizon Real Estate</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2C8 7 4 10 4 14c0 4.4 3.6 8 8 8s8-3.6 8-8c0-4-4-7-8-12zm0 17.5c-3 0-5.5-2.5-5.5-5.5 0-2 2-4.5 5.5-8.5 3.5 4 5.5 6.5 5.5 8.5 0 3-2.5 5.5-5.5 5.5z"/></svg>
+                  <span>Apex Petroleum</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.2 1.8 4 4 4v9h2v-9c2.2 0 4-1.8 4-4V2h-2v7zm8-7v10h-2V2h-2v10c0 2.2 1.8 4 4 4v6h2v-6c2.2 0 4-1.8 4-4V2h-2z"/></svg>
+                  <span>Gourmet Bistro</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6c1.7 0 3 1.3 3 3s-1.3 3-3 3-3-1.3-3-3 1.3-3 3-3zm0 8.2c2.7 0 5.3 1.2 6 2.8H6c.7-1.6 3.3-2.8 6-2.8z"/></svg>
+                  <span>Vanguard Institute</span>
+                </div>
+                <div class="hero-logo-item">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 15.5h-2v-2h2v2zm0-3.5h-2V7h2v7z"/></svg>
+                  <span>Nexus Tech</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section" id="services" aria-labelledby="services-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="services-title">Premium Marketing Services That Drive Real Business Growth And Scaling</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">Bespoke marketing solutions customized to scale your customer acquisition.</p>
+        </div>
+        <div class="grid grid-4">
+          <div class="card service-card reveal">
+            <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h3>Search Marketing</h3>
+            <p>Dominate search engines and conversational AI answers. We align keyword strategies, technical optimization, and semantic schemas to guarantee search visibility.</p>
+            <a href="search-marketing.html" class="btn btn-outline">Read More <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="card service-card reveal">
+            <div class="icon"><i class="fa-solid fa-chart-line"></i></div>
+            <h3>Performance Ads &amp; Funnels</h3>
+            <p>High-ROI digital ad execution. Setup and manage targeted search, display, and Performance Max campaigns across Meta, Instagram, and Google.</p>
+            <a href="performance-marketing.html" class="btn btn-outline">Read More <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="card service-card reveal">
+            <div class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <h3>Creative Production</h3>
+            <p>Direct response ad creative assets and brand upgrades. Setup visual guidelines, custom monograms, and viral short-form video assets.</p>
+            <a href="creative-services.html" class="btn btn-outline">Read More <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="card service-card reveal">
+            <div class="icon"><i class="fa-solid fa-robot"></i></div>
+            <h3>AI Marketing Solutions</h3>
+            <p>Cinematic explainer video production and marketing automation workflows deployed using artificial intelligence.</p>
+            <a href="ai-solutions.html" class="btn btn-outline">Read More <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Case Studies Section -->
+    <section class="section soft" id="portfolio" aria-labelledby="portfolio-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="portfolio-title">Featured Client Case Studies Showing Real Results And Growth</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">A selection of marketing campaigns, branding upgrades, and lead generation engines built for our clients.</p>
+        </div>
+        <div class="grid grid-2">
+          <article class="card reveal" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="icon" style="background: rgba(214,173,55,0.1); color: var(--accent); margin-bottom: 0; width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-building-shield"></i></div>
+              <h3 style="color: var(--accent); margin: 0;">Real Estate Growth Engine</h3>
+            </div>
+            <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); font-weight: 700; margin: 0.25rem 0 0;">Meta Ads, Web Development &amp; Local SEO</p>
+            <p style="margin-top: 0.25rem;">Designed a high-converting website, established key search rankings via local SEO, and ran direct-response lead ads on Meta to generate high-intent buyers.</p>
+          </article>
+          <article class="card reveal" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="icon" style="background: rgba(214,173,55,0.1); color: var(--accent); margin-bottom: 0; width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-oil-well"></i></div>
+              <h3 style="color: var(--accent); margin: 0;">Oil &amp; Energy Brand Campaign</h3>
+            </div>
+            <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); font-weight: 700; margin: 0.25rem 0 0;">Creative Branding &amp; Performance Campaigns</p>
+            <p style="margin-top: 0.25rem;">Developed luxury brand monograms, curated digital guidelines, and executed targeted Google and social ad campaigns to scale qualified business leads.</p>
+          </article>
+          <article class="card reveal" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="icon" style="background: rgba(214,173,55,0.1); color: var(--accent); margin-bottom: 0; width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-utensils"></i></div>
+              <h3 style="color: var(--accent); margin: 0;">Restaurant Content Support</h3>
+            </div>
+            <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); font-weight: 700; margin: 0.25rem 0 0;">Cinematic Video &amp; Reels Production</p>
+            <p style="margin-top: 0.25rem;">Produced high-retention short-form food videos, scripted engaging hooks, and managed creative daily postings to multiply impressions.</p>
+          </article>
+          <article class="card reveal" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="icon" style="background: rgba(214,173,55,0.1); color: var(--accent); margin-bottom: 0; width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-graduation-cap"></i></div>
+              <h3 style="color: var(--accent); margin: 0;">College Branding Assets</h3>
+            </div>
+            <p style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary); font-weight: 700; margin: 0.25rem 0 0;">Graphic &amp; Web Identity Design</p>
+            <p style="margin-top: 0.25rem;">Created custom presentation grids, academic identity books, and updated responsive website pages to drive inquiries and enrollments.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results / Metric Counter Section -->
+    <section class="section" id="results" aria-labelledby="results-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="results-title">Verifiable Marketing Results And High Conversion Case Studies Achieved</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">Real business outcomes driven by data, execution velocity, and high-impact campaigns.</p>
+        </div>
+        <div class="grid grid-4" style="margin-bottom: 2rem;">
+          <div class="metric reveal" style="background: var(--card-bg); border-top: 3px solid var(--accent); padding: 1.5rem; text-align: center; border-radius: var(--radius);">
+            <strong class="stat-counter" data-target="3.5" data-suffix="x" data-decimals="1" style="color: var(--accent); font-size: 2.2rem; display: block; font-family: Poppins, sans-serif; font-weight: 800;">0</strong>
+            <span style="color: var(--text-primary); font-weight: 700; margin-top: 0.5rem; display: block;">Client Growth</span>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Average increase in search traffic and visibility within 90 days.</p>
+          </div>
+          <div class="metric reveal" style="background: var(--card-bg); border-top: 3px solid var(--accent); padding: 1.5rem; text-align: center; border-radius: var(--radius);">
+            <strong class="stat-counter" data-target="4.2" data-suffix="x" data-decimals="1" style="color: var(--accent); font-size: 2.2rem; display: block; font-family: Poppins, sans-serif; font-weight: 800;">0</strong>
+            <span style="color: var(--text-primary); font-weight: 700; margin-top: 0.5rem; display: block;">Ad Performance</span>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Average ROAS achieved across Google Search &amp; Meta Campaigns.</p>
+          </div>
+          <div class="metric reveal" style="background: var(--card-bg); border-top: 3px solid var(--accent); padding: 1.5rem; text-align: center; border-radius: var(--radius);">
+            <strong class="stat-counter" data-target="5.8" data-suffix="M" data-decimals="1" style="color: var(--accent); font-size: 2.2rem; display: block; font-family: Poppins, sans-serif; font-weight: 800;">0</strong>
+            <span style="color: var(--text-primary); font-weight: 700; margin-top: 0.5rem; display: block;">Viral Reel Views</span>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Viral impressions and organic traffic generated for brand awareness.</p>
+          </div>
+          <div class="metric reveal" style="background: var(--card-bg); border-top: 3px solid var(--accent); padding: 1.5rem; text-align: center; border-radius: var(--radius);">
+            <strong class="stat-counter" data-target="1200" data-suffix="+" data-decimals="0" style="color: var(--accent); font-size: 2.2rem; display: block; font-family: Poppins, sans-serif; font-weight: 800;">0</strong>
+            <span style="color: var(--text-primary); font-weight: 700; margin-top: 0.5rem; display: block;">Leads Captured</span>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Qualified buyer inquiries delivered directly into client CRM pipelines.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section soft" id="testimonials" aria-labelledby="testimonials-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="testimonials-title">What Our Verified Clients And Business Partners Say About Us</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">Feedback from businesses and founders who scaled their digital presence.</p>
+        </div>
+        <div class="testimonials-carousel reveal">
+          <div class="carousel-track-container">
+            <ul class="carousel-track" data-carousel-track>
+              <li class="carousel-slide">
+                <div class="quote">
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <img src="assets/indian-avatar-1.png" alt="Rajesh Mehta" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div style="text-align: left;">
+                      <strong style="color: var(--text-primary); display: block;">Rajesh Mehta</strong>
+                      <small style="color: var(--accent);">Founder, Horizon Real Estate</small>
+                    </div>
+                  </div>
+                  <blockquote>"JABZEN transformed our brand from a standard local service to a premium high-ticket business. Their content strategy and Reels generated over 1.2M views in the first 30 days, which translated into booked calls."</blockquote>
+                </div>
+              </li>
+              <li class="carousel-slide">
+                <div class="quote">
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <img src="assets/indian-avatar-2.png" alt="Ananya Sharma" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div style="text-align: left;">
+                      <strong style="color: var(--text-primary); display: block;">Ananya Sharma</strong>
+                      <small style="color: var(--accent);">CMO, Apex Petroleum &amp; Oil Co.</small>
+                    </div>
+                  </div>
+                  <blockquote>"Their precision in technical SEO and Answer Engine Optimization (AEO) positioned us as authority nodes in our niche. Our organic search volume multiplied by 312% in less than 90 days."</blockquote>
+                </div>
+              </li>
+              <li class="carousel-slide">
+                <div class="quote">
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <img src="assets/indian-avatar-3.png" alt="Vikram Malhotra" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div style="text-align: left;">
+                      <strong style="color: var(--text-primary); display: block;">Vikram Malhotra</strong>
+                      <small style="color: var(--accent);">Managing Director, Gourmet Bistro Group</small>
+                    </div>
+                  </div>
+                  <blockquote>"Their ad creatives and video scripting are exceptional. We saw a direct 4.6x ROAS on Meta ads, and the lead cost dropped by 35% compared to our previous campaigns."</blockquote>
+                </div>
+              </li>
+              <li class="carousel-slide">
+                <div class="quote">
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <img src="assets/indian-avatar-4.png" alt="Dr. Amit Verma" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                    <div style="text-align: left;">
+                      <strong style="color: var(--text-primary); display: block;">Dr. Amit Verma</strong>
+                      <small style="color: var(--accent);">Director, Vanguard Institute of Technology</small>
+                    </div>
+                  </div>
+                  <blockquote>"They created a cohesive visual identity, monogram design, and high-converting landing pages for our executive courses. Direct, transparent, and highly analytical."</blockquote>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="carousel-nav">
+            <button class="carousel-indicator current-slide" aria-label="Slide 1"></button>
+            <button class="carousel-indicator" aria-label="Slide 2"></button>
+            <button class="carousel-indicator" aria-label="Slide 3"></button>
+            <button class="carousel-indicator" aria-label="Slide 4"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Client Logo Marquee Section -->
+    <section class="logo-marquee-container" aria-hidden="true">
+      <div class="logo-marquee-track">
+        <div class="logo-marquee-group">
+          <span>Horizon Real Estate</span>
+          <span>Apex Petroleum</span>
+          <span>Gourmet Bistro Group</span>
+          <span>Vanguard Institute</span>
+          <span>Horizon Real Estate</span>
+          <span>Apex Petroleum</span>
+          <span>Gourmet Bistro Group</span>
+          <span>Vanguard Institute</span>
+        </div>
+        <div class="logo-marquee-group">
+          <span>Horizon Real Estate</span>
+          <span>Apex Petroleum</span>
+          <span>Gourmet Bistro Group</span>
+          <span>Vanguard Institute</span>
+          <span>Horizon Real Estate</span>
+          <span>Apex Petroleum</span>
+          <span>Gourmet Bistro Group</span>
+          <span>Vanguard Institute</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog & Insights Section -->
+    <section class="section" id="blog" aria-labelledby="blog-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="blog-title">Latest Marketing Strategy Insights And Content Blueprints To Scale</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">Tactical guides, case reviews, and digital frameworks to scale organic and paid pipelines.</p>
+        </div>
+        <div class="grid grid-3">
+          <article class="card reveal" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            <div>
+              <span class="eyebrow" style="font-size: 0.75rem;">SEO</span>
+              <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="blog.html" style="color: var(--text-primary); transition: color 0.18s ease;">The Future of Search: Navigating the Generative Search Era</a></h3>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">How Gemini, ChatGPT, and AI-driven answer summaries are changing search behavior, and how to stay ahead.</p>
+            </div>
+            <a href="blog.html" class="btn btn-outline" style="margin-top: 1.25rem; font-size: 0.85rem; padding: 0.5rem 1rem; min-height: unset; align-self: flex-start; border-radius: 30px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i></a>
+          </article>
+          <article class="card reveal" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            <div>
+              <span class="eyebrow" style="font-size: 0.75rem;">AI Marketing</span>
+              <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="blog.html" style="color: var(--text-primary); transition: color 0.18s ease;">Leveraging Gemini &amp; LLMs to Automate Content Velocity</a></h3>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">A step-by-step framework to repurpose long-form assets into Reels, blogs, and social threads using AI workflows.</p>
+            </div>
+            <a href="blog.html" class="btn btn-outline" style="margin-top: 1.25rem; font-size: 0.85rem; padding: 0.5rem 1rem; min-height: unset; align-self: flex-start; border-radius: 30px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i></a>
+          </article>
+          <article class="card reveal" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            <div>
+              <span class="eyebrow" style="font-size: 0.75rem;">Meta Ads</span>
+              <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="blog.html" style="color: var(--text-primary); transition: color 0.18s ease;">High-ROAS Ad Copy Secrets for High-Ticket Clients</a></h3>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Visual hook patterns, direct response ad copies, and creative formats that convert cold traffic into booked calls.</p>
+            </div>
+            <a href="blog.html" class="btn btn-outline" style="margin-top: 1.25rem; font-size: 0.85rem; padding: 0.5rem 1rem; min-height: unset; align-self: flex-start; border-radius: 30px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem; margin-left: 4px;"></i></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <div class="section-head reveal" style="text-align: center; margin-bottom: 3rem;">
+          <h2 id="faq-title">Frequently Asked Questions About Our Services And Delivery Processes</h2>
+          <p class="lead" style="margin: 0.5rem auto 0; max-width: 650px;">Clear, honest answers about how we execute campaigns and support your growth.</p>
+        </div>
+        <div class="faq-list reveal" style="max-width: 800px; margin: 0 auto;">
+          <div class="faq" data-faq>
+            <button aria-expanded="false" type="button">
+              <span>What service capabilities does JABZEN offer?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+            </button>
+            <p>JABZEN provides high-end digital marketing solutions across four main channels: Search Marketing (technical SEO, AEO, and GEO schema modeling), Performance Ads &amp; Funnels, Creative Production (luxury branding, monograms, video assets), and AI Marketing Solutions.</p>
+          </div>
+          <div class="faq" data-faq>
+            <button aria-expanded="false" type="button">
+              <span>How do you structure client engagements?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+            </button>
+            <p>We work on clean, milestone-driven project agreements or monthly marketing retainers. We provide transparent communication, documented deliverables, and detailed weekly updates on performance metrics.</p>
+          </div>
+          <div class="faq" data-faq>
+            <button aria-expanded="false" type="button">
+              <span>Do you serve international clients?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+            </button>
+            <p>Yes. JABZEN serves B2B firms, real estate agencies, SaaS brands, and educational institutions globally. All communications are conducted in English, and workflows are synced to our client's target local hours.</p>
+          </div>
+          <div class="faq" data-faq>
+            <button aria-expanded="false" type="button">
+              <span>What is your approach to AI in marketing?</span>
+              <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i>
+            </button>
+            <p>We utilize AI tools (like Gemini, ChatGPT, and CapCut workflows) to accelerate content velocity, voice cloning, and data formatting. We ensure that all generated outputs go through human editing to maintain quality, accuracy, and search compliance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section soft" id="contact" aria-labelledby="contact-title">
+      <div class="container split" style="grid-template-columns: 1.15fr 0.85fr;">
+        <div class="reveal-left">
+          <h2 id="contact-title">Let's Grow Your Brand Authority And Lead Generation Channels</h2>
+          <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">Ready to scale? Book a free consultation call to discuss your branding, creative ads, reels, SEO, and performance marketing strategy.</p>
+          <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; color: var(--text-primary);">
+            <div><strong><i class="fa-solid fa-phone" style="color: var(--accent); margin-right: 8px;"></i> Phone / WhatsApp:</strong> <a href="https://wa.me/918840863659" style="color: var(--accent); font-weight: 700;">+91 88408 63659</a></div>
+            <div><strong><i class="fa-solid fa-envelope" style="color: var(--accent); margin-right: 8px;"></i> Email:</strong> info@jabzen.com</div>
+            <div><strong><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 8px;"></i> Location:</strong> India (Serving Global Clients)</div>
+          </div>
+        </div>
+        <form class="form-wrap reveal-right" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
+          <div class="form-grid" style="grid-template-columns: 1fr;">
+            <div class="field">
+              <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
+              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
+            </div>
+            <div class="field">
+              <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
+              <input id="lead-phone" name="phone" type="tel" autocomplete="tel" required placeholder="+91 99999 99999">
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1.5rem;">Book Free Consultation</button>
+          <p class="success-message" data-success-message style="color: var(--accent); font-weight: 700; margin-top: 1rem; text-align: center;">Thanks! Your request is captured. Redirecting or contacting via WhatsApp...</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating social FAB menu bottom right -->
+  <div class="social-fab-container" data-social-fab>
+    <div class="social-links-expand">
+      <a href="https://www.linkedin.com/in/abhishek-pratap-singh-08249624b/" target="_blank" rel="noopener" class="fab-btn linkedin" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+      </a>
+      <a href="https://instagram.com/abhishekpratapsinghh" target="_blank" rel="noopener" class="fab-btn instagram" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+      </a>
+      <a href="https://facebook.com/" target="_blank" rel="noopener" class="fab-btn facebook" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+      </a>
+      <a href="https://twitter.com/" target="_blank" rel="noopener" class="fab-btn twitter" aria-label="Twitter/X">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="https://youtube.com/" target="_blank" rel="noopener" class="fab-btn youtube" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      </a>
+    </div>
+    <a href="https://wa.me/918840863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
+      <svg class="icon-svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.003 5.324 5.328 0 11.859 0c3.166.001 6.141 1.233 8.378 3.469 2.237 2.235 3.469 5.21 3.468 8.379-.003 6.534-5.329 11.858-11.86 11.858-2.001-.001-3.97-.508-5.717-1.474L0 24zm6.549-3.238c1.658.983 3.284 1.503 4.909 1.504 5.405 0 9.805-4.394 9.807-9.8.002-2.617-1.013-5.078-2.86-6.928C16.607 3.687 14.15 2.673 11.53 2.673c-5.405 0-9.807 4.394-9.809 9.8-.001 1.83.499 3.613 1.447 5.174l-.953 3.478 3.567-.936c1.554.848 3.023 1.157 4.372 1.157zm12.355-6.702c-.3-.15-1.771-.875-2.046-.975-.275-.1-.475-.15-.675.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-3.519-1.758-5.314-3.717-6.525-5.8-.3-.513.233-.474.723-.974.137-.14.225-.263.292-.375.068-.112.034-.213-.017-.313-.05-.1-.475-1.143-.65-1.562-.171-.41-.363-.356-.5-.356-.1-.004-.217-.004-.334-.004-.117 0-.308.043-.469.22C7.307 4.7 6.8 5.176 6.8 6.161s.717 1.932.817 2.067c.1.135 1.414 2.158 3.424 3.028 1.636.709 2.27.765 3.09.684.514-.05 1.54-.63 1.754-1.24.214-.61.214-1.133.15-1.24-.064-.108-.244-.16-.544-.31z"/>
+      </svg>
+    </a>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
+            <picture>
+              <source srcset="assets/jabzen-logo.webp" type="image/webp">
+              <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+            </picture>
+          </span>
+          <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+        </a>
+        <p style="margin-top:1rem; font-size: 0.9rem; line-height: 1.5;">Helping brands scale through luxury visual branding, direct-response ad creative, SEO, and performance marketing.</p>
+      </div>
+      <div>
+        <h3>Pages</h3>
+        <ul>
+          <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+          <li><a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a></li>
+          <li><a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a></li>
+          <li><a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Services</h3>
+        <ul>
+          <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing</a></li>
+          <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads &amp; Funnels</a></li>
+          <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
+          <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp Chat</a></li>
+          <li><a href="contact.html"><i class="fa-solid fa-envelope"></i> Contact Form</a></li>
+          <li><i class="fa-solid fa-envelope"></i> info@jabzen.com</li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
+  </footer>
+  <script src="script.min.js?v=10" defer></script>
+</body>
+</html>
