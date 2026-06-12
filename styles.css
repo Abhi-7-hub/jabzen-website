@@ -2016,3 +2016,28 @@ body:not(.light-theme) .faq button {
 body.light-theme .article-content h2 {
   border-color: rgba(0, 0, 0, 0.08);
 }
+
+/* Redesigned Blog Cards Styling */
+.card.blog-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+.blog-image-wrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.blog-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+.card.blog-card:hover .blog-image-wrap img {
+  transform: scale(1.05);
+}

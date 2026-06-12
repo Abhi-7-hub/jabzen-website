@@ -131,26 +131,770 @@ if (track && indicators.length > 0) {
   }
 }
 
-// 3. Lead Capture System Integration (Firebase + Make.com Webhook + WhatsApp Redirect)
+// 3. Lead Capture & Dynamic Blog System Integration (Firebase + Make.com Webhook + WhatsApp Redirect)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBcIssLEiimq-t9PgvcqWKRtSNCAKZcS-Y",
+  authDomain: "jabzen-e13ff.firebaseapp.com",
+  projectId: "jabzen-e13ff",
+  storageBucket: "jabzen-e13ff.firebasestorage.app",
+  messagingSenderId: "966829347484",
+  appId: "1:966829347484:web:bf7accd5d9370efa601359",
+  measurementId: "G-GX7EF2NGE3"
 };
 
 let db = null;
-if (typeof firebase !== "undefined" && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+let auth = null;
+let currentUser = null;
+let isMockFirebase = false;
+
+if (typeof firebase !== "undefined" && firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey !== "") {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
-    console.log("Firebase Firestore initialized.");
+    auth = firebase.auth();
+    console.log("Firebase initialized successfully.");
   } catch (error) {
     console.error("Firebase init failed:", error);
   }
 }
+
+if (!auth || !db) {
+  isMockFirebase = true;
+  console.log("Using Mock LocalStorage Database & Auth because real credentials are not configured.");
+  
+  const mockAuthStateListeners = [];
+  let mockCurrentUser = null;
+  
+  try {
+    const savedUser = localStorage.getItem("jabzen_mock_current_user");
+    if (savedUser) {
+      mockCurrentUser = JSON.parse(savedUser);
+    }
+  } catch (e) {
+    console.error("Failed to parse mock current user", e);
+  }
+  
+  auth = {
+    onAuthStateChanged: (callback) => {
+      mockAuthStateListeners.push(callback);
+      setTimeout(() => callback(mockCurrentUser), 50);
+    },
+    createUserWithEmailAndPassword: async (email, password) => {
+      let users = [];
+      try {
+        users = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+      } catch(e) {}
+      if (users.find(u => u.email === email)) {
+        throw new Error("Email already registered in local mock database.");
+      }
+      const uid = "mock-uid-" + Math.random().toString(36).substring(2, 9);
+      const newUser = { email, uid, displayName: "" };
+      users.push({ ...newUser, password });
+      localStorage.setItem("jabzen_mock_users", JSON.stringify(users));
+      
+      mockCurrentUser = newUser;
+      localStorage.setItem("jabzen_mock_current_user", JSON.stringify(mockCurrentUser));
+      
+      mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
+      return {
+        user: {
+          ...newUser,
+          updateProfile: async (profile) => {
+            mockCurrentUser.displayName = profile.displayName;
+            localStorage.setItem("jabzen_mock_current_user", JSON.stringify(mockCurrentUser));
+            try {
+              const allUsers = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+              const idx = allUsers.findIndex(u => u.uid === mockCurrentUser.uid);
+              if (idx !== -1) {
+                allUsers[idx].displayName = profile.displayName;
+                localStorage.setItem("jabzen_mock_users", JSON.stringify(allUsers));
+              }
+            } catch(e){}
+            mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
+          }
+        }
+      };
+    },
+    signInWithEmailAndPassword: async (email, password) => {
+      let users = [];
+      try {
+        users = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+      } catch(e) {}
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) {
+        throw new Error("Invalid email or password.");
+      }
+      mockCurrentUser = { email: user.email, uid: user.uid, displayName: user.displayName };
+      localStorage.setItem("jabzen_mock_current_user", JSON.stringify(mockCurrentUser));
+      mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
+      return { user: mockCurrentUser };
+    },
+    signInWithPopup: async () => {
+      const mockName = "Google User";
+      const mockCompany = "Google Inc";
+      const uid = "mock-google-uid-" + Math.random().toString(36).substring(2, 9);
+      mockCurrentUser = {
+        email: "googleuser@gmail.com",
+        uid: uid,
+        displayName: `${mockName}|${mockCompany}`,
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(mockName)}&background=d6ad2d&color=121212`
+      };
+      localStorage.setItem("jabzen_mock_current_user", JSON.stringify(mockCurrentUser));
+      mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
+      return { user: mockCurrentUser };
+    },
+    signOut: async () => {
+      mockCurrentUser = null;
+      localStorage.removeItem("jabzen_mock_current_user");
+      mockAuthStateListeners.forEach(cb => cb(null));
+    }
+  };
+
+  const mockDbListeners = [];
+  const getMockBlogs = () => {
+    try {
+      return JSON.parse(localStorage.getItem("jabzen_mock_blogs") || "[]");
+    } catch(e) {
+      return [];
+    }
+  };
+  const saveMockBlogs = (blogs) => {
+    localStorage.setItem("jabzen_mock_blogs", JSON.stringify(blogs));
+    mockDbListeners.forEach(listener => listener.callback({
+      empty: blogs.length === 0,
+      forEach: (cb) => {
+        const sorted = [...blogs].sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        sorted.forEach(blog => {
+          cb({
+            id: blog.id,
+            data: () => blog
+          });
+        });
+      }
+    }));
+  };
+
+  db = {
+    collection: (colName) => {
+      if (colName !== "blogs") {
+        return {
+          add: async () => {},
+          get: async () => ({ empty: true, forEach: () => {} })
+        };
+      }
+      return {
+        where: (field, op, value) => {
+          return {
+            onSnapshot: (callback) => {
+              const blogs = getMockBlogs().filter(b => b[field] === value);
+              callback({
+                size: blogs.length,
+                empty: blogs.length === 0,
+                forEach: (cb) => {
+                  blogs.forEach(b => cb({ id: b.id, data: () => b }));
+                }
+              });
+              return () => {};
+            },
+            orderBy: (orderByField, direction) => {
+              return {
+                get: async () => {
+                  let blogs = getMockBlogs().filter(b => b[field] === value);
+                  if (direction === "desc") {
+                    blogs = blogs.sort((a,b) => (b[orderByField]?.seconds || 0) - (a.orderByField?.seconds || 0));
+                  } else {
+                    blogs = blogs.sort((a,b) => (a[orderByField]?.seconds || 0) - (b[orderByField]?.seconds || 0));
+                  }
+                  return {
+                    empty: blogs.length === 0,
+                    forEach: (cb) => {
+                      blogs.forEach(b => cb({ id: b.id, data: () => b }));
+                    }
+                  };
+                }
+              };
+            }
+          };
+        },
+        orderBy: (field, direction) => {
+          return {
+            onSnapshot: (callback) => {
+              const listenerId = Math.random().toString();
+              const listenerObj = {
+                id: listenerId,
+                callback: callback
+              };
+              mockDbListeners.push(listenerObj);
+              
+              const blogs = getMockBlogs();
+              setTimeout(() => {
+                callback({
+                  empty: blogs.length === 0,
+                  forEach: (cb) => {
+                    const sorted = [...blogs].sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                    sorted.forEach(blog => cb({ id: blog.id, data: () => blog }));
+                  }
+                });
+              }, 50);
+
+              return () => {
+                const idx = mockDbListeners.findIndex(l => l.id === listenerId);
+                if (idx !== -1) mockDbListeners.splice(idx, 1);
+              };
+            }
+          };
+        },
+        doc: (docId) => {
+          return {
+            get: async () => {
+              const blogs = getMockBlogs();
+              const blog = blogs.find(b => b.id === docId);
+              return {
+                exists: !!blog,
+                data: () => blog
+              };
+            },
+            update: async (data) => {
+              const blogs = getMockBlogs();
+              const idx = blogs.findIndex(b => b.id === docId);
+              if (idx !== -1) {
+                const cleanedData = { ...data };
+                cleanedData.lastModified = { seconds: Math.floor(Date.now() / 1000) };
+                if (cleanedData.createdAt && typeof cleanedData.createdAt === "object") {
+                  cleanedData.createdAt = { seconds: Math.floor(Date.now() / 1000) };
+                }
+                blogs[idx] = { ...blogs[idx], ...cleanedData };
+                saveMockBlogs(blogs);
+              }
+            },
+            delete: async () => {
+              let blogs = getMockBlogs();
+              blogs = blogs.filter(b => b.id !== docId);
+              saveMockBlogs(blogs);
+            }
+          };
+        },
+        add: async (data) => {
+          const blogs = getMockBlogs();
+          const id = "blog-id-" + Math.random().toString(36).substring(2, 9);
+          const cleanedData = { ...data };
+          cleanedData.createdAt = { seconds: Math.floor(Date.now() / 1000) };
+          cleanedData.lastModified = { seconds: Math.floor(Date.now() / 1000) };
+          const newBlog = {
+            ...cleanedData,
+            id
+          };
+          blogs.push(newBlog);
+          saveMockBlogs(blogs);
+          return { id };
+        }
+      };
+    }
+  };
+}
+
+
+// Dynamic Blog Platform Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const blogAuthSection = document.getElementById("blog-auth-section");
+  if (!blogAuthSection) return; // Only run on blog page
+
+  const guestAuthContainer = document.getElementById("guest-auth-container");
+  const emailAuthForm = document.getElementById("email-auth-form");
+  const signupExtraFields = document.getElementById("signup-extra-fields");
+  const authModeSigninBtn = document.getElementById("auth-mode-signin");
+  const authModeSignupBtn = document.getElementById("auth-mode-signup");
+  const authSubmitBtn = document.getElementById("auth-submit-btn");
+
+  const authNameInput = document.getElementById("auth-name");
+  const authCompanyInputForm = document.getElementById("auth-company-input");
+  const authEmailInput = document.getElementById("auth-email");
+  const authPasswordInput = document.getElementById("auth-password");
+
+  const userDashboardContainer = document.getElementById("user-dashboard-container");
+  const dashAvatar = document.getElementById("dash-avatar");
+  const dashName = document.getElementById("dash-name");
+  const dashMeta = document.getElementById("dash-meta");
+  const dashboardLogoutBtn = document.getElementById("dashboard-logout-btn");
+
+  const tabBtnWrite = document.getElementById("tab-btn-write");
+  const tabBtnManage = document.getElementById("tab-btn-manage");
+  const tabContentWrite = document.getElementById("tab-content-write");
+  const tabContentManage = document.getElementById("tab-content-manage");
+  const myPostsCount = document.getElementById("my-posts-count");
+  const myBlogsTableBody = document.getElementById("my-blogs-table-body");
+
+  const writeBlogForm = document.getElementById("write-blog-form");
+  const formHeading = document.getElementById("form-heading");
+  const editingDocIdInput = document.getElementById("editing-doc-id");
+  const blogTitleInput = document.getElementById("blog-title");
+  const blogCategorySelect = document.getElementById("blog-category");
+  const blogCompanyInput = document.getElementById("blog-company");
+  const blogImageInput = document.getElementById("blog-image");
+  const imageSizeError = document.getElementById("image-size-error");
+  const imagePreviewWrap = document.getElementById("image-preview-wrap");
+  const imagePreview = document.getElementById("image-preview");
+  const cancelWriteBtn = document.getElementById("cancel-write-btn");
+  const submitBlogBtn = document.getElementById("submit-blog-btn");
+  const dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
+
+  let base64ImageString = "";
+  let isSignUpMode = false;
+  let unsubscribeMyPosts = null;
+
+  // 1. Auth Mode Switching (Sign In vs Register)
+  const setAuthMode = (signup) => {
+    isSignUpMode = signup;
+    if (signup) {
+      signupExtraFields.style.display = "flex";
+      authModeSignupBtn.style.color = "var(--accent)";
+      authModeSignupBtn.style.fontWeight = "700";
+      authModeSignupBtn.style.borderBottom = "2px solid var(--accent)";
+      authModeSigninBtn.style.color = "var(--text-secondary)";
+      authModeSigninBtn.style.fontWeight = "600";
+      authModeSigninBtn.style.borderBottom = "none";
+      authSubmitBtn.textContent = "Create Account";
+      authNameInput.required = true;
+      authCompanyInputForm.required = true;
+    } else {
+      signupExtraFields.style.display = "none";
+      authModeSigninBtn.style.color = "var(--accent)";
+      authModeSigninBtn.style.fontWeight = "700";
+      authModeSigninBtn.style.borderBottom = "2px solid var(--accent)";
+      authModeSignupBtn.style.color = "var(--text-secondary)";
+      authModeSignupBtn.style.fontWeight = "600";
+      authModeSignupBtn.style.borderBottom = "none";
+      authSubmitBtn.textContent = "Sign In";
+      authNameInput.required = false;
+      authCompanyInputForm.required = false;
+    }
+  };
+
+  if (authModeSigninBtn && authModeSignupBtn) {
+    authModeSigninBtn.addEventListener("click", () => setAuthMode(false));
+    authModeSignupBtn.addEventListener("click", () => setAuthMode(true));
+  }
+
+  // 2. Auth Flow Trigger Actions
+  const loginWithGoogle = () => {
+    if (!auth) {
+      alert("Firebase is not configured with real credentials yet.");
+      return;
+    }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+      .catch((err) => {
+        console.error("Google Auth failed:", err);
+        alert("Google Sign-In failed: " + err.message);
+      });
+  };
+
+  const logoutUser = () => {
+    if (!auth) return;
+    if (unsubscribeMyPosts) {
+      unsubscribeMyPosts();
+      unsubscribeMyPosts = null;
+    }
+    auth.signOut().then(() => {
+      console.log("Logged out.");
+    });
+  };
+
+  const handleEmailAuthSubmit = (e) => {
+    e.preventDefault();
+    if (!auth) {
+      alert("Firebase is not configured with real credentials.");
+      return;
+    }
+
+    const email = authEmailInput.value.trim();
+    const password = authPasswordInput.value;
+    const originalText = authSubmitBtn.textContent;
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = "Processing...";
+
+    if (isSignUpMode) {
+      const name = authNameInput.value.trim();
+      const company = authCompanyInputForm.value.trim();
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(async (result) => {
+          // Format display name as "Name|Company" to store both fields securely
+          await result.user.updateProfile({
+            displayName: `${name}|${company}`
+          });
+          console.log("Account created successfully.");
+          emailAuthForm.reset();
+        })
+        .catch((err) => {
+          console.error("Registration failed:", err);
+          alert("Registration Error: " + err.message);
+        })
+        .finally(() => {
+          authSubmitBtn.disabled = false;
+          authSubmitBtn.textContent = originalText;
+        });
+    } else {
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          console.log("Logged in successfully.");
+          emailAuthForm.reset();
+        })
+        .catch((err) => {
+          console.error("Login failed:", err);
+          alert("Login Error: " + err.message);
+        })
+        .finally(() => {
+          authSubmitBtn.disabled = false;
+          authSubmitBtn.textContent = originalText;
+        });
+    }
+  };
+
+  document.getElementById("google-login-btn").addEventListener("click", loginWithGoogle);
+  dashboardLogoutBtn.addEventListener("click", logoutUser);
+  emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);
+
+  // 3. Tab Navigation Handlers
+  const setDashboardTab = (activeTab) => {
+    if (activeTab === "write") {
+      tabBtnWrite.className = "btn btn-primary";
+      tabBtnWrite.style.background = "";
+      tabBtnWrite.style.borderColor = "";
+      tabBtnWrite.style.color = "";
+      
+      tabBtnManage.className = "btn btn-secondary";
+      tabBtnManage.style.background = "var(--soft)";
+      tabBtnManage.style.borderColor = "var(--line)";
+      tabBtnManage.style.color = "var(--text-secondary)";
+      
+      tabContentWrite.style.display = "block";
+      tabContentManage.style.display = "none";
+    } else {
+      tabBtnManage.className = "btn btn-primary";
+      tabBtnManage.style.background = "";
+      tabBtnManage.style.borderColor = "";
+      tabBtnManage.style.color = "";
+      
+      tabBtnWrite.className = "btn btn-secondary";
+      tabBtnWrite.style.background = "var(--soft)";
+      tabBtnWrite.style.borderColor = "var(--line)";
+      tabBtnWrite.style.color = "var(--text-secondary)";
+      
+      tabContentWrite.style.display = "none";
+      tabContentManage.style.display = "block";
+      loadUserBlogsList();
+    }
+  };
+
+  tabBtnWrite.addEventListener("click", () => setDashboardTab("write"));
+  tabBtnManage.addEventListener("click", () => setDashboardTab("manage"));
+
+  // 4. Parse profile custom display name
+  const parseUserProfile = (user) => {
+    const rawName = user.displayName || "";
+    if (rawName.includes("|")) {
+      const parts = rawName.split("|");
+      return { name: parts[0] || "Author", company: parts[1] || "Independent" };
+    }
+    return { name: rawName || "Author", company: "Independent" };
+  };
+
+  // 5. Render User State & Load Dashboard Lists
+  const updateAuthUI = (user) => {
+    currentUser = user;
+    if (user) {
+      // User is logged in
+      const profile = parseUserProfile(user);
+      dashName.textContent = profile.name;
+      dashMeta.textContent = `${profile.company} | ${user.email}`;
+      dashAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
+      
+      blogCompanyInput.value = profile.company; // Autofill company field in writing editor
+      
+      guestAuthContainer.style.display = "none";
+      userDashboardContainer.style.display = "block";
+      setDashboardTab("write");
+      
+      // Start listening to user's post count
+      if (db) {
+        if (unsubscribeMyPosts) unsubscribeMyPosts();
+        unsubscribeMyPosts = db.collection("blogs")
+          .where("authorUid", "==", user.uid)
+          .onSnapshot((snap) => {
+            myPostsCount.textContent = snap.size;
+          });
+      }
+    } else {
+      // User is Guest
+      guestAuthContainer.style.display = "block";
+      userDashboardContainer.style.display = "none";
+      setAuthMode(false);
+    }
+  };
+
+  if (auth) {
+    auth.onAuthStateChanged(updateAuthUI);
+  } else {
+    updateAuthUI(null);
+  }
+
+  // 6. Image Picker & Processing
+  blogImageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+      imageSizeError.style.display = "block";
+      blogImageInput.value = "";
+      imagePreviewWrap.style.display = "none";
+      base64ImageString = "";
+      return;
+    }
+
+    imageSizeError.style.display = "none";
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      base64ImageString = event.target.result;
+      imagePreview.src = base64ImageString;
+      imagePreviewWrap.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const clearEditor = () => {
+    writeBlogForm.reset();
+    editingDocIdInput.value = "";
+    formHeading.textContent = "Publish a New Post";
+    submitBlogBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Publish Post';
+    imagePreviewWrap.style.display = "none";
+    imageSizeError.style.display = "none";
+    base64ImageString = "";
+    blogImageInput.required = true;
+    
+    // Restore default company autofill if logged in
+    if (currentUser) {
+      const profile = parseUserProfile(currentUser);
+      blogCompanyInput.value = profile.company;
+    }
+  };
+
+  cancelWriteBtn.addEventListener("click", clearEditor);
+
+  // 7. Write/Update Submit Handler
+  writeBlogForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) {
+      alert("Database connection is inactive. Configure Firebase API keys.");
+      return;
+    }
+    if (!currentUser) {
+      alert("Please log in to publish a post.");
+      return;
+    }
+
+    const editId = editingDocIdInput.value;
+    const isEditing = editId !== "";
+    
+    if (!isEditing && !base64ImageString) {
+      alert("Please upload a cover image.");
+      return;
+    }
+
+    const originalText = submitBlogBtn.innerHTML;
+    submitBlogBtn.disabled = true;
+    submitBlogBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+    const profile = parseUserProfile(currentUser);
+
+    const blogData = {
+      title: blogTitleInput.value.trim(),
+      category: blogCategorySelect.value,
+      company: blogCompanyInput.value.trim(),
+      content: document.getElementById("blog-content").value.trim(),
+      authorName: profile.name,
+      authorEmail: currentUser.email || "",
+      authorPhoto: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`,
+      authorUid: currentUser.uid,
+      lastModified: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    // Include image only if updated or new
+    if (base64ImageString) {
+      blogData.image = base64ImageString;
+    }
+
+    try {
+      if (isEditing) {
+        await db.collection("blogs").doc(editId).update(blogData);
+        alert("Success! Your blog post has been updated.");
+      } else {
+        blogData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection("blogs").add(blogData);
+        alert("Success! Your blog post has been published.");
+      }
+      clearEditor();
+      setDashboardTab("manage");
+    } catch (err) {
+      console.error("Firestore submit error:", err);
+      alert("Error: Failed to submit blog post. " + err.message);
+    } finally {
+      submitBlogBtn.disabled = false;
+      submitBlogBtn.innerHTML = originalText;
+    }
+  });
+
+  // 8. Load Manage Table List
+  const loadUserBlogsList = () => {
+    if (!db || !currentUser) return;
+    myBlogsTableBody.innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin"></i> Loading posts...</td></tr>';
+    
+    db.collection("blogs")
+      .where("authorUid", "==", currentUser.uid)
+      .orderBy("createdAt", "desc")
+      .get()
+      .then((snapshot) => {
+        myBlogsTableBody.innerHTML = "";
+        if (snapshot.empty) {
+          myBlogsTableBody.innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No posts published yet.</td></tr>';
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid var(--line)";
+          
+          tr.innerHTML = `
+            <td style="padding: 1rem; color: var(--text-primary); font-weight: 700; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.title}</td>
+            <td style="padding: 1rem;">${data.category}</td>
+            <td style="padding: 1rem;">${date}</td>
+            <td style="padding: 1rem; text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
+              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" onclick="window.editBlog('${doc.id}')"><i class="fa-solid fa-pencil"></i> Edit</button>
+              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);" onclick="window.deleteBlog('${doc.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+            </td>
+          `;
+          myBlogsTableBody.appendChild(tr);
+        });
+      })
+      .catch((err) => {
+        console.error("Error loading user blogs:", err);
+        myBlogsTableBody.innerHTML = `<tr><td colspan="4" style="padding: 2rem; text-align: center; color: #ff4d4d;">Failed to load posts: ${err.message}</td></tr>`;
+      });
+  };
+
+  // 9. Global CRUD functions mapped to window object
+  window.editBlog = (id) => {
+    if (!db) return;
+    db.collection("blogs").doc(id).get()
+      .then((doc) => {
+        if (!doc.exists) return;
+        const data = doc.data();
+        
+        // Populate inputs
+        editingDocIdInput.value = doc.id;
+        blogTitleInput.value = data.title || "";
+        blogCategorySelect.value = data.category || "SEO";
+        blogCompanyInput.value = data.company || "";
+        document.getElementById("blog-content").value = data.content || "";
+        
+        // Show image preview
+        if (data.image) {
+          imagePreview.src = data.image;
+          imagePreviewWrap.style.display = "block";
+          blogImageInput.required = false; // Don't require file upload again
+        } else {
+          imagePreviewWrap.style.display = "none";
+          blogImageInput.required = true;
+        }
+
+        formHeading.textContent = "Edit Blog Post";
+        submitBlogBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Save Changes';
+        
+        // Switch tab
+        setDashboardTab("write");
+        
+        // Scroll to editor form smooth
+        blogAuthSection.scrollIntoView({ behavior: "smooth" });
+      })
+      .catch((err) => {
+        console.error("Error retrieving document for editing:", err);
+      });
+  };
+
+  window.deleteBlog = (id) => {
+    if (!db) return;
+    if (confirm("Are you sure you want to delete this blog post permanently? This action cannot be undone.")) {
+      db.collection("blogs").doc(id).delete()
+        .then(() => {
+          alert("Blog post deleted successfully.");
+          loadUserBlogsList();
+        })
+        .catch((err) => {
+          console.error("Error deleting document:", err);
+          alert("Failed to delete post: " + err.message);
+        });
+    }
+  };
+
+  // 10. Load and Render Public dynamic blogs
+  if (db) {
+    db.collection("blogs").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+      dynamicBlogsContainer.innerHTML = "";
+      if (snapshot.empty) return;
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString("en-US", {
+          year: "numeric", month: "short", day: "numeric"
+        }) : new Date().toLocaleDateString();
+
+        const card = document.createElement("article");
+        card.className = "card blog-card";
+        card.style.cssText = "display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden; position: relative;";
+        
+        // Check if the current user is the owner of this post to show inline edit options
+        const isOwner = currentUser && data.authorUid === currentUser.uid;
+        const ownerActionsHtml = isOwner ? `
+          <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 5;">
+            <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; min-height: unset; border-radius: 30px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(4px); font-weight: 700; border-color: var(--line);" onclick="window.editBlog('${doc.id}'); return false;"><i class="fa-solid fa-pencil" style="font-size: 0.7rem;"></i></button>
+            <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; min-height: unset; border-radius: 30px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(4px); font-weight: 700; border-color: rgba(255, 77, 77, 0.3); color: #ff4d4d;" onclick="window.deleteBlog('${doc.id}'); return false;"><i class="fa-solid fa-trash" style="font-size: 0.7rem;"></i></button>
+          </div>
+        ` : "";
+
+        card.innerHTML = `
+          ${ownerActionsHtml}
+          <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+            <img src="${data.image}" alt="${data.title}" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">${data.category}</span>
+              <small style="color: var(--text-secondary); font-size: 0.75rem;">${date}</small>
+            </div>
+            <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;">
+              <a href="#" style="color: var(--text-primary); transition: color 0.18s ease;" onclick="return false;">${data.title}</a>
+            </h3>
+            <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary); white-space: pre-line;">${data.content}</p>
+            
+            <div style="margin-top: 1rem; border-top: 1px solid var(--line); padding-top: 0.75rem; display: flex; align-items: center; gap: 10px;">
+              <img src="${data.authorPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" alt="">
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">By <strong style="color: var(--text-primary);">${data.authorName}</strong> (${data.company})</span>
+            </div>
+          </div>
+          <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+            <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;" onclick="alert('Full post reading is coming soon!'); return false;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+          </div>
+        `;
+        dynamicBlogsContainer.appendChild(card);
+      });
+    }, (err) => {
+      console.error("Snapshot error loading blogs:", err);
+    });
+  }
+});
+
 
 const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/your_webhook_id";
 
@@ -174,7 +918,7 @@ document.querySelectorAll("form[data-lead-form]").forEach((form) => {
       source: window.location.pathname
     };
     
-    // Write to Firebase Firestore
+    // 1. Write to Firebase Firestore (if configured with real keys)
     if (db) {
       try {
         await db.collection("leads").add(leadData);
@@ -184,7 +928,7 @@ document.querySelectorAll("form[data-lead-form]").forEach((form) => {
       }
     }
     
-    // Post to Make.com Webhook
+    // 2. Post to Make.com Webhook (if webhook URL is active)
     if (MAKE_WEBHOOK_URL && !MAKE_WEBHOOK_URL.includes("your_webhook_id")) {
       try {
         await fetch(MAKE_WEBHOOK_URL, {
@@ -197,17 +941,36 @@ document.querySelectorAll("form[data-lead-form]").forEach((form) => {
         console.error("Webhook send error:", err);
       }
     }
+
+    // 3. Send Email Notification via FormSubmit.co API
+    try {
+      const emailResponse = await fetch("https://formsubmit.co/ajax/abhishek4srmu@gmail.com", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          name: leadData.name,
+          phone: leadData.phone,
+          page_source: leadData.source,
+          submitted_at: leadData.timestamp,
+          _subject: "New Lead Capture - JABZEN Website",
+          _template: "table"
+        })
+      });
+      const emailResult = await emailResponse.json();
+      console.log("FormSubmit email sent:", emailResult);
+    } catch (err) {
+      console.error("Email notification error:", err);
+    }
     
     if (successMsg) {
       successMsg.style.display = "block";
-      successMsg.textContent = "Thanks! Booking consultation call on WhatsApp...";
+      successMsg.textContent = "Thank you! Your request has been successfully submitted.";
     }
     
     setTimeout(() => {
-      const whatsappText = `Hi Abhishek, I would like to book a free consultation call. My name is ${encodeURIComponent(leadData.name)} and my phone number is ${encodeURIComponent(leadData.phone)}.`;
-      const whatsappUrl = `https://wa.me/918840863659?text=${whatsappText}`;
-      window.open(whatsappUrl, "_blank");
-      
       form.reset();
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -216,7 +979,7 @@ document.querySelectorAll("form[data-lead-form]").forEach((form) => {
       if (successMsg) {
         successMsg.style.display = "none";
       }
-    }, 1500);
+    }, 3000);
   });
 });
 

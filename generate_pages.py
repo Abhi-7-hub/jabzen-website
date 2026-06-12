@@ -62,8 +62,9 @@ HTML_HEADER = """<!doctype html>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="assets/favicon.png">
   <link rel="stylesheet" href="styles.min.css?v=10">
-  <!-- Firebase Compatibility SDK for App and Firestore -->
+  <!-- Firebase Compatibility SDK for App, Auth and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="landing-page">
@@ -77,10 +78,7 @@ HTML_HEADER = """<!doctype html>
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="JABZEN home">
         <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
-          <picture>
-            <source srcset="assets/jabzen-logo.webp" type="image/webp">
-            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
-          </picture>
+          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
         </span>
         <span>JABZEN<small>Creative Marketing Freelancer</small></span>
       </a>
@@ -112,19 +110,19 @@ HTML_FOOTER = """
   <!-- Floating social FAB menu bottom right -->
   <div class="social-fab-container" data-social-fab>
     <div class="social-links-expand">
-      <a href="https://www.linkedin.com/in/abhishek-pratap-singh-08249624b/" target="_blank" rel="noopener" class="fab-btn linkedin" aria-label="LinkedIn">
+      <a href="https://www.linkedin.com/company/110264236/" target="_blank" rel="noopener" class="fab-btn linkedin" aria-label="LinkedIn">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
       </a>
-      <a href="https://instagram.com/abhishekpratapsinghh" target="_blank" rel="noopener" class="fab-btn instagram" aria-label="Instagram">
+      <a href="https://www.instagram.com/jabzen.digital/" target="_blank" rel="noopener" class="fab-btn instagram" aria-label="Instagram">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
       </a>
-      <a href="https://facebook.com/" target="_blank" rel="noopener" class="fab-btn facebook" aria-label="Facebook">
+      <a href="https://www.facebook.com/share/18nExq4nbi/" target="_blank" rel="noopener" class="fab-btn facebook" aria-label="Facebook">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
       </a>
-      <a href="https://twitter.com/" target="_blank" rel="noopener" class="fab-btn twitter" aria-label="Twitter/X">
+      <a href="https://x.com/abhishek4srmu" target="_blank" rel="noopener" class="fab-btn twitter" aria-label="Twitter/X">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       </a>
-      <a href="https://youtube.com/" target="_blank" rel="noopener" class="fab-btn youtube" aria-label="YouTube">
+      <a href="https://youtube.com/@jabzen_digitalgrowth?si=WuvoRP5fkmYw152f" target="_blank" rel="noopener" class="fab-btn youtube" aria-label="YouTube">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       </a>
     </div>
@@ -140,10 +138,7 @@ HTML_FOOTER = """
       <div>
         <a class="brand" href="index.html">
           <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
-            <picture>
-              <source srcset="assets/jabzen-logo.webp" type="image/webp">
-              <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
-            </picture>
+            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
           </span>
           <span>JABZEN<small>Creative Marketing Freelancer</small></span>
         </a>
@@ -189,384 +184,65 @@ def generate_service_pages():
         title = info["title"]
         heading = info["heading"]
         desc = info["description"]
-        breadcrumb = info["breadcrumb"]
         
+        # Override titles & descriptions specifically for landing page conversion
         if slug == "search-marketing":
-            title = "SEO Services in 2026: What Businesses Need to Grow Organically and Stay Visible"
-            desc = "Discover how SEO Services help businesses improve search visibility, attract qualified traffic, and build long-term organic growth without relying only on paid advertising."
-            heading = "SEO Services in 2026: What Businesses Need to Grow Organically and Stay Visible"
-            
-            body_html = f"""  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Services / {breadcrumb}</div>
-        <h1 style="max-width: 900px; line-height: 1.15; font-size: clamp(2rem, 4.5vw, 3.8rem);">{heading}</h1>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="article-container">
-          <div class="article-content">
-            <p>Many businesses still struggle with the same problem: they have a website, but potential customers cannot find it. Traffic remains low, leads are inconsistent, and advertising costs continue to rise.</p>
-            <p>This is where SEO becomes important.</p>
-            <p>Search engine optimization helps businesses improve their visibility when people actively search for products, solutions, or services online. Unlike paid ads that stop generating results when the budget runs out, SEO focuses on creating sustainable growth over time.</p>
-
-            <h2>What Are SEO Services?</h2>
-            <p>SEO Services are professional activities designed to improve a website's rankings in search engines such as Google. The goal is simple: help the right audience discover your business when they need it.</p>
-            <p>These services usually include:</p>
-            <ul>
-              <li>Keyword research</li>
-              <li>Technical website optimization</li>
-              <li>Content optimization</li>
-              <li>On-page SEO</li>
-              <li>Local SEO</li>
-              <li>Link building</li>
-              <li>Performance monitoring</li>
-              <li>Search visibility improvement</li>
-            </ul>
-            <div class="answer-block">
-              SEO works by helping search engines understand, trust, and recommend your website for relevant searches.
-            </div>
-
-            <h2>Why Businesses Need SEO More Than Ever</h2>
-            <p>Search behavior has changed significantly over the last few years. Consumers now research products, compare options, read reviews, and seek answers before making decisions.</p>
-            <p>If your business is not visible during these searches, competitors gain the opportunity instead.</p>
-            <p>Some benefits include:</p>
-            <ul>
-              <li>Consistent organic traffic</li>
-              <li>Better brand credibility</li>
-              <li>Lower customer acquisition costs</li>
-              <li>Higher-quality leads</li>
-              <li>Improved user experience</li>
-              <li>Long-term business growth</li>
-            </ul>
-            <div class="answer-block">
-              SEO does not create demand. It captures existing demand from people already searching for solutions.
-            </div>
-
-            <h2>The Most Important Parts of Modern SEO</h2>
-            
-            <h3>Technical Optimization</h3>
-            <p>A website must load quickly, function properly on mobile devices, and allow search engines to crawl pages efficiently.</p>
-            <p>Common technical improvements include:</p>
-            <ul>
-              <li>Faster page speed</li>
-              <li>Mobile responsiveness</li>
-              <li>Secure HTTPS setup</li>
-              <li>XML sitemap optimization</li>
-              <li>Structured data implementation</li>
-            </ul>
-
-            <h3>Content Strategy</h3>
-            <p>Search engines prioritize content that genuinely answers user questions.</p>
-            <p>Effective content should:</p>
-            <ul>
-              <li>Solve real problems</li>
-              <li>Be easy to understand</li>
-              <li>Include clear headings</li>
-              <li>Match search intent</li>
-              <li>Stay updated regularly</li>
-            </ul>
-            <p>Businesses that publish useful content consistently often build stronger organic visibility over time.</p>
-
-            <h3>Authority Building</h3>
-            <p>Search engines evaluate trust signals across the web.</p>
-            <p>Authority is often strengthened through:</p>
-            <ul>
-              <li>High-quality backlinks</li>
-              <li>Brand mentions</li>
-              <li>Expert content</li>
-              <li>Positive user engagement</li>
-              <li>Industry relevance</li>
-            </ul>
-            <div class="answer-block">
-              Authority increases when credible websites and users consistently associate your brand with expertise and trust.
-            </div>
-
-            <h2>How to Choose the Right SEO Partner</h2>
-            <p>Not all providers deliver the same results.</p>
-            <p>Before hiring an agency or consultant, look for:</p>
-            <ul>
-              <li>Clear reporting practices</li>
-              <li>Transparent communication</li>
-              <li>Real business case studies</li>
-              <li>Ethical optimization methods</li>
-              <li>Long-term strategy planning</li>
-            </ul>
-            <p>Be cautious of anyone promising instant rankings or guaranteed first-page positions. Search algorithms constantly evolve, and sustainable growth requires ongoing work.</p>
-
-            <h2>What Results Can Businesses Expect?</h2>
-            <p>The timeline depends on competition, website condition, industry, and content quality.</p>
-            <p>Most businesses typically see:</p>
-            <ul>
-              <li>Early improvements within 2 to 3 months</li>
-              <li>Stronger traffic growth within 4 to 6 months</li>
-              <li>Long-term gains after consistent optimization</li>
-            </ul>
-            <p>Good SEO is not a one-time project. It is an ongoing process of improvement, testing, and refinement.</p>
-            <p>At Jabzen, we view SEO Services as a long-term growth asset rather than a short-term marketing tactic. When combined with quality content, technical excellence, and a user-first approach, SEO can become one of the most reliable channels for attracting customers and building online authority.</p>
-
-            <h2>Final Takeaway</h2>
-            <p>Businesses that invest in visibility today are more likely to capture attention tomorrow. Search engines continue to be one of the primary ways customers discover brands, compare options, and make purchasing decisions.</p>
-            <p>A strong SEO strategy helps businesses appear where those decisions begin, creating sustainable growth that compounds over time.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section soft">
-      <div class="container split">
-        <div>
-          <p class="eyebrow">Strategy</p>
-          <h2>Connect This Premium Marketing Service To Your Active Sales Pipeline</h2>
-          <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">We implement execution workflows that directly map to phone conversations, inquiry forms, and qualified lead metrics. Let's design a custom road map for your target market.</p>
-        </div>
-        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
-          <div class="form-grid" style="grid-template-columns: 1fr;">
-            <div class="field">
-              <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
-              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
-            </div>
-            <div class="field">
-              <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
-              <input id="lead-phone" name="phone" type="tel" autocomplete="tel" required placeholder="+91 99999 99999">
-            </div>
-          </div>
-          <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1.5rem;">Book Free Consultation</button>
-          <p class="success-message" data-success-message style="color: var(--accent); font-weight: 700; margin-top: 1rem; text-align: center;">Thanks! Booking consultation call on WhatsApp...</p>
-        </form>
-      </div>
-    </section>
-  </main>
-"""
+            title = "SEO Services: Drive Organic Traffic & AI Search Answers | JABZEN"
+            heading = "SEO & Search Engine Optimization: Get Found by High-Intent Buyers Today"
+            desc = "Improve search engine rankings, optimize for voice search AEO, and index in generative AI models to scale organic lead generation without monthly ad spend."
+        elif slug == "performance-marketing":
+            title = "Performance Marketing Funnels & Ad Campaigns | JABZEN"
+            heading = "Performance Ads & Funnel Optimization: Turn Paid Traffic into Profitable Conversions"
+            desc = "Deploy direct-response ads on Meta and Google, fast glassmorphic landing pages, and lead tracking pipelines to stop wasting ad spend and capture ready-to-buy customers."
         elif slug == "creative-services":
-            title = "Most Businesses Don't Need More Followers. They Need a Better Social Media Strategy."
-            desc = "Discover how Social Media Marketing helps businesses build trust, increase visibility, and attract quality customers through consistent content and audience engagement."
-            heading = "Most Businesses Don't Need More Followers. They Need a Better Social Media Strategy."
-            
-            body_html = f"""  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Services / {breadcrumb}</div>
-        <h1 style="max-width: 900px; line-height: 1.15; font-size: clamp(2rem, 4.5vw, 3.8rem);">{heading}</h1>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="article-container">
-          <!-- Full-width visual banner -->
-          <div style="width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); margin-bottom: 2.5rem; box-shadow: var(--shadow);">
-            <img src="assets/creative-services-banner.png" alt="Creative Production and Social Strategy Banner" style="width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 16/9;">
-          </div>
-          
-          <div class="article-content">
-            <p>A common mistake businesses make is chasing follower counts.</p>
-            <p>They celebrate every new follower but rarely ask a more important question:</p>
-            <p><em>"Are these followers becoming customers?"</em></p>
-            <p>The truth is simple. A page with 2,000 engaged followers can generate more business than a page with 100,000 inactive followers.</p>
-            <p>That's why successful brands focus on strategy before growth.</p>
-
-            <h2>Attention Is Easy. Trust Is Difficult.</h2>
-            <p>Almost anyone can create a viral post. Building trust is much harder.</p>
-            <p>People buy from brands they recognize, remember, and trust. Social platforms give businesses a chance to earn that trust every day through valuable content and genuine interactions.</p>
-            <p>When a potential customer sees your content repeatedly, something important happens. Your brand becomes familiar.</p>
-            <p>Familiarity often leads to trust. Trust often leads to sales.</p>
-            <div class="answer-block">
-              Social media influences buying decisions by keeping a brand visible before customers are ready to purchase.
-            </div>
-
-            <h2>The Brands Winning Today Are Teaching, Not Selling</h2>
-            <p>Open Instagram, LinkedIn, or Facebook. Most businesses are still posting endless promotions:</p>
-            <ul>
-              <li>Buy now</li>
-              <li>Limited offer</li>
-              <li>Contact us today</li>
-              <li>Best service in town</li>
-            </ul>
-            <p>Audiences ignore this quickly.</p>
-            <p>The brands growing fastest are sharing:</p>
-            <ul>
-              <li>Helpful tips</li>
-              <li>Industry insights</li>
-              <li>Customer stories</li>
-              <li>Behind-the-scenes content</li>
-              <li>Practical solutions</li>
-            </ul>
-            <p>People naturally engage with content that helps them solve problems.</p>
-
-            <h2>Consistency Beats Creativity Most of the Time</h2>
-            <p>Many businesses spend weeks creating one perfect post and then disappear for a month. That approach rarely works.</p>
-            <p>A simple, consistent content schedule often produces better results than occasional bursts of creativity.</p>
-            <p>Posting regularly keeps your business visible. It reminds people that you exist. More importantly, it gives algorithms more opportunities to distribute your content.</p>
-            <div class="answer-block">
-              Consistency increases visibility because social platforms reward active and reliable creators.
-            </div>
-
-            <h2>Why Social Media Marketing Matters for Long-Term Growth</h2>
-            <p>Businesses often treat social platforms as advertising channels. They are much more than that.</p>
-            <p>Social Media Marketing allows businesses to:</p>
-            <ul>
-              <li>Build authority</li>
-              <li>Strengthen customer relationships</li>
-              <li>Generate organic visibility</li>
-              <li>Increase website traffic</li>
-              <li>Create brand awareness</li>
-              <li>Stay connected with existing customers</li>
-            </ul>
-            <p>The value compounds over time. Every useful post, comment, and interaction contributes to a stronger online presence.</p>
-            <p>The businesses that succeed on social media are rarely the loudest. They are usually the most consistent.</p>
-            <p>Instead of chasing vanity metrics, focus on creating content people genuinely want to see.</p>
-            <p>At Jabzen, we believe Social Media Marketing works best when it combines strategy, valuable content, and authentic engagement. When those elements come together, growth becomes a natural outcome rather than a constant struggle.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section soft">
-      <div class="container split">
-        <div>
-          <p class="eyebrow">Strategy</p>
-          <h2>Connect This Premium Marketing Service To Your Active Sales Pipeline</h2>
-          <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">We implement execution workflows that directly map to phone conversations, inquiry forms, and qualified lead metrics. Let's design a custom road map for your target market.</p>
-        </div>
-        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
-          <div class="form-grid" style="grid-template-columns: 1fr;">
-            <div class="field">
-              <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
-              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
-            </div>
-            <div class="field">
-              <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
-              <input id="lead-phone" name="phone" type="tel" autocomplete="tel" required placeholder="+91 99999 99999">
-            </div>
-          </div>
-          <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1.5rem;">Book Free Consultation</button>
-          <p class="success-message" data-success-message style="color: var(--accent); font-weight: 700; margin-top: 1rem; text-align: center;">Thanks! Booking consultation call on WhatsApp...</p>
-        </form>
-      </div>
-    </section>
-  </main>
-"""
+            title = "Creative Production, Video Editing & Visual Branding | JABZEN"
+            heading = "Creative Production & Visual Branding: Storytelling That Converts"
+            desc = "Direct response creative assets, viral Reel/Short-form video production, minimal custom monograms, and luxury branding guidelines designed to capture attention and build authority."
         elif slug == "ai-solutions":
-            title = "AI Marketing Solutions & Automation | JABZEN | Creative Marketing Freelancer"
-            desc = "Discover how AI Marketing Solutions and automated workflows can scale your visual content production, voice replication, and lead workflows 24/7."
-            heading = "AI Marketing Solutions & Automation"
-            
-            body_html = f"""  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Services / {breadcrumb}</div>
-        <h1 style="max-width: 900px; line-height: 1.15; font-size: clamp(2rem, 4.5vw, 3.8rem);">{heading}</h1>
-      </div>
-    </section>
+            title = "AI Marketing Solutions & Custom Workflow Automation | JABZEN"
+            heading = "AI Marketing Solutions & Automation: Scale Your Execution 24/7"
+            desc = "Deploy custom virtual presenter guides, professional voice cloned walkthroughs, and responsive webhook automations to increase operational velocity and conversion rates."
 
-    <section class="section">
-      <div class="container">
-        <div class="article-container">
-          <!-- Full-width visual banner -->
-          <div style="width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); margin-bottom: 2.5rem; box-shadow: var(--shadow);">
-            <img src="assets/ai-solutions-banner.png" alt="AI Marketing Solutions and Workflow Automation Banner" style="width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 16/9;">
-          </div>
-          
-          <div class="article-content">
-            <p>Artificial Intelligence is no longer a future concept. It is a live multiplier for businesses trying to scale. From creating personalized video variations to voice cloning and programmatic workflows, AI tools enable brands to deliver agency-grade output at a fraction of the traditional speed and cost.</p>
-            <p>At JABZEN, we build marketing automations that act as silent team members, working 24/7. This page details the capabilities we deploy to optimize your creative and conversion pipelines.</p>
+        # Compile deliverables cards dynamically
+        cards_html = ""
+        for card_title, card_desc in info["cards"]:
+            cards_html += f"""
+          <div class="card service-card" style="align-items: flex-start; text-align: left; padding: 2rem;">
+            <div class="icon" style="background: rgba(214,173,45,0.15); color: var(--accent); width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 1.25rem;"><i class="fa-solid fa-circle-check"></i></div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">{card_title}</h3>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">{card_desc}</p>
+          </div>"""
 
-            <h2>AI Guide Presenters &amp; Voice Replication</h2>
-            <p>With custom AI video avatars, you can produce personalized guide videos for different buyer segments instantly. Instead of renting studio space or recording raw takes repeatedly, we configure virtual presenters to convey your product guides with complete clarity.</p>
-            <p>Additionally, voice cloning allows us to create highly realistic multi-lingual voice replicates that explain product features in a fraction of normal recording time, establishing a uniform brand voice across all touchpoints.</p>
-            <div class="answer-block">
-              AI guide presenters allow businesses to scale their dynamic video outreach without running into studio scheduling constraints or content production bottlenecks.
-            </div>
-
-            <h2>Automated Cinematic Explainer Videos</h2>
-            <p>We stitch together scriptwriting models, voice overlays, and cinematic explainer assets programmatically. This enables rapid creation and testing of direct-response video ads across Instagram, Meta, and YouTube.</p>
-            <p>By producing high-retention video variations at scale, you can determine exactly which hooks and angles drive the lowest customer acquisition costs without spending weeks in post-production.</p>
-            <p>These cinematic explainer assets typically include:</p>
-            <ul>
-              <li>High-retention video scripting</li>
-              <li>Realistic voice replication and sync</li>
-              <li>Dynamic subtitling and cinematic graphic frames</li>
-              <li>Multi-platform asset scaling (Reels, Shorts, Landscape)</li>
-            </ul>
-
-            <h2>Workflow Automation &amp; 24/7 Pipelines</h2>
-            <p>True scale is achieved when your marketing funnel works while you sleep. We set up custom automation pipelines using advanced webhooks and APIs to bridge the gap between user interest and sales actions.</p>
-            <p>Common automation workflows include:</p>
-            <ul>
-              <li>Automated email sequences and newsletter systems</li>
-              <li>Instant lead notifications synced to team Slack or Discord</li>
-              <li>Responsive AI agents that answer basic product queries instantly</li>
-              <li>Webhook integrations connecting forms directly to CRM pipelines</li>
-            </ul>
-            <div class="answer-block">
-              True automation isn't about spamming; it is about building reliable, responsive connection pathways between user queries and your sales system.
-            </div>
-
-            <h2>Why Invest in AI and Automation Today?</h2>
-            <p>Businesses that adopt automation grow exponentially faster because they free up resources to focus on high-impact strategies. Key benefits include:</p>
-            <ul>
-              <li>Consistent execution without human downtime</li>
-              <li>Significantly lower operational and production costs</li>
-              <li>Higher lead conversion rates due to instant follow-ups</li>
-              <li>Scalable asset variation testing</li>
-            </ul>
-            <p>At Jabzen, we view AI Marketing Solutions as a strategic multiplier. When combined with authentic branding, technical excellence, and human oversight, AI becomes one of the most powerful tools for accelerating business growth.</p>
-          </div>
+        body_html = f"""  <main id="main">
+    <!-- Hero Section -->
+    <section class="page-hero" style="padding: 100px 0 60px; position: relative; overflow: hidden;">
+      <div class="container" style="text-align: center; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;">
+        <span class="eyebrow" style="font-size: 0.82rem; letter-spacing: 0.15em; font-weight: 900; color: var(--accent);">Premium Service Offering</span>
+        <h1 style="max-width: 900px; line-height: 1.12; font-size: clamp(2.2rem, 5.5vw, 4rem); font-weight: 800; font-family: Poppins, sans-serif; color: var(--text-primary); margin: 0;">{heading}</h1>
+        <p class="lead" style="margin: 0.5rem auto 0; font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--text-secondary); max-width: 750px; line-height: 1.6; text-align: center;">{desc}</p>
+        <div class="cta-row" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
+          <a class="btn btn-primary" href="#contact" style="padding: 0.75rem 1.75rem; font-weight: 900;"><i class="fa-solid fa-calendar-check" style="margin-right: 8px;"></i> Book Consultation</a>
+          <a class="btn btn-secondary" href="#deliverables" style="padding: 0.75rem 1.75rem; font-weight: 900;"><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> View Scope & Deliverables</a>
         </div>
       </div>
     </section>
 
-    <section class="section soft">
-      <div class="container split">
-        <div>
-          <p class="eyebrow">Strategy</p>
-          <h2>Connect This Premium Marketing Service To Your Active Sales Pipeline</h2>
-          <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">We implement execution workflows that directly map to phone conversations, inquiry forms, and qualified lead metrics. Let's design a custom road map for your target market.</p>
+    <!-- Visual Banner Section -->
+    <section class="section" style="padding: 20px 0 40px;">
+      <div class="container" style="max-width: 960px; margin: 0 auto;">
+        <div style="width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
+          <img src="assets/{slug}-banner.webp" alt="{heading} Banner" style="width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 16/9;">
         </div>
-        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
-          <div class="form-grid" style="grid-template-columns: 1fr;">
-            <div class="field">
-              <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
-              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
-            </div>
-            <div class="field">
-              <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
-              <input id="lead-phone" name="phone" type="tel" autocomplete="tel" required placeholder="+91 99999 99999">
-            </div>
-          </div>
-          <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1.5rem;">Book Free Consultation</button>
-          <p class="success-message" data-success-message style="color: var(--accent); font-weight: 700; margin-top: 1rem; text-align: center;">Thanks! Booking consultation call on WhatsApp...</p>
-        </form>
-      </div>
-    </section>
-  </main>
-"""
-        else:
-            cards_html = ""
-            for card_title, card_desc in info["cards"]:
-                cards_html += f"""
-      <article class="card">
-        <h3 style="color: var(--accent); margin-bottom: 0.5rem;">{card_title}</h3>
-        <p>{card_desc}</p>
-      </article>"""
-
-            body_html = f"""  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Services / {breadcrumb}</div>
-        <h1>{heading}</h1>
-        <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">{desc}</p>
       </div>
     </section>
 
-    <section class="section">
+    <!-- Deliverables Scope Section -->
+    <section class="section" id="deliverables" style="padding: 60px 0;">
       <div class="container">
-        <div class="section-head" style="text-align: center; margin-bottom: 3rem;">
-          <p class="eyebrow">Framework</p>
-          <h2>Key Deliverables And Performance Capabilities We Deliver For Brands</h2>
+        <div class="section-head" style="text-align: center; margin-bottom: 3.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+          <p class="eyebrow" style="margin: 0;">Service Scope</p>
+          <h2 style="font-size: clamp(1.6rem, 3.5vw, 2.5rem); margin: 0;">What We Deliver to Scale Your Business</h2>
+          <p style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0; font-size: 0.95rem; text-align: center;">Specific, action-oriented execution fields designed to drive traffic, visibility, and direct inquiries.</p>
         </div>
         <div class="grid grid-3">
           {cards_html}
@@ -574,14 +250,96 @@ def generate_service_pages():
       </div>
     </section>
 
-    <section class="section soft">
-      <div class="container split">
-        <div>
-          <p class="eyebrow">Strategy</p>
-          <h2>Connect This Premium Marketing Service To Your Active Sales Pipeline</h2>
-          <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">We implement execution workflows that directly map to phone conversations, inquiry forms, and qualified lead metrics. Let's design a custom road map for your target market.</p>
+    <!-- Process Timeline Section -->
+    <section class="section soft" id="process" style="padding: 70px 0; background: var(--soft);">
+      <div class="container">
+        <div class="section-head" style="text-align: center; margin-bottom: 3.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+          <p class="eyebrow" style="margin: 0;">Execution Roadmap</p>
+          <h2 style="font-size: clamp(1.6rem, 3.5vw, 2.5rem); margin: 0;">How We Work Together to Achieve Results</h2>
+          <p style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0; font-size: 0.95rem; text-align: center;">Our clean process roadmap keeps our collaboration fast, transparent, and focused on target milestones.</p>
         </div>
-        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
+        <div class="timeline" style="max-width: 800px; margin: 0 auto;">
+          <div class="timeline-item" style="position: relative; padding-left: 3.5rem; margin-bottom: 2.5rem;">
+            <div class="timeline-badge" style="position: absolute; left: 11px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--accent); z-index: 2;"></div>
+            <div class="timeline-content">
+              <h3 style="color: var(--accent); font-size: 1.25rem; font-weight: 700; margin: 0 0 0.25rem;">Phase 1: Discovery & Strategy Audit</h3>
+              <small style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 700; font-size: 0.82rem;">Week 1</small>
+              <p style="margin: 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">We audit your current organic search positioning, paid campaign logs, or creative styles. We then prepare a competitive audit and mapping list containing specific priorities.</p>
+            </div>
+          </div>
+          <div class="timeline-item" style="position: relative; padding-left: 3.5rem; margin-bottom: 2.5rem;">
+            <div class="timeline-badge" style="position: absolute; left: 11px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--accent); z-index: 2;"></div>
+            <div class="timeline-content">
+              <h3 style="color: var(--accent); font-size: 1.25rem; font-weight: 700; margin: 0 0 0.25rem;">Phase 2: Implementation & Launch</h3>
+              <small style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 700; font-size: 0.82rem;">Weeks 2-3</small>
+              <p style="margin: 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">We build high-converting glassmorphic landing pages, write expert copywriting grids, configure AI models/voice clones, or design ad creatives. We verify page speeds and analytics before setting the funnel live.</p>
+            </div>
+          </div>
+          <div class="timeline-item" style="position: relative; padding-left: 3.5rem;">
+            <div class="timeline-badge" style="position: absolute; left: 11px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--accent); z-index: 2;"></div>
+            <div class="timeline-content">
+              <h3 style="color: var(--accent); font-size: 1.25rem; font-weight: 700; margin: 0 0 0.25rem;">Phase 3: Weekly Optimization & Scaling</h3>
+              <small style="display: block; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 700; font-size: 0.82rem;">Ongoing Retention</small>
+              <p style="margin: 0; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">We monitor conversion logs, run test variations on ad creatives, adjust bids or search indices, and send clean, transparent dashboard reports on a fixed weekly cadence.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Choose JABZEN Section -->
+    <section class="section" id="benefits" style="padding: 70px 0;">
+      <div class="container split" style="align-items: center; display: grid; gap: 3rem; grid-template-columns: 1.1fr 0.9fr;">
+        <div style="text-align: left;">
+          <p class="eyebrow" style="margin: 0 0 0.75rem;">Why Choose JABZEN</p>
+          <h2 style="font-size: clamp(1.6rem, 3.5vw, 2.5rem); margin: 0 0 1rem; line-height: 1.15;">A Human-First Approach to Modern Digital Growth</h2>
+          <p style="margin: 0 0 1.5rem; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">We replace empty promises and vague metrics with structured deliverables, clear conversion optimization workflows, and direct contact options.</p>
+          <ul style="list-style: none; padding: 0; display: grid; gap: 1rem; margin: 0;">
+            <li style="display: flex; align-items: flex-start; gap: 10px; color: var(--text-primary); font-size: 0.92rem; line-height: 1.5;">
+              <i class="fa-solid fa-circle-check" style="color: var(--accent); margin-top: 4px; flex-shrink: 0;"></i>
+              <span><strong>Milestone-driven retainers:</strong> Know exactly what assets are generated and deployed weekly.</span>
+            </li>
+            <li style="display: flex; align-items: flex-start; gap: 10px; color: var(--text-primary); font-size: 0.92rem; line-height: 1.5;">
+              <i class="fa-solid fa-circle-check" style="color: var(--accent); margin-top: 4px; flex-shrink: 0;"></i>
+              <span><strong>Direct communications:</strong> Direct connections to your specialist via WhatsApp/Slack without sales gatekeepers.</span>
+            </li>
+            <li style="display: flex; align-items: flex-start; gap: 10px; color: var(--text-primary); font-size: 0.92rem; line-height: 1.5;">
+              <i class="fa-solid fa-circle-check" style="color: var(--accent); margin-top: 4px; flex-shrink: 0;"></i>
+              <span><strong>AIO/GEO readiness:</strong> Funnels built to capture search rankings and AI citations from tools like Gemini and ChatGPT.</span>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Value metrics container -->
+        <div style="background: var(--card-bg); border: 1px solid var(--line); padding: 2.5rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 1.5rem; box-shadow: var(--shadow);">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="icon" style="background: rgba(214,173,45,0.1); color: var(--accent); width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; margin: 0;"><i class="fa-solid fa-chart-line"></i></div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">Funnel Performance Metrics</h3>
+          </div>
+          <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">Our client engagements target core revenue and visibility improvements rather than simple raw clicks.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 0.5rem;">
+            <div>
+              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">4.2x</strong>
+              <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">Average ROAS</span>
+            </div>
+            <div>
+              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">312%</strong>
+              <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">Search Visibility Increase</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lead Generation Form Section -->
+    <section class="section soft" id="contact" style="padding: 70px 0; background: var(--soft);">
+      <div class="container split" style="display: grid; gap: 3rem; grid-template-columns: 1.15fr 0.85fr;">
+        <div style="text-align: left;">
+          <p class="eyebrow" style="margin: 0 0 0.75rem;">Strategy Call</p>
+          <h2 style="font-size: clamp(1.6rem, 3.5vw, 2.5rem); margin: 0 0 1rem; line-height: 1.15;">Let's Connect This Service to Your Live Sales Channels</h2>
+          <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">Schedule a free strategy consultation call. We will review your current ad accounts, website performance, or search keywords and map out a customized action list.</p>
+        </div>
+        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line); margin: 0;">
           <div class="form-grid" style="grid-template-columns: 1fr;">
             <div class="field">
               <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
@@ -612,7 +370,6 @@ def generate_blog_page():
     body_html = """  <main id="main">
     <section class="page-hero">
       <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Blog</div>
         <h1>Latest Marketing & Strategy Insights</h1>
         <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">Frameworks, case reviews, and search patterns to help service brands scale lead generation.</p>
       </div>
@@ -620,36 +377,242 @@ def generate_blog_page():
 
     <section class="section">
       <div class="container">
-        <div class="grid grid-3">
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">SEO</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Future of Search: Navigating the Generative Search Era</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">How Gemini, ChatGPT, and AI-driven answer summaries are changing search behavior, and how to stay ahead.</p>
+        <!-- Auth state and Dashboard Panel -->
+        <div id="blog-auth-section" style="margin-bottom: 3rem; background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); position: relative;">
+          
+          <!-- GUEST VIEW: Google + Email/Password forms -->
+          <div id="guest-auth-container" style="display: block;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem;">
+              
+              <!-- Left panel: Social Sign-In -->
+              <div style="display: flex; flex-direction: column; justify-content: center; gap: 1rem; border-right: 1px solid var(--line); padding-right: 2rem;">
+                <h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-feather-pointed" style="color: var(--accent);"></i> JABZEN Blog Platform</h2>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem; line-height: 1.5;">Share your strategy, marketing frameworks, and insights. Login instantly to write, edit, and publish blogs.</p>
+                <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 1rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+              </div>
+              
+              <!-- Right panel: Email Sign-In / Register -->
+              <div>
+                <!-- Toggle mode header -->
+                <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                  <button type="button" id="auth-mode-signin" style="background: none; border: none; color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid var(--accent);">Sign In</button>
+                  <button type="button" id="auth-mode-signup" style="background: none; border: none; color: var(--text-secondary); font-weight: 600; font-size: 1rem; cursor: pointer; padding-bottom: 4px;">Register</button>
+                </div>
+                
+                <!-- Email/Password Auth Form -->
+                <form id="email-auth-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <!-- Sign Up fields (Only visible when Register is active) -->
+                  <div id="signup-extra-fields" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
+                      <input id="auth-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                    </div>
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-company-input" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
+                      <input id="auth-company-input" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                    </div>
+                  </div>
+                  
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-email" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Email Address *</label>
+                    <input id="auth-email" type="email" required placeholder="name@company.com" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-password" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Password *</label>
+                    <input id="auth-password" type="password" required placeholder="••••••••" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                  
+                  <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; margin-top: 0.5rem; border-radius: 30px;">Sign In</button>
+                </form>
+              </div>
+              
+            </div>
+          </div>
+          
+          <!-- LOGGED-IN AUTHOR VIEW: Dashboard Tabs -->
+          <div id="user-dashboard-container" style="display: none;">
+            <!-- Dashboard Profile Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="dash-avatar" src="https://www.gravatar.com/avatar/?d=mp" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);" alt="Avatar">
+                <div>
+                  <h3 id="dash-name" style="margin: 0; font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">Author Name</h3>
+                  <small id="dash-meta" style="color: var(--text-secondary); display: block; font-size: 0.8rem;">Company Name | Email</small>
+                </div>
+              </div>
+              <button id="dashboard-logout-btn" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.82rem; min-height: unset; border-radius: 30px; font-weight: 700;">Sign Out</button>
+            </div>
+            
+            <!-- Dashboard Navigation Tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+              <button id="tab-btn-write" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; min-height: unset; border-radius: 30px; font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Write Blog</button>
+              <button id="tab-btn-manage" class="btn btn-secondary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; min-height: unset; border-radius: 30px; font-weight: 700; background: var(--soft); border-color: var(--line); color: var(--text-secondary);"><i class="fa-solid fa-list"></i> My Posts (<span id="my-posts-count">0</span>)</button>
+            </div>
+            
+            <!-- Tab Contents -->
+            <div>
+              
+              <!-- Tab 1: Write Blog Form -->
+              <div id="tab-content-write" style="display: block;">
+                <form id="write-blog-form">
+                  <h3 id="form-heading" style="font-size: 1.2rem; color: var(--text-primary); margin: 0 0 1.25rem 0; font-weight: 700;">Publish a New Post</h3>
+                  <input type="hidden" id="editing-doc-id" value="">
+                  
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.25rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="blog-title" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Blog Title *</label>
+                      <input id="blog-title" required placeholder="The future of search engines..." style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
+                    </div>
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="blog-category" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Category / Tags *</label>
+                      <select id="blog-category" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
+                        <option value="SEO">SEO</option>
+                        <option value="AI Marketing">AI Marketing</option>
+                        <option value="Meta Ads">Meta Ads</option>
+                        <option value="Google Ads">Google Ads</option>
+                        <option value="Branding">Branding</option>
+                        <option value="Strategy">Strategy</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.25rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="blog-company" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Display Company Name *</label>
+                      <input id="blog-company" required placeholder="Acme Corp / Freelancer" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
+                    </div>
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="blog-image" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Cover Image (Max 1MB) *</label>
+                      <input id="blog-image" type="file" accept="image/*" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.55rem;">
+                      <span id="image-size-error" style="color: #ff4d4d; font-size: 0.8rem; display: none; margin-top: 4px; font-weight: 700;">File size exceeds 1MB. Please choose a smaller image.</span>
+                    </div>
+                  </div>
+
+                  <div class="field" style="margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-content" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Blog Content *</label>
+                    <textarea id="blog-content" required placeholder="Write your blog post content here..." rows="8" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem; font-family: inherit; line-height: 1.6; resize: vertical;"></textarea>
+                  </div>
+                  
+                  <div id="image-preview-wrap" style="display: none; margin-bottom: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; max-width: 300px; aspect-ratio: 16/9;">
+                    <img id="image-preview" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+
+                  <div style="display: flex; gap: 1rem;">
+                    <button type="submit" id="submit-blog-btn" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 900; border-radius: 30px;"><i class="fa-solid fa-circle-check"></i> Publish Post</button>
+                    <button type="button" id="cancel-write-btn" class="btn btn-outline" style="padding: 0.75rem 2rem; border-radius: 30px;">Cancel</button>
+                  </div>
+                </form>
+              </div>
+              
+              <!-- Tab 2: Manage My Blogs List -->
+              <div id="tab-content-manage" style="display: none;">
+                <h3 style="font-size: 1.2rem; color: var(--text-primary); margin: 0 0 1rem 0; font-weight: 700;">Manage Your Published Posts</h3>
+                
+                <div style="overflow-x: auto; width: 100%; border-radius: var(--radius); border: 1px solid var(--line);">
+                  <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                      <tr style="background: var(--soft); border-bottom: 1px solid var(--line); color: var(--text-primary);">
+                        <th style="padding: 1rem; font-weight: 700;">Title</th>
+                        <th style="padding: 1rem; font-weight: 700;">Category</th>
+                        <th style="padding: 1rem; font-weight: 700;">Date</th>
+                        <th style="padding: 1rem; font-weight: 700; text-align: center;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="my-blogs-table-body" style="color: var(--text-secondary);">
+                      <tr>
+                        <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No posts published yet.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="grid grid-3" id="blogs-grid">
+          <!-- Dynamic blogs container -->
+          <div id="dynamic-blogs-container" style="display: contents;"></div>
+          
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-seo.webp" alt="Generative Search SEO" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">SEO</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Future of Search: Navigating the Generative Search Era</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How Gemini, ChatGPT, and AI-driven answer summaries are changing search behavior, and how to stay ahead in organic search rankings.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">AI Marketing</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Leveraging Gemini & LLMs to Automate Content Velocity</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">A step-by-step framework to repurpose long-form assets into Reels, blogs, and social threads using AI workflows.</p>
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-ai.webp" alt="AI Content Automation" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">AI Marketing</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Leveraging Gemini & LLMs to Automate Content Velocity</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">A step-by-step framework to repurpose long-form assets into Reels, blogs, and social threads using modern AI automation pipelines.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">Meta Ads</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">High-ROAS Ad Copy Secrets for High-Ticket Clients</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Visual hook patterns, direct response copy outlines, and creative formats that convert cold traffic into booked calls.</p>
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-meta-ads.webp" alt="Meta Ads Optimization" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Meta Ads</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">High-ROAS Ad Copy Secrets for High-Ticket Clients</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">Visual hook patterns, direct response copy outlines, and creative formats that convert cold traffic into booked consultation calls.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">Google Ads</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Scaling Performance Max Campaigns Without Wasting Spend</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">How to configure asset groups, target audiences, and placement exclusions for high-intent B2B search dominance.</p>
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-google-ads.webp" alt="Google Ads Scaling" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Google Ads</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Scaling Performance Max Campaigns Without Wasting Spend</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How to configure asset groups, target audiences, and placement exclusions for high-intent search engine dominance profitably.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">Branding</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Anatomy of a Premium Personal Brand Portfolio</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">How to position yourself as India's leading creative specialist by optimizing visual hierarchy, monograms, and trust signals.</p>
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-branding.webp" alt="Branding Guidelines" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Branding</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Anatomy of a Premium Personal Brand Portfolio</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How to position yourself as an authority creative specialist by optimizing visual hierarchy, layouts, and trust signals.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
-          <article class="card">
-            <span class="eyebrow" style="font-size: 0.7rem;">Content Marketing</span>
-            <h3 style="margin: 0.5rem 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Building a Content Cluster Engine That Educates & Converts</a></h3>
-            <p style="font-size: 0.9rem; margin-top: 0.5rem;">A blueprint for map-planning core business offers to informational, transactional, and comparative content pieces.</p>
+          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
+            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
+              <img src="assets/blog-content.webp" alt="Content Marketing Strategy" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
+              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Content Marketing</span>
+              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Building a Content Cluster Engine That Educates & Converts</a></h3>
+              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">A blueprint for mapping informational, transactional, and comparative content pieces directly to your core business offers.</p>
+            </div>
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            </div>
           </article>
         </div>
       </div>
@@ -669,8 +632,7 @@ def generate_contact_page():
     body_html = """  <main id="main">
     <section class="page-hero">
       <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Contact</div>
-        <h1>Let's Scale Your Brand</h1>
+        <h1>Let's Work Together to Scale Your Brand Authority, Optimize Paid Ads, and Dominate Organic Search Rankings</h1>
         <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">Schedule a free consultation call to discuss your search presence, Google/Meta Ads, or creative video production strategy.</p>
       </div>
     </section>
@@ -718,7 +680,6 @@ def generate_results_page():
     body_html = """  <main id="main">
     <section class="page-hero">
       <div class="container">
-        <div class="breadcrumbs"><a href="index.html">Home</a> / Results</div>
         <h1>Results & Performance Case Studies</h1>
         <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">Real outcomes showing traffic multiples, visual branding upgrades, and direct lead pipelines.</p>
       </div>
