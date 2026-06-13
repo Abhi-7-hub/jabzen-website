@@ -676,11 +676,10 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (err.code === "auth/invalid-email") {
             errMsg = "The email address is invalid.";
           } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
-            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
-              localStorage.setItem("jabzen_use_mock_mode", "true");
-              window.location.reload();
-              return;
-            }
+            alert("Firebase Authentication is not configured or accessible for this project. Switching automatically to Local Demo Mode (LocalStorage) so you can test the website.");
+            localStorage.setItem("jabzen_use_mock_mode", "true");
+            window.location.reload();
+            return;
           }
           alert("Password Reset Error: " + errMsg);
         })
@@ -703,11 +702,10 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Google Auth failed:", err);
         let errMsg = err.message;
         if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
-          if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
-            localStorage.setItem("jabzen_use_mock_mode", "true");
-            window.location.reload();
-            return;
-          }
+          alert("Firebase Authentication is not configured or accessible for this project. Switching automatically to Local Demo Mode (LocalStorage) so you can test the website.");
+          localStorage.setItem("jabzen_use_mock_mode", "true");
+          window.location.reload();
+          return;
         }
         alert("Google Sign-In failed: " + errMsg);
       });
@@ -751,11 +749,10 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (err.code === "auth/invalid-email") {
             errMsg = "The email address is invalid.";
           } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
-            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
-              localStorage.setItem("jabzen_use_mock_mode", "true");
-              window.location.reload();
-              return;
-            }
+            alert("Firebase Authentication is not configured or accessible for this project. Switching automatically to Local Demo Mode (LocalStorage) so you can test the website.");
+            localStorage.setItem("jabzen_use_mock_mode", "true");
+            window.location.reload();
+            return;
           }
           alert("Registration Error: " + errMsg);
         })
@@ -781,11 +778,10 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (err.code === "auth/user-disabled") {
             errMsg = "This user account has been disabled by an administrator.";
           } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
-            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
-              localStorage.setItem("jabzen_use_mock_mode", "true");
-              window.location.reload();
-              return;
-            }
+            alert("Firebase Authentication is not configured or accessible for this project. Switching automatically to Local Demo Mode (LocalStorage) so you can test the website.");
+            localStorage.setItem("jabzen_use_mock_mode", "true");
+            window.location.reload();
+            return;
           }
           alert("Login Error: " + errMsg);
         })
