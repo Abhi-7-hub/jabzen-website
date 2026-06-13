@@ -67,6 +67,22 @@
       </div>
       <div class="nav-actions">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        
+        <!-- User Profile Dropdown Icon -->
+        <div id="header-user-profile" class="header-profile-container" style="display: none;">
+          <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
+            <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
+          </button>
+          <div id="header-profile-dropdown" class="header-profile-dropdown">
+            <div class="dropdown-user-info">
+              <div id="header-profile-name" class="dropdown-user-name">User Name</div>
+              <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
+            </div>
+            <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+
         <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
         <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
       </div>

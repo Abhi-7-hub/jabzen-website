@@ -99,6 +99,22 @@ HTML_HEADER = """<!doctype html>
       </div>
       <div class="nav-actions">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        
+        <!-- User Profile Dropdown Icon -->
+        <div id="header-user-profile" class="header-profile-container" style="display: none;">
+          <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
+            <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
+          </button>
+          <div id="header-profile-dropdown" class="header-profile-dropdown">
+            <div class="dropdown-user-info">
+              <div id="header-profile-name" class="dropdown-user-name">User Name</div>
+              <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
+            </div>
+            <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+
         <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
         <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
       </div>
@@ -418,11 +434,19 @@ def generate_blog_page():
                     <input id="auth-email" type="email" required placeholder="name@company.com" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
                   </div>
                   <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <label for="auth-password" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Password *</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <label for="auth-password" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Password *</label>
+                      <button type="button" id="forgot-password-btn" style="background: none; border: none; color: var(--accent); font-size: 0.8rem; cursor: pointer; font-weight: 600; padding: 0;">Forgot Password?</button>
+                    </div>
                     <input id="auth-password" type="password" required placeholder="••••••••" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
                   </div>
                   
                   <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; margin-top: 0.5rem; border-radius: 30px;">Sign In</button>
+                  
+                  <!-- Mode Switch Text Link -->
+                  <p id="auth-mode-switch-p" style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.75rem; margin-bottom: 0;">
+                    Don't have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Register Now</a>
+                  </p>
                 </form>
               </div>
               

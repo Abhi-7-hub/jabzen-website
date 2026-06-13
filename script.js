@@ -395,9 +395,128 @@ if (!auth || !db) {
 
 
 // Dynamic Blog Platform Logic
+// Dynamic Blog Platform Logic
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. Global Header Profile Dropdown & Auth UI Updating (Runs on all pages)
+  const headerUserProfile = document.getElementById("header-user-profile");
+  const headerProfileBtn = document.getElementById("header-profile-btn");
+  const headerProfileDropdown = document.getElementById("header-profile-dropdown");
+  const headerProfileAvatar = document.getElementById("header-profile-avatar");
+  const headerProfileName = document.getElementById("header-profile-name");
+  const headerProfileEmail = document.getElementById("header-profile-email");
+  const headerLogoutBtn = document.getElementById("header-logout-btn");
+
+  if (headerProfileBtn && headerProfileDropdown) {
+    headerProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      headerProfileDropdown.classList.toggle("is-open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!headerProfileDropdown.contains(e.target) && e.target !== headerProfileBtn) {
+        headerProfileDropdown.classList.remove("is-open");
+      }
+    });
+  }
+
+  const parseUserProfile = (user) => {
+    const rawName = user.displayName || "";
+    if (rawName.includes("|")) {
+      const parts = rawName.split("|");
+      return { name: parts[0] || "Author", company: parts[1] || "Independent" };
+    }
+    return { name: rawName || "Author", company: "Independent" };
+  };
+
+  let unsubscribeMyPosts = null;
+
+  const logoutUser = () => {
+    if (!auth) return;
+    if (unsubscribeMyPosts) {
+      unsubscribeMyPosts();
+      unsubscribeMyPosts = null;
+    }
+    auth.signOut().then(() => {
+      console.log("Logged out.");
+    });
+  };
+
+  if (headerLogoutBtn) {
+    headerLogoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      logoutUser();
+    });
+  }
+
+  const updateAuthUI = (user) => {
+    currentUser = user;
+    
+    // Sync Header Profile Dropdown (all pages)
+    if (user) {
+      const profile = parseUserProfile(user);
+      if (headerUserProfile) headerUserProfile.style.display = "block";
+      if (headerProfileAvatar) {
+        headerProfileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
+      }
+      if (headerProfileName) headerProfileName.textContent = profile.name;
+      if (headerProfileEmail) headerProfileEmail.textContent = user.email;
+    } else {
+      if (headerUserProfile) headerUserProfile.style.display = "none";
+    }
+
+    // Sync Blog Dashboard (blog page only)
+    const blogAuthSection = document.getElementById("blog-auth-section");
+    if (blogAuthSection) {
+      const guestAuthContainer = document.getElementById("guest-auth-container");
+      const userDashboardContainer = document.getElementById("user-dashboard-container");
+      const dashAvatar = document.getElementById("dash-avatar");
+      const dashName = document.getElementById("dash-name");
+      const dashMeta = document.getElementById("dash-meta");
+      const blogCompanyInput = document.getElementById("blog-company");
+      const myPostsCount = document.getElementById("my-posts-count");
+
+      if (user) {
+        const profile = parseUserProfile(user);
+        if (dashName) dashName.textContent = profile.name;
+        if (dashMeta) dashMeta.textContent = `${profile.company} | ${user.email}`;
+        if (dashAvatar) {
+          dashAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
+        }
+        if (blogCompanyInput) blogCompanyInput.value = profile.company;
+        
+        if (guestAuthContainer) guestAuthContainer.style.display = "none";
+        if (userDashboardContainer) userDashboardContainer.style.display = "block";
+        if (typeof setDashboardTab === "function") {
+          setDashboardTab("write");
+        }
+        
+        if (db) {
+          if (unsubscribeMyPosts) unsubscribeMyPosts();
+          unsubscribeMyPosts = db.collection("blogs")
+            .where("authorUid", "==", user.uid)
+            .onSnapshot((snap) => {
+              if (myPostsCount) myPostsCount.textContent = snap.size;
+            });
+        }
+      } else {
+        if (guestAuthContainer) guestAuthContainer.style.display = "block";
+        if (userDashboardContainer) userDashboardContainer.style.display = "none";
+        if (typeof setAuthMode === "function") {
+          setAuthMode(false);
+        }
+      }
+    }
+  };
+
+  // Register state changed listener for all pages
+  if (auth) {
+    auth.onAuthStateChanged(updateAuthUI);
+  } else {
+    updateAuthUI(null);
+  }
+
+  // 2. Blog Dashboard Specific Logic (Runs only on Blog page)
   const blogAuthSection = document.getElementById("blog-auth-section");
-  if (!blogAuthSection) return; // Only run on blog page
+  if (!blogAuthSection) return; // Only run the rest on blog page
 
   const guestAuthContainer = document.getElementById("guest-auth-container");
   const emailAuthForm = document.getElementById("email-auth-form");
@@ -440,11 +559,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let base64ImageString = "";
   let isSignUpMode = false;
-  let unsubscribeMyPosts = null;
 
-  // 1. Auth Mode Switching (Sign In vs Register)
+  // Auth Mode Switching (Sign In vs Register) & switch link bottom updates
+  const authModeSwitchP = document.getElementById("auth-mode-switch-p");
   const setAuthMode = (signup) => {
     isSignUpMode = signup;
+    const forgotBtn = document.getElementById("forgot-password-btn");
+    
     if (signup) {
       signupExtraFields.style.display = "flex";
       authModeSignupBtn.style.color = "var(--accent)";
@@ -456,6 +577,18 @@ document.addEventListener("DOMContentLoaded", () => {
       authSubmitBtn.textContent = "Create Account";
       authNameInput.required = true;
       authCompanyInputForm.required = true;
+      if (forgotBtn) forgotBtn.style.display = "none";
+      
+      if (authModeSwitchP) {
+        authModeSwitchP.innerHTML = 'Already have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Sign In</a>';
+        const link = document.getElementById("auth-switch-link");
+        if (link) {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            setAuthMode(false);
+          });
+        }
+      }
     } else {
       signupExtraFields.style.display = "none";
       authModeSigninBtn.style.color = "var(--accent)";
@@ -467,6 +600,18 @@ document.addEventListener("DOMContentLoaded", () => {
       authSubmitBtn.textContent = "Sign In";
       authNameInput.required = false;
       authCompanyInputForm.required = false;
+      if (forgotBtn) forgotBtn.style.display = "inline";
+      
+      if (authModeSwitchP) {
+        authModeSwitchP.innerHTML = 'Don\'t have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Register Now</a>';
+        const link = document.getElementById("auth-switch-link");
+        if (link) {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            setAuthMode(true);
+          });
+        }
+      }
     }
   };
 
@@ -475,7 +620,62 @@ document.addEventListener("DOMContentLoaded", () => {
     authModeSignupBtn.addEventListener("click", () => setAuthMode(true));
   }
 
-  // 2. Auth Flow Trigger Actions
+  // Initialize switch links on load
+  const switchLink = document.getElementById("auth-switch-link");
+  if (switchLink) {
+    switchLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthMode(isSignUpMode);
+    });
+  }
+
+  // Forgot Password handler
+  const forgotPasswordBtn = document.getElementById("forgot-password-btn");
+  if (forgotPasswordBtn) {
+    forgotPasswordBtn.addEventListener("click", () => {
+      const email = authEmailInput.value.trim();
+      if (!email) {
+        alert("Please enter your email address in the Email field first, then click 'Forgot Password?' to receive a reset link.");
+        authEmailInput.focus();
+        return;
+      }
+      
+      if (!auth) {
+        alert("Firebase Auth is not initialized.");
+        return;
+      }
+      
+      if (isMockFirebase) {
+        alert("Mock Reset Link Sent: Check simulated inbox at " + email + " (Simulation).");
+        return;
+      }
+      
+      forgotPasswordBtn.disabled = true;
+      const originalText = forgotPasswordBtn.textContent;
+      forgotPasswordBtn.textContent = "Sending...";
+      
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          alert("Success! Password reset email has been sent. Please check your inbox at " + email + ".");
+        })
+        .catch((err) => {
+          console.error("Password reset error:", err);
+          let errMsg = err.message;
+          if (err.code === "auth/user-not-found") {
+            errMsg = "There is no user record corresponding to this email address. The user may not exist.";
+          } else if (err.code === "auth/invalid-email") {
+            errMsg = "The email address is invalid.";
+          }
+          alert("Password Reset Error: " + errMsg);
+        })
+        .finally(() => {
+          forgotPasswordBtn.disabled = false;
+          forgotPasswordBtn.textContent = originalText;
+        });
+    });
+  }
+
+  // Auth Flow Trigger Actions
   const loginWithGoogle = () => {
     if (!auth) {
       alert("Firebase is not configured with real credentials yet.");
@@ -487,17 +687,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Google Auth failed:", err);
         alert("Google Sign-In failed: " + err.message);
       });
-  };
-
-  const logoutUser = () => {
-    if (!auth) return;
-    if (unsubscribeMyPosts) {
-      unsubscribeMyPosts();
-      unsubscribeMyPosts = null;
-    }
-    auth.signOut().then(() => {
-      console.log("Logged out.");
-    });
   };
 
   const handleEmailAuthSubmit = (e) => {
@@ -528,7 +717,17 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch((err) => {
           console.error("Registration failed:", err);
-          alert("Registration Error: " + err.message);
+          let errMsg = err.message;
+          if (err.code === "auth/operation-not-allowed") {
+            errMsg = "Email/Password sign-in provider is disabled in your Firebase project. Please enable it in the Firebase console under Authentication > Sign-in method.";
+          } else if (err.code === "auth/email-already-in-use") {
+            errMsg = "This email address is already in use by another account. Please Sign In instead.";
+          } else if (err.code === "auth/weak-password") {
+            errMsg = "The password is too weak. It must be at least 6 characters.";
+          } else if (err.code === "auth/invalid-email") {
+            errMsg = "The email address is invalid.";
+          }
+          alert("Registration Error: " + errMsg);
         })
         .finally(() => {
           authSubmitBtn.disabled = false;
@@ -542,7 +741,17 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch((err) => {
           console.error("Login failed:", err);
-          alert("Login Error: " + err.message);
+          let errMsg = err.message;
+          if (err.code === "auth/operation-not-allowed") {
+            errMsg = "Email/Password sign-in provider is disabled in your Firebase project. Please enable it in the Firebase console under Authentication > Sign-in method.";
+          } else if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+            errMsg = "Invalid email or password. Please verify your credentials and try again.";
+          } else if (err.code === "auth/invalid-email") {
+            errMsg = "The email address is badly formatted.";
+          } else if (err.code === "auth/user-disabled") {
+            errMsg = "This user account has been disabled by an administrator.";
+          }
+          alert("Login Error: " + errMsg);
         })
         .finally(() => {
           authSubmitBtn.disabled = false;
