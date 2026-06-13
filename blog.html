@@ -92,6 +92,14 @@
                 <h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-feather-pointed" style="color: var(--accent);"></i> JABZEN Blog Platform</h2>
                 <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem; line-height: 1.5;">Share your strategy, marketing frameworks, and insights. Login instantly to write, edit, and publish blogs.</p>
                 <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 1rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                
+                <!-- DB Fallback Selector widget -->
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(214, 173, 45, 0.05); border: 1px dashed var(--line); border-radius: var(--radius); text-align: center;" id="db-mode-selector-wrap">
+                  <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.6rem 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="fa-solid fa-database" style="color: var(--accent);"></i> Connection: <strong id="db-mode-status" style="color: var(--text-primary);">Real Firebase</strong>
+                  </p>
+                  <button type="button" id="toggle-db-mode-btn" class="btn btn-outline" style="min-height: unset; padding: 0.45rem 1rem; font-size: 0.75rem; border-radius: 30px; font-weight: 700; width: 100%; border-color: var(--line);"><i class="fa-solid fa-rotate"></i> Switch to Mock Demo</button>
+                </div>
               </div>
               
               <!-- Right panel: Email Sign-In / Register -->

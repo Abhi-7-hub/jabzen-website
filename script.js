@@ -147,20 +147,26 @@ let auth = null;
 let currentUser = null;
 let isMockFirebase = false;
 
-if (typeof firebase !== "undefined" && firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey !== "") {
+// Check if user has explicitly opted for Local Mock Demo mode, or if API key is blank/default
+const savedMockPreference = localStorage.getItem("jabzen_use_mock_mode");
+if (savedMockPreference === "true" || firebaseConfig.apiKey === "YOUR_API_KEY" || firebaseConfig.apiKey === "") {
+  isMockFirebase = true;
+}
+
+if (typeof firebase !== "undefined" && !isMockFirebase) {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     auth = firebase.auth();
     console.log("Firebase initialized successfully.");
   } catch (error) {
-    console.error("Firebase init failed:", error);
+    console.error("Firebase init failed, switching to Mock Mode:", error);
+    isMockFirebase = true;
   }
 }
 
-if (!auth || !db) {
-  isMockFirebase = true;
-  console.log("Using Mock LocalStorage Database & Auth because real credentials are not configured.");
+if (isMockFirebase) {
+  console.log("Using Mock LocalStorage Database & Auth because real credentials are not configured or Mock Mode is enabled.");
   
   const mockAuthStateListeners = [];
   let mockCurrentUser = null;
@@ -178,6 +184,10 @@ if (!auth || !db) {
     onAuthStateChanged: (callback) => {
       mockAuthStateListeners.push(callback);
       setTimeout(() => callback(mockCurrentUser), 50);
+    },
+    sendPasswordResetEmail: async (email) => {
+      console.log("Mock password reset email sent to:", email);
+      return true;
     },
     createUserWithEmailAndPassword: async (email, password) => {
       let users = [];
@@ -665,6 +675,12 @@ document.addEventListener("DOMContentLoaded", () => {
             errMsg = "There is no user record corresponding to this email address. The user may not exist.";
           } else if (err.code === "auth/invalid-email") {
             errMsg = "The email address is invalid.";
+          } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
+            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
+              localStorage.setItem("jabzen_use_mock_mode", "true");
+              window.location.reload();
+              return;
+            }
           }
           alert("Password Reset Error: " + errMsg);
         })
@@ -685,7 +701,15 @@ document.addEventListener("DOMContentLoaded", () => {
     auth.signInWithPopup(provider)
       .catch((err) => {
         console.error("Google Auth failed:", err);
-        alert("Google Sign-In failed: " + err.message);
+        let errMsg = err.message;
+        if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
+          if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
+            localStorage.setItem("jabzen_use_mock_mode", "true");
+            window.location.reload();
+            return;
+          }
+        }
+        alert("Google Sign-In failed: " + errMsg);
       });
   };
 
@@ -726,6 +750,12 @@ document.addEventListener("DOMContentLoaded", () => {
             errMsg = "The password is too weak. It must be at least 6 characters.";
           } else if (err.code === "auth/invalid-email") {
             errMsg = "The email address is invalid.";
+          } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
+            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
+              localStorage.setItem("jabzen_use_mock_mode", "true");
+              window.location.reload();
+              return;
+            }
           }
           alert("Registration Error: " + errMsg);
         })
@@ -750,6 +780,12 @@ document.addEventListener("DOMContentLoaded", () => {
             errMsg = "The email address is badly formatted.";
           } else if (err.code === "auth/user-disabled") {
             errMsg = "This user account has been disabled by an administrator.";
+          } else if (err.code === "auth/configuration-not-found" || err.code === "auth/invalid-api-key" || errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("configuration")) {
+            if (confirm("Firebase Authentication is not configured or accessible for this project. Would you like to switch to Mock Demo Mode (LocalStorage) to test the website?")) {
+              localStorage.setItem("jabzen_use_mock_mode", "true");
+              window.location.reload();
+              return;
+            }
           }
           alert("Login Error: " + errMsg);
         })
@@ -763,6 +799,29 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("google-login-btn").addEventListener("click", loginWithGoogle);
   dashboardLogoutBtn.addEventListener("click", logoutUser);
   emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);
+
+  // Manual Database Mode Switcher Toggle
+  const dbModeStatus = document.getElementById("db-mode-status");
+  const toggleDbModeBtn = document.getElementById("toggle-db-mode-btn");
+
+  if (dbModeStatus && toggleDbModeBtn) {
+    if (isMockFirebase) {
+      dbModeStatus.innerHTML = '<span style="color: var(--accent);">Local Demo (Mock)</span>';
+      toggleDbModeBtn.innerHTML = '<i class="fa-solid fa-wifi"></i> Switch to Live Firebase';
+    } else {
+      dbModeStatus.innerHTML = '<span style="color: #25D366;">Live Firebase</span>';
+      toggleDbModeBtn.innerHTML = '<i class="fa-solid fa-laptop"></i> Switch to Local Demo';
+    }
+
+    toggleDbModeBtn.addEventListener("click", () => {
+      if (isMockFirebase) {
+        localStorage.setItem("jabzen_use_mock_mode", "false");
+      } else {
+        localStorage.setItem("jabzen_use_mock_mode", "true");
+      }
+      window.location.reload();
+    });
+  }
 
   // 3. Tab Navigation Handlers
   const setDashboardTab = (activeTab) => {
