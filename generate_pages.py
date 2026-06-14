@@ -61,7 +61,7 @@ HTML_HEADER = """<!doctype html>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="styles.min.css?v=13">
+  <link rel="stylesheet" href="styles.min.css?v=14">
   <!-- Firebase Compatibility SDK for App, Auth and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -189,7 +189,7 @@ HTML_FOOTER = """
     </div>
     <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
   </footer>
-  <script src="script.min.js?v=13" defer></script>
+  <script src="script.min.js?v=14" defer></script>
 </body>
 </html>
 """

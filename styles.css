@@ -1062,7 +1062,7 @@ body.light-theme .btn-outline {
 }
 
 label {
-  color: #26364f;
+  color: var(--text-primary);
   font-weight: 850;
   font-size: 0.92rem;
 }
@@ -1086,6 +1086,22 @@ textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+/* Light Theme Input Overrides to prevent invisible white-on-white inputs */
+body.light-theme input,
+body.light-theme select,
+body.light-theme textarea {
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+body.light-theme input:focus,
+body.light-theme select:focus,
+body.light-theme textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.15);
 }
 
 textarea {
