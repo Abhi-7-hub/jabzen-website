@@ -405,8 +405,10 @@ if (isMockFirebase) {
 
 
 // Dynamic Blog Platform Logic
-// Dynamic Blog Platform Logic
 document.addEventListener("DOMContentLoaded", () => {
+  let setAuthMode;
+  let setDashboardTab;
+
   // 1. Global Header Profile Dropdown & Auth UI Updating (Runs on all pages)
   const headerUserProfile = document.getElementById("header-user-profile");
   const headerProfileBtn = document.getElementById("header-profile-btn");
@@ -526,53 +528,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Blog Dashboard Specific Logic (Runs only on Blog page)
   const blogAuthSection = document.getElementById("blog-auth-section");
-  if (!blogAuthSection) return; // Only run the rest on blog page
+  if (blogAuthSection) {
+    const guestAuthContainer = document.getElementById("guest-auth-container");
+    const emailAuthForm = document.getElementById("email-auth-form");
+    const signupExtraFields = document.getElementById("signup-extra-fields");
+    const authModeSigninBtn = document.getElementById("auth-mode-signin");
+    const authModeSignupBtn = document.getElementById("auth-mode-signup");
+    const authSubmitBtn = document.getElementById("auth-submit-btn");
 
-  const guestAuthContainer = document.getElementById("guest-auth-container");
-  const emailAuthForm = document.getElementById("email-auth-form");
-  const signupExtraFields = document.getElementById("signup-extra-fields");
-  const authModeSigninBtn = document.getElementById("auth-mode-signin");
-  const authModeSignupBtn = document.getElementById("auth-mode-signup");
-  const authSubmitBtn = document.getElementById("auth-submit-btn");
+    const authNameInput = document.getElementById("auth-name");
+    const authCompanyInputForm = document.getElementById("auth-company-input");
+    const authEmailInput = document.getElementById("auth-email");
+    const authPasswordInput = document.getElementById("auth-password");
 
-  const authNameInput = document.getElementById("auth-name");
-  const authCompanyInputForm = document.getElementById("auth-company-input");
-  const authEmailInput = document.getElementById("auth-email");
-  const authPasswordInput = document.getElementById("auth-password");
+    const userDashboardContainer = document.getElementById("user-dashboard-container");
+    const dashAvatar = document.getElementById("dash-avatar");
+    const dashName = document.getElementById("dash-name");
+    const dashMeta = document.getElementById("dash-meta");
+    const dashboardLogoutBtn = document.getElementById("dashboard-logout-btn");
 
-  const userDashboardContainer = document.getElementById("user-dashboard-container");
-  const dashAvatar = document.getElementById("dash-avatar");
-  const dashName = document.getElementById("dash-name");
-  const dashMeta = document.getElementById("dash-meta");
-  const dashboardLogoutBtn = document.getElementById("dashboard-logout-btn");
+    const tabBtnWrite = document.getElementById("tab-btn-write");
+    const tabBtnManage = document.getElementById("tab-btn-manage");
+    const tabContentWrite = document.getElementById("tab-content-write");
+    const tabContentManage = document.getElementById("tab-content-manage");
+    const myPostsCount = document.getElementById("my-posts-count");
+    const myBlogsTableBody = document.getElementById("my-blogs-table-body");
 
-  const tabBtnWrite = document.getElementById("tab-btn-write");
-  const tabBtnManage = document.getElementById("tab-btn-manage");
-  const tabContentWrite = document.getElementById("tab-content-write");
-  const tabContentManage = document.getElementById("tab-content-manage");
-  const myPostsCount = document.getElementById("my-posts-count");
-  const myBlogsTableBody = document.getElementById("my-blogs-table-body");
+    const writeBlogForm = document.getElementById("write-blog-form");
+    const formHeading = document.getElementById("form-heading");
+    const editingDocIdInput = document.getElementById("editing-doc-id");
+    const blogTitleInput = document.getElementById("blog-title");
+    const blogCategorySelect = document.getElementById("blog-category");
+    const blogCompanyInput = document.getElementById("blog-company");
+    const blogImageInput = document.getElementById("blog-image");
+    const imageSizeError = document.getElementById("image-size-error");
+    const imagePreviewWrap = document.getElementById("image-preview-wrap");
+    const imagePreview = document.getElementById("image-preview");
+    const cancelWriteBtn = document.getElementById("cancel-write-btn");
+    const submitBlogBtn = document.getElementById("submit-blog-btn");
+    const dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
 
-  const writeBlogForm = document.getElementById("write-blog-form");
-  const formHeading = document.getElementById("form-heading");
-  const editingDocIdInput = document.getElementById("editing-doc-id");
-  const blogTitleInput = document.getElementById("blog-title");
-  const blogCategorySelect = document.getElementById("blog-category");
-  const blogCompanyInput = document.getElementById("blog-company");
-  const blogImageInput = document.getElementById("blog-image");
-  const imageSizeError = document.getElementById("image-size-error");
-  const imagePreviewWrap = document.getElementById("image-preview-wrap");
-  const imagePreview = document.getElementById("image-preview");
-  const cancelWriteBtn = document.getElementById("cancel-write-btn");
-  const submitBlogBtn = document.getElementById("submit-blog-btn");
-  const dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
+    let base64ImageString = "";
+    let isSignUpMode = false;
 
-  let base64ImageString = "";
-  let isSignUpMode = false;
-
-  // Auth Mode Switching (Sign In vs Register) & switch link bottom updates
-  const authModeSwitchP = document.getElementById("auth-mode-switch-p");
-  const setAuthMode = (signup) => {
+    // Auth Mode Switching (Sign In vs Register) & switch link bottom updates
+    const authModeSwitchP = document.getElementById("auth-mode-switch-p");
+    setAuthMode = (signup) => {
     isSignUpMode = signup;
     const forgotBtn = document.getElementById("forgot-password-btn");
     
@@ -820,7 +821,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 3. Tab Navigation Handlers
-  const setDashboardTab = (activeTab) => {
+  setDashboardTab = (activeTab) => {
     if (activeTab === "write") {
       tabBtnWrite.className = "btn btn-primary";
       tabBtnWrite.style.background = "";
@@ -854,54 +855,7 @@ document.addEventListener("DOMContentLoaded", () => {
   tabBtnWrite.addEventListener("click", () => setDashboardTab("write"));
   tabBtnManage.addEventListener("click", () => setDashboardTab("manage"));
 
-  // 4. Parse profile custom display name
-  const parseUserProfile = (user) => {
-    const rawName = user.displayName || "";
-    if (rawName.includes("|")) {
-      const parts = rawName.split("|");
-      return { name: parts[0] || "Author", company: parts[1] || "Independent" };
-    }
-    return { name: rawName || "Author", company: "Independent" };
-  };
-
-  // 5. Render User State & Load Dashboard Lists
-  const updateAuthUI = (user) => {
-    currentUser = user;
-    if (user) {
-      // User is logged in
-      const profile = parseUserProfile(user);
-      dashName.textContent = profile.name;
-      dashMeta.textContent = `${profile.company} | ${user.email}`;
-      dashAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
-      
-      blogCompanyInput.value = profile.company; // Autofill company field in writing editor
-      
-      guestAuthContainer.style.display = "none";
-      userDashboardContainer.style.display = "block";
-      setDashboardTab("write");
-      
-      // Start listening to user's post count
-      if (db) {
-        if (unsubscribeMyPosts) unsubscribeMyPosts();
-        unsubscribeMyPosts = db.collection("blogs")
-          .where("authorUid", "==", user.uid)
-          .onSnapshot((snap) => {
-            myPostsCount.textContent = snap.size;
-          });
-      }
-    } else {
-      // User is Guest
-      guestAuthContainer.style.display = "block";
-      userDashboardContainer.style.display = "none";
-      setAuthMode(false);
-    }
-  };
-
-  if (auth) {
-    auth.onAuthStateChanged(updateAuthUI);
-  } else {
-    updateAuthUI(null);
-  }
+  // (Removed redundant updateAuthUI & parseUserProfile helper declarations)
 
   // 6. Image Picker & Processing
   blogImageInput.addEventListener("change", (e) => {
@@ -1156,6 +1110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, (err) => {
       console.error("Snapshot error loading blogs:", err);
     });
+  }
   }
 });
 
