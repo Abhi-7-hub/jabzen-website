@@ -12,10 +12,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="assets/favicon.png">
   <link rel="stylesheet" href="styles.min.css?v=15">
-  <!-- Firebase Compatibility SDK for App, Auth and Firestore -->
+  <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 </head>
 <body class="landing-page">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -91,7 +92,8 @@
               <div style="display: flex; flex-direction: column; justify-content: center; gap: 1rem; border-right: 1px solid var(--line); padding-right: 2rem;">
                 <h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-feather-pointed" style="color: var(--accent);"></i> JABZEN Blog Platform</h2>
                 <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem; line-height: 1.5;">Share your strategy, marketing frameworks, and insights. Login instantly to write, edit, and publish blogs.</p>
-                <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 1rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 0.5rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+                <button id="phone-login-toggle-btn" class="btn btn-outline" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; border-color: var(--line);"><i class="fa-solid fa-mobile-screen-button"></i> Sign In with Phone OTP</button>
                 
                 <!-- DB Fallback Selector widget -->
                 <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(214, 173, 45, 0.05); border: 1px dashed var(--line); border-radius: var(--radius); text-align: center;" id="db-mode-selector-wrap">
@@ -102,10 +104,10 @@
                 </div>
               </div>
               
-              <!-- Right panel: Email Sign-In / Register -->
+              <!-- Right panel: Email Sign-In / Register / Phone OTP Forms -->
               <div>
                 <!-- Toggle mode header -->
-                <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                <div id="email-auth-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
                   <button type="button" id="auth-mode-signin" style="background: none; border: none; color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid var(--accent);">Sign In</button>
                   <button type="button" id="auth-mode-signup" style="background: none; border: none; color: var(--text-secondary); font-weight: 600; font-size: 1rem; cursor: pointer; padding-bottom: 4px;">Register</button>
                 </div>
@@ -141,6 +143,49 @@
                   <!-- Mode Switch Text Link -->
                   <p id="auth-mode-switch-p" style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.75rem; margin-bottom: 0;">
                     Don't have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Register Now</a>
+                  </p>
+                </form>
+
+                <!-- Phone OTP Auth Form -->
+                <form id="phone-auth-form" style="display: none; flex-direction: column; gap: 1rem;">
+                  <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 0.25rem;">
+                    <h3 style="font-size: 1.1rem; color: var(--accent); margin: 0; font-weight: 700;">Phone OTP Sign In / Register</h3>
+                  </div>
+
+                  <!-- Details Group (For Profile updates) -->
+                  <div id="phone-details-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-phone-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
+                      <input id="auth-phone-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                    </div>
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-phone-company" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
+                      <input id="auth-phone-company" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                    </div>
+                  </div>
+                  
+                  <!-- Phone Input Group -->
+                  <div id="phone-input-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-phone" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Phone Number (with country code, e.g., +91XXXXXXXXXX) *</label>
+                      <input id="auth-phone" type="tel" required placeholder="+91 8840863659" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
+                    </div>
+                    <!-- Recaptcha Container -->
+                    <div id="recaptcha-container" style="margin: 0.25rem 0;"></div>
+                    <button type="button" id="send-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Send Verification SMS</button>
+                  </div>
+
+                  <!-- OTP Code Input Group -->
+                  <div id="otp-input-group" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                      <label for="auth-otp" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">6-Digit Verification Code *</label>
+                      <input id="auth-otp" type="text" placeholder="123456" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem; text-align: center; letter-spacing: 0.4rem; font-size: 1.25rem; font-weight: 700;">
+                    </div>
+                    <button type="submit" id="verify-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Verify & Sign In</button>
+                  </div>
+
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem; margin-bottom: 0;">
+                    Use another method? <a href="#" id="phone-switch-to-email-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Use Email/Password</a>
                   </p>
                 </form>
               </div>
@@ -201,7 +246,7 @@
                       <input id="blog-company" required placeholder="Acme Corp / Freelancer" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
                     </div>
                     <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="blog-image" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Cover Image (Max 1MB) *</label>
+                      <label for="blog-image" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Cover Image (Optional)</label>
                       <input id="blog-image" type="file" accept="image/*" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.55rem;">
                       <span id="image-size-error" style="color: #ff4d4d; font-size: 0.8rem; display: none; margin-top: 4px; font-weight: 700;">File size exceeds 1MB. Please choose a smaller image.</span>
                     </div>

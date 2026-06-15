@@ -144,6 +144,7 @@ const firebaseConfig = {
 
 let db = null;
 let auth = null;
+let storage = null;
 let currentUser = null;
 let isMockFirebase = false;
 
@@ -158,6 +159,7 @@ if (typeof firebase !== "undefined" && !isMockFirebase) {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     auth = firebase.auth();
+    storage = firebase.storage();
     console.log("Firebase initialized successfully.");
   } catch (error) {
     console.error("Firebase init failed, switching to Mock Mode:", error);
@@ -403,6 +405,12 @@ if (isMockFirebase) {
   };
 }
 
+// Expose Firebase modules globally for external page scripts (like read-blog.html)
+window.db = db;
+window.auth = auth;
+window.storage = storage;
+window.isMockFirebase = isMockFirebase;
+
 
 // Dynamic Blog Platform Logic
 document.addEventListener("DOMContentLoaded", () => {
@@ -569,6 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
 
     let base64ImageString = "";
+    let selectedImageFile = null;
     let isSignUpMode = false;
 
     // Auth Mode Switching (Sign In vs Register) & switch link bottom updates
@@ -792,12 +801,193 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
   };
+  // Phone OTP Sign-In Elements
+  const phoneLoginToggleBtn = document.getElementById("phone-login-toggle-btn");
+  const phoneAuthForm = document.getElementById("phone-auth-form");
+  const phoneSwitchToEmailLink = document.getElementById("phone-switch-to-email-link");
+  const emailAuthHeader = document.getElementById("email-auth-header");
+  const phoneInputGroup = document.getElementById("phone-input-group");
+  const otpInputGroup = document.getElementById("otp-input-group");
+  const sendOtpBtn = document.getElementById("send-otp-btn");
+  const authPhoneInput = document.getElementById("auth-phone");
+  const authOtpInput = document.getElementById("auth-otp");
+  const authPhoneNameInput = document.getElementById("auth-phone-name");
+  const authPhoneCompanyInput = document.getElementById("auth-phone-company");
+
+  // Toggle Forms Handlers
+  if (phoneLoginToggleBtn) {
+    phoneLoginToggleBtn.addEventListener("click", () => {
+      emailAuthForm.style.display = "none";
+      if (emailAuthHeader) emailAuthHeader.style.display = "none";
+      if (phoneAuthForm) {
+        phoneAuthForm.style.display = "flex";
+        initPhoneRecaptcha();
+      }
+    });
+  }
+
+  if (phoneSwitchToEmailLink) {
+    phoneSwitchToEmailLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (phoneAuthForm) phoneAuthForm.style.display = "none";
+      emailAuthForm.style.display = "flex";
+      if (emailAuthHeader) emailAuthHeader.style.display = "flex";
+    });
+  }
+
+  // Recaptcha Verifier Initialization
+  const initPhoneRecaptcha = () => {
+    if (isMockFirebase || window.recaptchaVerifier) return;
+    try {
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'normal',
+        'callback': (response) => {
+          console.log("reCAPTCHA solved");
+        },
+        'expired-callback': () => {
+          console.log("reCAPTCHA expired");
+        }
+      });
+      window.recaptchaVerifier.render();
+    } catch (e) {
+      console.error("Recaptcha init failed:", e);
+    }
+  };
+
+  // Send Phone OTP SMS
+  if (sendOtpBtn) {
+    sendOtpBtn.addEventListener("click", () => {
+      const phoneNumber = authPhoneInput.value.trim();
+      const name = authPhoneNameInput.value.trim();
+      const company = authPhoneCompanyInput.value.trim();
+
+      if (!phoneNumber) {
+        alert("Please enter a valid phone number including country code (+91XXXXXXXXXX).");
+        authPhoneInput.focus();
+        return;
+      }
+      if (!name || !company) {
+        alert("Please enter both Full Name and Company Name to continue.");
+        return;
+      }
+
+      sendOtpBtn.disabled = true;
+      const originalText = sendOtpBtn.textContent;
+      sendOtpBtn.textContent = "Sending OTP...";
+
+      if (isMockFirebase) {
+        setTimeout(() => {
+          alert("Mock SMS Sent: Enter code '123456' to log in (Simulation).");
+          phoneInputGroup.style.display = "none";
+          document.getElementById("phone-details-group").style.display = "none";
+          otpInputGroup.style.display = "flex";
+          sendOtpBtn.disabled = false;
+          sendOtpBtn.textContent = originalText;
+        }, 1000);
+      } else {
+        initPhoneRecaptcha();
+        auth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+          .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            alert("Verification code has been sent successfully to " + phoneNumber + ".");
+            phoneInputGroup.style.display = "none";
+            document.getElementById("phone-details-group").style.display = "none";
+            otpInputGroup.style.display = "flex";
+          })
+          .catch((err) => {
+            console.error("Phone Auth Send OTP error:", err);
+            alert("Failed to send OTP: " + err.message);
+            if (window.recaptchaVerifier) {
+              window.recaptchaVerifier.clear();
+              window.recaptchaVerifier = null;
+              document.getElementById("recaptcha-container").innerHTML = "";
+              initPhoneRecaptcha();
+            }
+          })
+          .finally(() => {
+            sendOtpBtn.disabled = false;
+            sendOtpBtn.textContent = originalText;
+          });
+      }
+    });
+  }
+
+  // Verify OTP and Sign In
+  if (phoneAuthForm) {
+    phoneAuthForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const otpCode = authOtpInput.value.trim();
+      const name = authPhoneNameInput.value.trim();
+      const company = authPhoneCompanyInput.value.trim();
+
+      if (!otpCode || otpCode.length !== 6) {
+        alert("Please enter the 6-digit verification code.");
+        authOtpInput.focus();
+        return;
+      }
+
+      const verifyBtn = document.getElementById("verify-otp-btn");
+      const originalText = verifyBtn.textContent;
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = "Verifying...";
+
+      if (isMockFirebase) {
+        setTimeout(() => {
+          if (otpCode === "123456") {
+            const uid = "mock-phone-uid-" + Math.random().toString(36).substring(2, 9);
+            const newUser = {
+              email: "phoneuser@simulated.com",
+              uid: uid,
+              displayName: `${name}|${company}`,
+              photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=d6ad2d&color=121212`
+            };
+            localStorage.setItem("jabzen_mock_current_user", JSON.stringify(newUser));
+            
+            // Trigger mocked listener
+            const savedUsers = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+            savedUsers.push(newUser);
+            localStorage.setItem("jabzen_mock_users", JSON.stringify(savedUsers));
+            
+            window.location.reload(); // Quick way to reload and update auth state cleanly
+          } else {
+            alert("Invalid verification code. Use '123456' for the local mock demo.");
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = originalText;
+          }
+        }, 1000);
+      } else {
+        if (!window.confirmationResult) {
+          alert("Verification session has expired. Please request a new OTP.");
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = originalText;
+          return;
+        }
+        window.confirmationResult.confirm(otpCode)
+          .then((result) => {
+            const user = result.user;
+            return user.updateProfile({
+              displayName: `${name}|${company}`
+            }).then(() => {
+              console.log("Phone profile updated.");
+              phoneAuthForm.reset();
+              window.location.reload();
+            });
+          })
+          .catch((err) => {
+            console.error("OTP verification error:", err);
+            alert("Verification failed: " + err.message);
+          })
+          .finally(() => {
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = originalText;
+          });
+      }
+    });
+  }
 
   document.getElementById("google-login-btn").addEventListener("click", loginWithGoogle);
   dashboardLogoutBtn.addEventListener("click", logoutUser);
-  emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);
-
-  // Manual Database Mode Switcher Toggle
+  emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);  // Manual Database Mode Switcher Toggle
   const dbModeStatus = document.getElementById("db-mode-status");
   const toggleDbModeBtn = document.getElementById("toggle-db-mode-btn");
 
@@ -867,10 +1057,12 @@ document.addEventListener("DOMContentLoaded", () => {
       blogImageInput.value = "";
       imagePreviewWrap.style.display = "none";
       base64ImageString = "";
+      selectedImageFile = null;
       return;
     }
 
     imageSizeError.style.display = "none";
+    selectedImageFile = file;
     const reader = new FileReader();
     reader.onload = (event) => {
       base64ImageString = event.target.result;
@@ -888,7 +1080,8 @@ document.addEventListener("DOMContentLoaded", () => {
     imagePreviewWrap.style.display = "none";
     imageSizeError.style.display = "none";
     base64ImageString = "";
-    blogImageInput.required = true;
+    selectedImageFile = null;
+    blogImageInput.required = false;
     
     // Restore default company autofill if logged in
     if (currentUser) {
@@ -914,10 +1107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const editId = editingDocIdInput.value;
     const isEditing = editId !== "";
     
-    if (!isEditing && !base64ImageString) {
-      alert("Please upload a cover image.");
-      return;
-    }
+
 
     const originalText = submitBlogBtn.innerHTML;
     submitBlogBtn.disabled = true;
@@ -932,17 +1122,41 @@ document.addEventListener("DOMContentLoaded", () => {
       content: document.getElementById("blog-content").value.trim(),
       authorName: profile.name,
       authorEmail: currentUser.email || "",
-      authorPhoto: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`,
+      authorPhoto: currentUser.photoURL || `https://ui-avatars.com/avatar/?d=mp`,
       authorUid: currentUser.uid,
       lastModified: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    // Include image only if updated or new
-    if (base64ImageString) {
-      blogData.image = base64ImageString;
-    }
-
     try {
+      // Handle Image Upload to Firebase Storage (or Mock fallback)
+      if (selectedImageFile) {
+        if (isMockFirebase || !storage) {
+          // Fallback to local Base64 string for mock mode
+          blogData.image = base64ImageString;
+        } else {
+          try {
+            // Upload actual file to Storage
+            const fileExtension = selectedImageFile.name.split('.').pop();
+            const fileName = `blog_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExtension}`;
+            const storageRef = storage.ref().child(`blog-covers/${fileName}`);
+            
+            submitBlogBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Image...';
+            const uploadSnapshot = await storageRef.put(selectedImageFile);
+            const downloadUrl = await uploadSnapshot.ref.getDownloadURL();
+            blogData.image = downloadUrl;
+          } catch (storageErr) {
+            console.warn("Storage upload failed, falling back to Base64 image:", storageErr);
+            // Fallback to Base64 text string in Firestore database
+            blogData.image = base64ImageString;
+          }
+        }
+      } else if (base64ImageString) {
+        // Fallback for mock if only base64 string is present (e.g. from editing)
+        blogData.image = base64ImageString;
+      }
+
+      submitBlogBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving Post...';
+
       if (isEditing) {
         await db.collection("blogs").doc(editId).update(blogData);
         alert("Success! Your blog post has been updated.");
@@ -1024,7 +1238,7 @@ document.addEventListener("DOMContentLoaded", () => {
           blogImageInput.required = false; // Don't require file upload again
         } else {
           imagePreviewWrap.style.display = "none";
-          blogImageInput.required = true;
+          blogImageInput.required = false;
         }
 
         formHeading.textContent = "Edit Blog Post";
@@ -1081,18 +1295,22 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         ` : "";
 
-        card.innerHTML = `
-          ${ownerActionsHtml}
+        const imageHtml = data.image ? `
           <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
             <img src="${data.image}" alt="${data.title}" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
+        ` : '';
+
+        card.innerHTML = `
+          ${ownerActionsHtml}
+          ${imageHtml}
           <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">${data.category}</span>
               <small style="color: var(--text-secondary); font-size: 0.75rem;">${date}</small>
             </div>
             <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;">
-              <a href="#" style="color: var(--text-primary); transition: color 0.18s ease;" onclick="return false;">${data.title}</a>
+              <a href="read-blog.html?id=${doc.id}" style="color: var(--text-primary); transition: color 0.18s ease;">${data.title}</a>
             </h3>
             <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary); white-space: pre-line;">${data.content}</p>
             
@@ -1102,7 +1320,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
           <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-            <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;" onclick="alert('Full post reading is coming soon!'); return false;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            <a href="read-blog.html?id=${doc.id}" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
           </div>
         `;
         dynamicBlogsContainer.appendChild(card);

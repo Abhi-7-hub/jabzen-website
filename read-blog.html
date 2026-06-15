@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Read Blog | JABZEN | Creative Marketing Freelancer</title>
+  <meta name="description" content="Read full strategic insights and frameworks on SEO, AI, Meta Ads, and Branding by JABZEN.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="styles.min.css?v=15">
+  <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <style>
+    .blog-detail-container {
+      max-width: 800px;
+      margin: 120px auto 80px auto;
+      padding: 0 1.5rem;
+    }
+    .blog-detail-header {
+      margin-bottom: 2.5rem;
+      text-align: left;
+    }
+    .blog-detail-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .blog-detail-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+    }
+    .blog-detail-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 2rem;
+    }
+    .blog-detail-author img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+    .blog-detail-author-info h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .blog-detail-author-info p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .blog-detail-cover {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      margin-bottom: 3rem;
+    }
+    .blog-detail-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .blog-detail-body {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .blog-detail-body p {
+      margin-bottom: 1.5rem;
+    }
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      gap: 1rem;
+      color: var(--text-secondary);
+    }
+    .loading-spinner {
+      border: 4px solid rgba(214, 173, 45, 0.1);
+      border-left-color: var(--accent);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .back-btn {
+      margin-bottom: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body class="landing-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <script>
+    if (localStorage.getItem("theme") === "light") {
+      document.body.classList.add("light-theme");
+    }
+  </script>
+  
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="JABZEN home">
+        <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
+          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+        </span>
+        <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+      </a>
+      <div class="nav-links" data-nav-links>
+        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <div class="nav-dropdown">
+          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-briefcase"></i> Services <span class="arrow"><i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 2px;"></i></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing (SEO, AEO, GEO)</a></li>
+            <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads & Funnels</a></li>
+            <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
+            <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+          </ul>
+        </div>
+        <a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a>
+        <a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a>
+        <a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a>
+      </div>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        
+        <!-- User Profile Dropdown Icon -->
+        <div id="header-user-profile" class="header-profile-container" style="display: none;">
+          <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
+            <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
+          </button>
+          <div id="header-profile-dropdown" class="header-profile-dropdown">
+            <div class="dropdown-user-info">
+              <div id="header-profile-name" class="dropdown-user-name">User Name</div>
+              <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
+            </div>
+            <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+
+        <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="blog-detail-container">
+      <a href="blog.html" class="btn btn-outline back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+      
+      <div id="blog-content-wrapper">
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading strategic insights...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="loading-state" id="error-state" style="display: none;">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #ff4d4d;"></i>
+          <h3>Post Not Found</h3>
+          <p>The requested blog post could not be retrieved. It may have been deleted or the link is incorrect.</p>
+        </div>
+
+        <!-- Main Blog Content -->
+        <article id="blog-article" style="display: none;">
+          <header class="blog-detail-header">
+            <div class="blog-detail-meta">
+              <span class="eyebrow" id="blog-cat" style="margin: 0;">SEO</span>
+              <span style="color: var(--text-secondary); font-size: 0.85rem;" id="blog-date">Date</span>
+            </div>
+            <h1 class="blog-detail-title" id="blog-title">Title of the Blog Post</h1>
+            
+            <div class="blog-detail-author">
+              <img id="author-img" src="https://www.gravatar.com/avatar/?d=mp" alt="Author avatar">
+              <div class="blog-detail-author-info">
+                <h4 id="author-name">Author Name</h4>
+                <p id="author-company">Company / Role</p>
+              </div>
+            </div>
+          </header>
+
+          <div class="blog-detail-cover" id="cover-wrap">
+            <img id="blog-cover" src="" alt="Blog Cover">
+          </div>
+
+          <div class="blog-detail-body" id="blog-body">
+            <!-- Content will be injected here -->
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
+            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+          </span>
+          <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+        </a>
+        <p style="margin-top: 1rem; font-size: 0.9rem; line-height: 1.5;">Helping brands scale through luxury visual branding, direct-response ad creative, SEO, and performance marketing.</p>
+      </div>
+      <div>
+        <h3>Pages</h3>
+        <ul>
+          <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+          <li><a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a></li>
+          <li><a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a></li>
+          <li><a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Services</h3>
+        <ul>
+          <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing</a></li>
+          <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads &amp; Funnels</a></li>
+          <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
+          <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp Chat</a></li>
+          <li><a href="contact.html"><i class="fa-solid fa-envelope"></i> Contact Form</a></li>
+          <li><i class="fa-solid fa-envelope"></i> info@jabzen.com</li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
+  </footer>
+
+  <script src="script.min.js?v=15" defer></script>
+  
+  <!-- Detail Page Content Fetching Script -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // Extract blog post ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const blogId = urlParams.get('id');
+
+      if (!blogId) {
+        showErrorState();
+        return;
+      }
+
+      // Check for database availability and load content
+      let checkIntervalAttempts = 0;
+      const dbCheckInterval = setInterval(() => {
+        checkIntervalAttempts++;
+        
+        // Wait for Firebase to be initialized by script.js
+        if (typeof window.db !== 'undefined' || typeof window.isMockFirebase !== 'undefined') {
+          clearInterval(dbCheckInterval);
+          loadBlogData(blogId);
+        } else if (checkIntervalAttempts > 50) { // Timeout after 5 seconds
+          clearInterval(dbCheckInterval);
+          console.error("Firebase database initialization timed out.");
+          showErrorState();
+        }
+      }, 100);
+    });
+
+    const showErrorState = () => {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('blog-article').style.display = 'none';
+      document.getElementById('error-state').style.display = 'flex';
+    };
+
+    const loadBlogData = (blogId) => {
+      const isMock = window.isMockFirebase;
+      const db = window.db;
+
+      if (isMock) {
+        // Load from LocalStorage mock DB
+        try {
+          const blogs = JSON.parse(localStorage.getItem('jabzen_mock_blogs') || '[]');
+          const blog = blogs.find(b => b.id === blogId);
+          if (blog) {
+            renderBlog(blog);
+          } else {
+            showErrorState();
+          }
+        } catch (e) {
+          console.error("Failed to parse mock database:", e);
+          showErrorState();
+        }
+      } else if (db) {
+        // Load from Live Firestore
+        db.collection('blogs').doc(blogId).get()
+          .then((doc) => {
+            if (doc.exists) {
+              renderBlog(doc.data());
+            } else {
+              showErrorState();
+            }
+          })
+          .catch((err) => {
+            console.error("Firestore loading error:", err);
+            showErrorState();
+          });
+      } else {
+        showErrorState();
+      }
+    };
+
+    const renderBlog = (data) => {
+      const title = data.title || "Untitled Post";
+      const category = data.category || "General";
+      const company = data.company || "Independent";
+      const content = data.content || "";
+      const authorName = data.authorName || "Author";
+      const authorPhoto = data.authorPhoto || "https://ui-avatars.com/api/?name=" + encodeURIComponent(authorName);
+      
+      let dateString = "Unknown Date";
+      if (data.createdAt) {
+        // Firestore timestamp vs LocalStorage mock timestamp object
+        const seconds = data.createdAt.seconds || (typeof data.createdAt === 'object' && data.createdAt.seconds);
+        if (seconds) {
+          dateString = new Date(seconds * 1000).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          });
+        } else {
+          dateString = new Date(data.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          });
+        }
+      }
+
+      // Populate page elements
+      document.title = `${title} | JABZEN Blog`;
+      document.getElementById('blog-title').textContent = title;
+      document.getElementById('blog-cat').textContent = category;
+      document.getElementById('blog-date').textContent = dateString;
+      document.getElementById('author-name').textContent = authorName;
+      document.getElementById('author-company').textContent = company;
+      document.getElementById('author-img').src = authorPhoto;
+
+      // Handle Content paragraphs nicely
+      const contentBody = document.getElementById('blog-body');
+      contentBody.innerHTML = ''; // clear
+      
+      const paragraphs = content.split('\n\n');
+      paragraphs.forEach(pText => {
+        if (pText.trim()) {
+          const p = document.createElement('p');
+          p.textContent = pText.trim();
+          contentBody.appendChild(p);
+        }
+      });
+
+      // Handle cover image
+      if (data.image) {
+        document.getElementById('blog-cover').src = data.image;
+        document.getElementById('blog-cover').alt = title;
+      } else {
+        document.getElementById('cover-wrap').style.display = 'none';
+      }
+
+      // Show article and hide loading
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('blog-article').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
