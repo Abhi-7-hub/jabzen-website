@@ -58,15 +58,10 @@ HTML_HEADER = """<!doctype html>
   <link rel="canonical" href="https://jabzen.com/{canonical_slug}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <link rel="icon" href="assets/favicon.png">
   <link rel="stylesheet" href="styles.min.css?v=15">
-  <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 </head>
 <body class="landing-page">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -79,7 +74,7 @@ HTML_HEADER = """<!doctype html>
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="JABZEN home">
         <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
-          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" fetchpriority="high">
         </span>
         <span>JABZEN<small>Creative Marketing Freelancer</small></span>
       </a>
@@ -155,7 +150,7 @@ HTML_FOOTER = """
       <div>
         <a class="brand" href="index.html">
           <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
-            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;">
+            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" loading="lazy">
           </span>
           <span>JABZEN<small>Creative Marketing Freelancer</small></span>
         </a>
@@ -190,6 +185,11 @@ HTML_FOOTER = """
     </div>
     <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
   </footer>
+  <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
   <script src="script.min.js?v=15" defer></script>
 </body>
 </html>

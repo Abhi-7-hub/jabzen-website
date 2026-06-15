@@ -159,7 +159,9 @@ if (typeof firebase !== "undefined" && !isMockFirebase) {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     auth = firebase.auth();
-    storage = firebase.storage();
+    if (typeof firebase.storage === "function") {
+      storage = firebase.storage();
+    }
     console.log("Firebase initialized successfully.");
   } catch (error) {
     console.error("Firebase init failed, switching to Mock Mode:", error);
@@ -1485,80 +1487,90 @@ if (bodyEl && bodyEl.classList.contains("landing-page")) {
 
 // 3. Canvas Golden Particles
 if (canvas) {
-  const ctx = canvas.getContext("2d");
-  let width = (canvas.width = canvas.offsetWidth);
-  let height = (canvas.height = canvas.offsetHeight);
+  if (window.innerWidth >= 768) {
+    const ctx = canvas.getContext("2d");
+    let width = (canvas.width = canvas.offsetWidth);
+    let height = (canvas.height = canvas.offsetHeight);
 
-  // Resize canvas on viewport changes
-  window.addEventListener("resize", () => {
-    width = canvas.width = canvas.offsetWidth;
-    height = canvas.height = canvas.offsetHeight;
-  });
-
-  const particlesCount = 45;
-  const particles = [];
-
-  class Particle {
-    constructor() {
-      this.reset();
-      this.y = Math.random() * height; // Random initial y position
-    }
-
-    reset() {
-      this.x = Math.random() * width;
-      this.y = height + 10;
-      this.radius = Math.random() * 2 + 0.5;
-      this.vy = -(Math.random() * 0.4 + 0.1); // Slow move up
-      this.vx = Math.random() * 0.2 - 0.1; // Slight drift
-      this.opacity = Math.random() * 0.5 + 0.15;
-      this.pulseSpeed = Math.random() * 0.02 + 0.005;
-      this.pulseDir = Math.random() > 0.5 ? 1 : -1;
-    }
-
-    update() {
-      this.y += this.vy;
-      this.x += this.vx;
-
-      // Pulsing opacity
-      this.opacity += this.pulseSpeed * this.pulseDir;
-      if (this.opacity > 0.75 || this.opacity < 0.1) {
-        this.pulseDir *= -1;
-      }
-
-      // Reset if moves off screen
-      if (this.y < -10 || this.x < -10 || this.x > width + 10) {
-        this.reset();
-      }
-    }
-
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(214, 173, 45, ${this.opacity})`;
-      ctx.shadowColor = "rgba(214, 173, 45, 0.4)";
-      ctx.shadowBlur = this.radius * 2;
-      ctx.fill();
-    }
-  }
-
-  // Init particles
-  for (let i = 0; i < particlesCount; i++) {
-    particles.push(new Particle());
-  }
-
-  // Animation Loop
-  function animate() {
-    ctx.clearRect(0, 0, width, height);
-    
-    particles.forEach((p) => {
-      p.update();
-      p.draw();
+    // Resize canvas on viewport changes
+    window.addEventListener("resize", () => {
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
     });
 
-    requestAnimationFrame(animate);
-  }
+    const particlesCount = 45;
+    const particles = [];
 
-  animate();
+    class Particle {
+      constructor() {
+        this.reset();
+        this.y = Math.random() * height; // Random initial y position
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = height + 10;
+        this.radius = Math.random() * 2 + 0.5;
+        this.vy = -(Math.random() * 0.4 + 0.1); // Slow move up
+        this.vx = Math.random() * 0.2 - 0.1; // Slight drift
+        this.opacity = Math.random() * 0.5 + 0.15;
+        this.pulseSpeed = Math.random() * 0.02 + 0.005;
+        this.pulseDir = Math.random() > 0.5 ? 1 : -1;
+      }
+
+      update() {
+        this.y += this.vy;
+        this.x += this.vx;
+
+        // Pulsing opacity
+        this.opacity += this.pulseSpeed * this.pulseDir;
+        if (this.opacity > 0.75 || this.opacity < 0.1) {
+          this.pulseDir *= -1;
+        }
+
+        // Reset if moves off screen
+        if (this.y < -10 || this.x < -10 || this.x > width + 10) {
+          this.reset();
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(214, 173, 45, ${this.opacity})`;
+        ctx.shadowColor = "rgba(214, 173, 45, 0.4)";
+        ctx.shadowBlur = this.radius * 2;
+        ctx.fill();
+      }
+    }
+
+    // Init particles
+    for (let i = 0; i < particlesCount; i++) {
+      particles.push(new Particle());
+    }
+
+    // Animation Loop
+    let animId;
+    function animate() {
+      if (window.innerWidth < 768) {
+        canvas.style.display = "none";
+        cancelAnimationFrame(animId);
+        return;
+      }
+      ctx.clearRect(0, 0, width, height);
+      
+      particles.forEach((p) => {
+        p.update();
+        p.draw();
+      });
+
+      animId = requestAnimationFrame(animate);
+    }
+
+    animate();
+  } else {
+    canvas.style.display = "none";
+  }
 }
 
 // --- SCROLL REVEAL ANIMATIONS (LAZY LOAD REVEAL) ---
