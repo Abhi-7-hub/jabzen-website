@@ -65,7 +65,7 @@ HTML_HEADER = """<!doctype html>
   <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="./" aria-label="JABZEN home">
-        <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 38px; height: 38px; object-fit: contain;">
+        <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
         <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
       <div class="nav-links" data-nav-links>
@@ -137,7 +137,7 @@ HTML_FOOTER = """
       <div class="footer-grid">
         <div class="footer-brand">
           <a class="brand" href="./" aria-label="JABZEN home">
-            <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 38px; height: 38px; object-fit: contain;">
+            <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
             <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
           </a>
           <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
