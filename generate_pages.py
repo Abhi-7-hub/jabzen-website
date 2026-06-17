@@ -64,28 +64,24 @@ HTML_HEADER = """<!doctype html>
   <!-- Header -->
   <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
-      <a class="brand" href="index.html" aria-label="JABZEN home">
-        <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
-          <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
-          <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
-          <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
-        </svg>
+      <a class="brand" href="./" aria-label="JABZEN home">
+        <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 38px; height: 38px; object-fit: contain;">
         <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
       <div class="nav-links" data-nav-links>
-        <a href="index.html">Home</a>
+        <a href="./">Home</a>
         <div class="nav-dropdown">
           <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">Services <span class="arrow">&darr;</span></a>
           <ul class="dropdown-menu">
-            <li><a href="search-marketing.html">Search Marketing (SEO)</a></li>
-            <li><a href="performance-marketing.html">Performance Ads &amp; Funnels</a></li>
-            <li><a href="creative-services.html">Creative Production</a></li>
-            <li><a href="ai-solutions.html">AI Marketing Solutions</a></li>
+            <li><a href="search-marketing">Search Marketing (SEO)</a></li>
+            <li><a href="performance-marketing">Performance Ads &amp; Funnels</a></li>
+            <li><a href="creative-services">Creative Production</a></li>
+            <li><a href="ai-solutions">AI Marketing Solutions</a></li>
           </ul>
         </div>
-        <a href="about.html">About</a>
-        <a href="blog.html">Blog</a>
-        <a href="contact.html">Contact</a>
+        <a href="about">About</a>
+        <a href="blog">Blog</a>
+        <a href="contact">Contact</a>
       </div>
       <div class="nav-actions">
         <div id="header-user-profile" class="header-profile-container" style="display: none;">
@@ -97,7 +93,7 @@ HTML_HEADER = """<!doctype html>
               <div id="header-profile-name" class="dropdown-user-name">User Name</div>
               <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
             </div>
-            <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <a href="blog#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
             <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 8px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
           </div>
         </div>
@@ -140,12 +136,8 @@ HTML_FOOTER = """
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a class="brand" href="index.html" aria-label="JABZEN home">
-            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
-              <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
-              <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
-              <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
-            </svg>
+          <a class="brand" href="./" aria-label="JABZEN home">
+            <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 38px; height: 38px; object-fit: contain;">
             <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
           </a>
           <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
@@ -153,19 +145,19 @@ HTML_FOOTER = """
         <div class="footer-col">
           <h3>Services</h3>
           <ul>
-            <li><a href="#services">Search Optimization</a></li>
-            <li><a href="#services">Content Systems</a></li>
-            <li><a href="#services">Performance Ads</a></li>
-            <li><a href="#services">AI Automation</a></li>
+            <li><a href="search-marketing">Search Optimization</a></li>
+            <li><a href="creative-services">Content Systems</a></li>
+            <li><a href="performance-marketing">Performance Ads</a></li>
+            <li><a href="ai-solutions">AI Automation</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h3>Methodology</h3>
           <ul>
-            <li><a href="#faq">Discover</a></li>
-            <li><a href="#faq">Strategize</a></li>
-            <li><a href="#faq">Execute</a></li>
-            <li><a href="#faq">Scale</a></li>
+            <li><a href="./#process">Discover</a></li>
+            <li><a href="./#process">Strategize</a></li>
+            <li><a href="./#process">Execute</a></li>
+            <li><a href="./#process">Scale</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -372,7 +364,7 @@ def generate_service_pages():
     </section>
   </main>
 """
-        full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug=f"{slug}.html") + body_html + HTML_FOOTER
+        full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug=slug) + body_html + HTML_FOOTER
         with open(filename, "w", encoding="utf-8") as f:
             f.write(full_content)
         print(f"Generated {filename}")
@@ -694,7 +686,7 @@ def generate_blog_page():
     </section>
   </main>
 """
-    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="blog.html") + body_html + HTML_FOOTER
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="blog") + body_html + HTML_FOOTER
     with open(filename, "w", encoding="utf-8") as f:
         f.write(full_content)
     print("Generated blog.html")
@@ -742,7 +734,7 @@ def generate_contact_page():
     </section>
   </main>
 """
-    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="contact.html") + body_html + HTML_FOOTER
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="contact") + body_html + HTML_FOOTER
     with open(filename, "w", encoding="utf-8") as f:
         f.write(full_content)
     print("Generated contact.html")
@@ -815,7 +807,7 @@ def generate_about_page():
     </section>
   </main>
 """
-    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="about.html") + body_html + HTML_FOOTER
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="about") + body_html + HTML_FOOTER
     with open(filename, "w", encoding="utf-8") as f:
         f.write(full_content)
     print("Generated about.html")
@@ -865,13 +857,13 @@ def generate_sitemap():
     today = datetime.today().strftime('%Y-%m-%d')
     urls = [
         ("", "1.0", "daily"),
-        ("search-marketing.html", "0.9", "weekly"),
-        ("performance-marketing.html", "0.9", "weekly"),
-        ("creative-services.html", "0.9", "weekly"),
-        ("ai-solutions.html", "0.9", "weekly"),
-        ("about.html", "0.8", "weekly"),
-        ("blog.html", "0.8", "weekly"),
-        ("contact.html", "0.8", "monthly")
+        ("search-marketing", "0.9", "weekly"),
+        ("performance-marketing", "0.9", "weekly"),
+        ("creative-services", "0.9", "weekly"),
+        ("ai-solutions", "0.9", "weekly"),
+        ("about", "0.8", "weekly"),
+        ("blog", "0.8", "weekly"),
+        ("contact", "0.8", "monthly")
     ]
     
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
