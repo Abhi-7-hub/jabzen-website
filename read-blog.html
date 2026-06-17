@@ -3,14 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Read Blog | JABZEN | Creative Marketing Freelancer</title>
+  <title>Read Blog | JABZEN | Premium Growth Partner</title>
   <meta name="description" content="Read full strategic insights and frameworks on SEO, AI, Meta Ads, and Branding by JABZEN.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <link rel="canonical" href="https://jabzen.com/read-blog.html">
   <link rel="icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="styles.min.css?v=15">
+  <link rel="stylesheet" href="styles.min.css?v=16">
   <style>
     .blog-detail-container {
       max-width: 800px;
@@ -30,7 +27,7 @@
     }
     .blog-detail-title {
       font-size: clamp(2rem, 5vw, 3rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: var(--font-heading);
       font-weight: 800;
       line-height: 1.2;
       color: var(--text-primary);
@@ -41,8 +38,8 @@
       align-items: center;
       gap: 12px;
       padding: 0.75rem 0;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
       margin-bottom: 2rem;
     }
     .blog-detail-author img {
@@ -50,26 +47,27 @@
       height: 44px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--accent);
+      border: 2px solid var(--brand-primary);
     }
     .blog-detail-author-info h4 {
       margin: 0;
       font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-primary);
+      font-family: var(--font-body);
     }
     .blog-detail-author-info p {
       margin: 0;
       font-size: 0.8rem;
       color: var(--text-secondary);
+      font-family: var(--font-body);
     }
     .blog-detail-cover {
       width: 100%;
       aspect-ratio: 16/9;
-      border-radius: var(--radius);
+      border-radius: var(--radius-soft);
       overflow: hidden;
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
       margin-bottom: 3rem;
     }
     .blog-detail-cover img {
@@ -83,6 +81,7 @@
       color: var(--text-secondary);
       white-space: pre-wrap;
       word-break: break-word;
+      font-family: var(--font-body);
     }
     .blog-detail-body p {
       margin-bottom: 1.5rem;
@@ -95,10 +94,11 @@
       min-height: 400px;
       gap: 1rem;
       color: var(--text-secondary);
+      font-family: var(--font-body);
     }
     .loading-spinner {
-      border: 4px solid rgba(214, 173, 45, 0.1);
-      border-left-color: var(--accent);
+      border: 4px solid rgba(111, 143, 114, 0.1);
+      border-left-color: var(--brand-primary);
       border-radius: 50%;
       width: 40px;
       height: 40px;
@@ -113,44 +113,39 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      font-family: var(--font-body);
     }
   </style>
 </head>
-<body class="landing-page">
+<body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <script>
-    if (localStorage.getItem("theme") === "light") {
-      document.body.classList.add("light-theme");
-    }
-  </script>
   
-  <header class="site-header">
+  <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="JABZEN home">
-        <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
-          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" fetchpriority="high">
-        </span>
-        <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+        <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
+          <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
+          <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
+          <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
+        </svg>
+        <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
       <div class="nav-links" data-nav-links>
-        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="index.html">Home</a>
         <div class="nav-dropdown">
-          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-briefcase"></i> Services <span class="arrow"><i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 2px;"></i></span></a>
+          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">Services <span class="arrow">&darr;</span></a>
           <ul class="dropdown-menu">
-            <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing (SEO, AEO, GEO)</a></li>
-            <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads & Funnels</a></li>
-            <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
-            <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+            <li><a href="search-marketing.html">Search Marketing (SEO)</a></li>
+            <li><a href="performance-marketing.html">Performance Ads &amp; Funnels</a></li>
+            <li><a href="creative-services.html">Creative Production</a></li>
+            <li><a href="ai-solutions.html">AI Marketing Solutions</a></li>
           </ul>
         </div>
-        <a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a>
-        <a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a>
-        <a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a>
+        <a href="about.html">About</a>
+        <a href="blog.html" aria-current="page">Blog</a>
+        <a href="contact.html">Contact</a>
       </div>
       <div class="nav-actions">
-        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
-        
-        <!-- User Profile Dropdown Icon -->
         <div id="header-user-profile" class="header-profile-container" style="display: none;">
           <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
             <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
@@ -161,19 +156,18 @@
               <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
             </div>
             <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 8px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
           </div>
         </div>
-
-        <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
-        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+        <a class="btn btn-primary" href="#contact">Book Strategy Call</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">&equiv;</button>
       </div>
     </nav>
   </header>
 
   <main id="main">
     <div class="blog-detail-container">
-      <a href="blog.html" class="btn btn-outline back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+      <a href="blog.html" class="btn btn-outline back-btn">&larr; Back to Blog</a>
       
       <div id="blog-content-wrapper">
         <!-- Loading State -->
@@ -184,7 +178,6 @@
 
         <!-- Error State -->
         <div class="loading-state" id="error-state" style="display: none;">
-          <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #ff4d4d;"></i>
           <h3>Post Not Found</h3>
           <p>The requested blog post could not be retrieved. It may have been deleted or the link is incorrect.</p>
         </div>
@@ -194,7 +187,7 @@
           <header class="blog-detail-header">
             <div class="blog-detail-meta">
               <span class="eyebrow" id="blog-cat" style="margin: 0;">SEO</span>
-              <span style="color: var(--text-secondary); font-size: 0.85rem;" id="blog-date">Date</span>
+              <span style="color: var(--text-secondary); font-size: 0.85rem; font-family: var(--font-body);" id="blog-date">Date</span>
             </div>
             <h1 class="blog-detail-title" id="blog-title">Title of the Blog Post</h1>
             
@@ -217,47 +210,79 @@
         </article>
       </div>
     </div>
-  </main>
+  <!-- Floating social FAB menu bottom right -->
+  <div class="social-fab-container" data-social-fab>
+    <div class="social-links-expand">
+      <a href="https://www.linkedin.com/company/110264236/" target="_blank" rel="noopener" class="fab-btn linkedin" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/jabzen.digital/" target="_blank" rel="noopener" class="fab-btn instagram" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+      </a>
+      <a href="https://www.facebook.com/share/18nExq4nbi/" target="_blank" rel="noopener" class="fab-btn facebook" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+      </a>
+      <a href="https://x.com/abhishek4srmu" target="_blank" rel="noopener" class="fab-btn twitter" aria-label="Twitter/X">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="https://youtube.com/@jabzen_digitalgrowth?si=WuvoRP5fkmYw152f" target="_blank" rel="noopener" class="fab-btn youtube" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      </a>
+    </div>
+    <a href="https://wa.me/918840863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
+      <svg class="icon-svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.003 5.324 5.328 0 11.859 0c3.166.001 6.141 1.233 8.378 3.469 2.237 2.235 3.469 5.21 3.468 8.379-.003 6.534-5.329 11.858-11.86 11.858-2.001-.001-3.97-.508-5.717-1.474L0 24zm6.549-3.238c1.658.983 3.284 1.503 4.909 1.504 5.405 0 9.805-4.394 9.807-9.8.002-2.617-1.013-5.078-2.86-6.928C16.607 3.687 14.15 2.673 11.53 2.673c-5.405 0-9.807 4.394-9.809 9.8-.001 1.83.499 3.613 1.447 5.174l-.953 3.478 3.567-.936c1.554.848 3.023 1.157 4.372 1.157zm12.355-6.702c-.3-.15-1.771-.875-2.046-.975-.275-.1-.475-.15-.675.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-3.519-1.758-5.314-3.717-6.525-5.8-.3-.513.233-.474.723-.974.137-.14.225-.263.292-.375.068-.112.034-.213-.017-.313-.05-.1-.475-1.143-.65-1.562-.171-.41-.363-.356-.5-.356-.1-.004-.217-.004-.334-.004-.117 0-.308.043-.469.22C7.307 4.7 6.8 5.176 6.8 6.161s.717 1.932.817 2.067c.1.135 1.414 2.158 3.424 3.028 1.636.709 2.27.765 3.09.684.514-.05 1.54-.63 1.754-1.24.214-.61.214-1.133.15-1.24-.064-.108-.244-.16-.544-.31z"/>
+      </svg>
+    </a>
+  </div>
 
+  <!-- Footer -->
   <footer class="footer">
-    <div class="container footer-grid">
-      <div>
-        <a class="brand" href="index.html">
-          <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
-            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" loading="lazy">
-          </span>
-          <span>JABZEN<small>Creative Marketing Freelancer</small></span>
-        </a>
-        <p style="margin-top: 1rem; font-size: 0.9rem; line-height: 1.5;">Helping brands scale through luxury visual branding, direct-response ad creative, SEO, and performance marketing.</p>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html" aria-label="JABZEN home">
+            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
+              <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
+              <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
+              <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
+            </svg>
+            <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
+          </a>
+          <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul>
+            <li><a href="search-marketing.html">Search Optimization</a></li>
+            <li><a href="creative-services.html">Content Systems</a></li>
+            <li><a href="performance-marketing.html">Performance Ads</a></li>
+            <li><a href="ai-solutions.html">AI Automation</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Methodology</h3>
+          <ul>
+            <li><a href="index.html#process">Discover</a></li>
+            <li><a href="index.html#process">Strategize</a></li>
+            <li><a href="index.html#process">Execute</a></li>
+            <li><a href="index.html#process">Scale</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <ul>
+            <li><a href="mailto:info@jabzen.com">info@jabzen.com</a></li>
+            <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
+            <li><span>India &bull; Serving Globally</span></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h3>Pages</h3>
-        <ul>
-          <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
-          <li><a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a></li>
-          <li><a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a></li>
-          <li><a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Services</h3>
-        <ul>
-          <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing</a></li>
-          <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads &amp; Funnels</a></li>
-          <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
-          <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Contact</h3>
-        <ul>
-          <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp Chat</a></li>
-          <li><a href="contact.html"><i class="fa-solid fa-envelope"></i> Contact Form</a></li>
-          <li><i class="fa-solid fa-envelope"></i> info@jabzen.com</li>
-        </ul>
+      <div class="footer-bottom">
+        <span>&copy; 2026 JABZEN. All rights reserved.</span>
+        <span>Aesthetic growth systems built for scaling brands.</span>
       </div>
     </div>
-    <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
   </footer>
 
   <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
@@ -265,7 +290,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
-  <script src="script.min.js?v=15" defer></script>
+  <script src="script.min.js?v=16" defer></script>
   
   <!-- Detail Page Content Fetching Script -->
   <script>

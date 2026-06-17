@@ -56,47 +56,38 @@ HTML_HEADER = """<!doctype html>
   <title>{title}</title>
   <meta name="description" content="{description}">
   <link rel="canonical" href="https://jabzen.com/{canonical_slug}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <link rel="icon" href="assets/favicon.png">
-  <link rel="stylesheet" href="styles.min.css?v=15">
+  <link rel="stylesheet" href="styles.min.css?v=16">
 </head>
-<body class="landing-page">
+<body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <script>
-    if (localStorage.getItem("theme") === "light") {{
-      document.body.classList.add("light-theme");
-    }}
-  </script>
-  <header class="site-header">
+  <!-- Header -->
+  <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="JABZEN home">
-        <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; overflow: hidden; width: 44px; height: 44px;">
-          <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" fetchpriority="high">
-        </span>
-        <span>JABZEN<small>Creative Marketing Freelancer</small></span>
+        <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
+          <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
+          <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
+          <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
+        </svg>
+        <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
       <div class="nav-links" data-nav-links>
-        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="index.html">Home</a>
         <div class="nav-dropdown">
-          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-briefcase"></i> Services <span class="arrow"><i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; margin-left: 2px;"></i></span></a>
+          <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">Services <span class="arrow">&darr;</span></a>
           <ul class="dropdown-menu">
-            <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing (SEO, AEO, GEO)</a></li>
-            <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads & Funnels</a></li>
-            <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
-            <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
+            <li><a href="search-marketing.html">Search Marketing (SEO)</a></li>
+            <li><a href="performance-marketing.html">Performance Ads &amp; Funnels</a></li>
+            <li><a href="creative-services.html">Creative Production</a></li>
+            <li><a href="ai-solutions.html">AI Marketing Solutions</a></li>
           </ul>
         </div>
-        <a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a>
-        <a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a>
-        <a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a>
+        <a href="about.html">About</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
       </div>
       <div class="nav-actions">
-        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark/light mode" type="button"><i class="fa-solid fa-circle-half-stroke"></i></button>
-        
-        <!-- User Profile Dropdown Icon -->
         <div id="header-user-profile" class="header-profile-container" style="display: none;">
           <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
             <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
@@ -107,12 +98,11 @@ HTML_HEADER = """<!doctype html>
               <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
             </div>
             <a href="blog.html#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+            <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 8px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
           </div>
         </div>
-
-        <a class="btn btn-dark" href="tel:+918840863659" data-call-btn><i class="fa-solid fa-phone"></i> Call Now</a>
-        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+        <a class="btn btn-primary" href="#contact">Book Strategy Call</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">&equiv;</button>
       </div>
     </nav>
   </header>
@@ -145,52 +135,60 @@ HTML_FOOTER = """
     </a>
   </div>
 
+  <!-- Footer -->
   <footer class="footer">
-    <div class="container footer-grid">
-      <div>
-        <a class="brand" href="index.html">
-          <span class="brand-mark" style="display: flex; justify-content: center; align-items: center; width: 44px; height: 44px; margin-bottom: 0.5rem;">
-            <img src="assets/jabzen-logo.png" alt="JABZEN Logo" width="44" height="44" style="width: 100%; height: 100%; object-fit: contain;" loading="lazy">
-          </span>
-          <span>JABZEN<small>Creative Marketing Freelancer</small></span>
-        </a>
-        <p style="margin-top:1rem; font-size: 0.9rem; line-height: 1.5;">Helping brands scale through luxury visual branding, direct-response ad creative, SEO, and performance marketing.</p>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html" aria-label="JABZEN home">
+            <svg class="brand-logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--brand-primary); width: 36px; height: 36px;">
+              <path d="M8 5v14" stroke="#6F8F72" stroke-width="2.5"></path>
+              <path d="M14 5v10c0 2-1.5 3.5-3.5 3.5" stroke="#6F8F72" stroke-width="2.5"></path>
+              <rect x="14" y="2" width="2.5" height="2.5" fill="#F2A65A"></rect>
+            </svg>
+            <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
+          </a>
+          <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Services</h3>
+          <ul>
+            <li><a href="#services">Search Optimization</a></li>
+            <li><a href="#services">Content Systems</a></li>
+            <li><a href="#services">Performance Ads</a></li>
+            <li><a href="#services">AI Automation</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Methodology</h3>
+          <ul>
+            <li><a href="#faq">Discover</a></li>
+            <li><a href="#faq">Strategize</a></li>
+            <li><a href="#faq">Execute</a></li>
+            <li><a href="#faq">Scale</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <ul>
+            <li><a href="mailto:info@jabzen.com">info@jabzen.com</a></li>
+            <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
+            <li><span>India &bull; Serving Globally</span></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h3>Pages</h3>
-        <ul>
-          <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
-          <li><a href="results.html"><i class="fa-solid fa-chart-simple"></i> Results</a></li>
-          <li><a href="blog.html"><i class="fa-solid fa-newspaper"></i> Blog</a></li>
-          <li><a href="contact.html"><i class="fa-solid fa-paper-plane"></i> Contact</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Services</h3>
-        <ul>
-          <li><a href="search-marketing.html"><i class="fa-solid fa-magnifying-glass"></i> Search Marketing</a></li>
-          <li><a href="performance-marketing.html"><i class="fa-solid fa-chart-line"></i> Performance Ads &amp; Funnels</a></li>
-          <li><a href="creative-services.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Creative Production</a></li>
-          <li><a href="ai-solutions.html"><i class="fa-solid fa-robot"></i> AI Marketing Solutions</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Contact</h3>
-        <ul>
-          <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp Chat</a></li>
-          <li><a href="contact.html"><i class="fa-solid fa-envelope"></i> Contact Form</a></li>
-          <li><i class="fa-solid fa-envelope"></i> info@jabzen.com</li>
-        </ul>
+      <div class="footer-bottom">
+        <span>&copy; 2026 JABZEN. All rights reserved.</span>
+        <span>Aesthetic growth systems built for scaling brands.</span>
       </div>
     </div>
-    <div class="container footer-bottom">© 2026 JABZEN. All rights reserved.</div>
   </footer>
   <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
-  <script src="script.min.js?v=15" defer></script>
+  <script src="script.min.js?v=16" defer></script>
 </body>
 </html>
 """
@@ -726,14 +724,14 @@ def generate_contact_page():
             <div><strong><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 8px;"></i> Location:</strong> India (Global Delivery)</div>
           </div>
         </div>
-        <form class="form-wrap" data-lead-form style="background: var(--card-bg); border-color: var(--line);">
+        <form class="form-wrap" data-lead-form>
           <div class="form-grid" style="grid-template-columns: 1fr;">
             <div class="field">
-              <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
+              <label for="lead-name">Full Name</label>
               <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
             </div>
             <div class="field">
-              <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
+              <label for="lead-phone">Phone Number</label>
               <input id="lead-phone" name="phone" type="tel" autocomplete="tel" required placeholder="+91 99999 99999">
             </div>
           </div>
@@ -749,55 +747,78 @@ def generate_contact_page():
         f.write(full_content)
     print("Generated contact.html")
 
-def generate_results_page():
-    filename = "results.html"
-    title = "Results & Case Studies | JABZEN | Creative Marketing Freelancer"
-    desc = "Case studies and metrics achieved for brand visibility, organic traffic growth, ad spend ROI, and lead capture."
+def generate_about_page():
+    filename = "about.html"
+    title = "About & Results | JABZEN | Premium Growth Partner"
+    desc = "Learn about JABZEN's philosophy, the team, and the verifiable growth metrics achieved across SEO, paid ads, and content systems."
     
     body_html = """  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <h1>Results & Performance Case Studies</h1>
-        <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">Real outcomes showing traffic multiples, visual branding upgrades, and direct lead pipelines.</p>
+    <!-- Hero Section -->
+    <section class="page-hero" aria-labelledby="about-hero-title">
+      <div class="container reveal">
+        <span class="eyebrow">About JABZEN</span>
+        <h1 id="about-hero-title">A modern growth partner<br>with verifiable performance.</h1>
+        <p class="lead">We combine human-first positioning with rigorous analytics to build clean customer acquisition channels.</p>
       </div>
     </section>
 
-    <section class="section">
+    <!-- Section 2: Narrative -->
+    <section class="section" aria-labelledby="narrative-title">
       <div class="container">
-        <div class="section-head" style="text-align: center; margin-bottom: 3rem;">
-          <p class="eyebrow">Outcomes</p>
-          <h2>Core Metric Case Audits Demonstrating Revenue Growth And Scaling</h2>
+        <div class="philosophy-split reveal">
+          <div class="philosophy-left">
+            <h2 id="narrative-title">Our Core<br>Belief.</h2>
+          </div>
+          <div class="philosophy-right">
+            <p style="font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--text-primary);">We believe digital growth shouldn't feel noisy, generic, or intrusive. The best marketing builds bridges of trust between exceptional companies and their future customers.</p>
+            <p>JABZEN operates as a premium consulting group rather than a high-volume agency. By limiting our client partnerships, we focus deeply on unit economics, attribution loops, and premium design standards.</p>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Performance Case Audits (Original Results content) -->
+    <section class="section secondary-bg" aria-labelledby="results-grid-title">
+      <div class="container">
+        <div class="services-intro reveal" style="text-align: center; margin-bottom: 4rem;">
+          <span class="eyebrow">Metrics Summary</span>
+          <h2 id="results-grid-title">Core Performance Metrics &amp; Case Audits</h2>
+        </div>
+        
         <div class="grid grid-2">
-          <article class="card">
-            <h3 style="color: var(--accent); margin-bottom: 0.5rem;">Organic Search (SEO, AEO, GEO)</h3>
-            <p><strong>Result: 312% Search Volume Increase</strong></p>
-            <p style="margin-top: 0.5rem;">Structured keyword clusters and programmatic pages for service area providers, achieving top rankings and citation placement in LLM engines.</p>
-          </article>
-          <article class="card">
-            <h3 style="color: var(--accent); margin-bottom: 0.5rem;">Performance Marketing Ads</h3>
-            <p><strong>Result: 4.6x Meta & Google ROAS</strong></p>
-            <p style="margin-top: 0.5rem;">Designed and mapped high-CTR creative ad variations and landing pages for B2B consulting firms, significantly cutting acquisition costs.</p>
-          </article>
-          <article class="card">
-            <h3 style="color: var(--accent); margin-bottom: 0.5rem;">Creative Reels Production</h3>
-            <p><strong>Result: 5.8M Views & Organic Traffic</strong></p>
-            <p style="margin-top: 0.5rem;">Repurposed educational concepts into viral vertical hooks, sound design, and gold-overlay formats, driving sales inquiries.</p>
-          </article>
-          <article class="card">
-            <h3 style="color: var(--accent); margin-bottom: 0.5rem;">AI Marketing Workflows</h3>
-            <p><strong>Result: 10x Content Velocity Output</strong></p>
-            <p style="margin-top: 0.5rem;">Deployed automated AI explainer avatars and prompt-based pipelines that increased lead follow-up efficiency and velocity.</p>
-          </article>
+          <!-- Card 1 -->
+          <div class="card reveal">
+            <span class="eyebrow" style="margin-bottom: 0.5rem;">Organic SEO Channel</span>
+            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">+312% Search Volume</h3>
+            <p>We craft dense semantic clusters, technical structure, and programmatic pages for service providers to dominate target keywords and capture LLM citations.</p>
+          </div>
+          <!-- Card 2 -->
+          <div class="card reveal">
+            <span class="eyebrow" style="margin-bottom: 0.5rem;">Paid Campaigns</span>
+            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">4.6x Meta &amp; Google ROAS</h3>
+            <p>We execute targeted ad creatives, direct-response copy variations, and custom landers that filter low-intent clicks and scale conversion rates.</p>
+          </div>
+          <!-- Card 3 -->
+          <div class="card reveal">
+            <span class="eyebrow" style="margin-bottom: 0.5rem;">Creative Assets</span>
+            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">5.8M Views &amp; Growth</h3>
+            <p>We script and produce educational concept Reels, short-form food videos, and vertical brand upgrades that convert visual hooks into booked consultations.</p>
+          </div>
+          <!-- Card 4 -->
+          <div class="card reveal">
+            <span class="eyebrow" style="margin-bottom: 0.5rem;">AI Systems</span>
+            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">10x Content Velocity</h3>
+            <p>We build prompt workflows, text-to-video assets, and automated CRM follow-ups that keep operation overhead low and execution speed high.</p>
+          </div>
         </div>
       </div>
     </section>
   </main>
 """
-    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="results.html") + body_html + HTML_FOOTER
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="about.html") + body_html + HTML_FOOTER
     with open(filename, "w", encoding="utf-8") as f:
         f.write(full_content)
-    print("Generated results.html")
+    print("Generated about.html")
 
 def minify_css(src, dest):
     import re
@@ -848,7 +869,7 @@ def generate_sitemap():
         ("performance-marketing.html", "0.9", "weekly"),
         ("creative-services.html", "0.9", "weekly"),
         ("ai-solutions.html", "0.9", "weekly"),
-        ("results.html", "0.8", "weekly"),
+        ("about.html", "0.8", "weekly"),
         ("blog.html", "0.8", "weekly"),
         ("contact.html", "0.8", "monthly")
     ]
@@ -875,14 +896,14 @@ def main():
     generate_service_pages()
     generate_blog_page()
     generate_contact_page()
-    generate_results_page()
+    generate_about_page()
     generate_sitemap()
     minify_css("styles.css", "styles.min.css")
     minify_js("script.js", "script.min.js")
     
     # Cleanup obsolete files that are removed from nav/layout
     old_files = [
-        "about.html", "book-strategy-call.html", "services.html",
+        "results.html", "book-strategy-call.html", "services.html",
         "seo.html", "aeo.html", "geo.html", "branding.html", 
         "meta-ads.html", "google-ads.html", "ai-video-creation.html", 
         "reel-creation.html", "content-creation.html"

@@ -69,8 +69,8 @@ if (header) {
 }
 
 // FAQ accordion toggles
-document.querySelectorAll("[data-faq]").forEach((faq) => {
-  const button = faq.querySelector("button");
+document.querySelectorAll(".faq-item, [data-faq]").forEach((faq) => {
+  const button = faq.querySelector("button, .faq-question");
   if (!button) return;
 
   button.addEventListener("click", () => {
@@ -1424,36 +1424,7 @@ document.querySelectorAll("form[data-lead-form]").forEach((form) => {
 
 // --- NEW HERO INTERACTION CODE ---
 
-// --- DYNAMIC THEME SWITCHER LOGIC ---
-const themeToggle = document.getElementById("theme-toggle");
-
-const enableLightMode = () => {
-  document.body.classList.add("light-theme");
-  localStorage.setItem("theme", "light");
-};
-
-const disableLightMode = () => {
-  document.body.classList.remove("light-theme");
-  localStorage.setItem("theme", "dark");
-};
-
-// Check stored theme preference on load
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "light") {
-  enableLightMode();
-} else {
-  disableLightMode();
-}
-
-if (themeToggle) {
-  themeToggle.addEventListener("click", () => {
-    if (document.body.classList.contains("light-theme")) {
-      disableLightMode();
-    } else {
-      enableLightMode();
-    }
-  });
-}
+// --- SINGLE THEME ENFORCED (BEIGE) ---
 
 // --- HERO BACKGROUND MOUSE GLOW ---
 const hero = document.querySelector(".hero");
@@ -1587,6 +1558,7 @@ document.addEventListener("DOMContentLoaded", () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("active");
+          entry.target.classList.add("is-visible");
           observer.unobserve(entry.target); // Reveal only once
         }
       });
