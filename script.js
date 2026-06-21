@@ -569,25 +569,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Customize Blog button (header cta)
     document.querySelectorAll(".header-cta-btn").forEach(btn => {
       if (isBlogPage) {
-        btn.textContent = "Switch to Blog Mode";
-        btn.setAttribute("href", "#");
-        btn.onclick = (e) => {
-          e.preventDefault();
-          if (typeof window.selectMenuTab === "function") {
-            window.selectMenuTab("home");
-          }
-          const mainEl = document.getElementById("main");
-          if (mainEl) {
-            mainEl.scrollIntoView({ behavior: "smooth" });
-          }
-          return false;
-        };
+        btn.style.setProperty("display", "none", "important");
       } else {
         btn.textContent = "Blog";
         btn.setAttribute("href", "blog");
         btn.onclick = null;
+        btn.style.setProperty("display", "", "important");
       }
-      btn.style.setProperty("display", "", "important");
     });
   };
 

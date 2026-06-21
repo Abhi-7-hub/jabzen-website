@@ -3230,9 +3230,7 @@ body.page-read-blog .nav-normal-link {
 }
 body.page-blog .nav-marketing-link,
 body.page-read-blog .nav-marketing-link {
-  display: inline-block !important;
-  font-weight: 700;
-  color: var(--brand-primary);
+  display: none !important;
 }
 body.page-read-blog .header-cta-btn {
   display: none !important;
