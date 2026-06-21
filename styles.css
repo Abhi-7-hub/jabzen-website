@@ -3454,3 +3454,41 @@ body:not(.page-blog) #mobile-login-btn {
   display: none !important;
 }
 
+
+/* --- MESSAGES & NOTIFICATION BADGES DESIGN (RED COUNTERS) & TYPING DOTS --- */
+.menu-item .badge, 
+.menu-item .badge.badge-accent {
+  background: #ff4d4d !important;
+  color: #ffffff !important;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  box-shadow: 0 2px 8px rgba(255, 77, 77, 0.4);
+  transition: all 0.2s ease;
+}
+
+/* Typing animations */
+.typing-dots {
+  display: inline-flex;
+  gap: 2px;
+}
+.typing-dots .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  animation: typing-bounce 1.4s infinite ease-in-out both;
+}
+.typing-dots .dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots .dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Follower list items style */
+.followers-modal-card div:hover {
+  background: rgba(214, 173, 45, 0.05) !important;
+}

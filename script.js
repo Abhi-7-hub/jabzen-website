@@ -587,6 +587,21 @@ document.addEventListener("DOMContentLoaded", () => {
   let notificationsUnsubscribe = null;
   let allFollowsCache = [];
   let followsUnsubscribe = null;
+  let followsSyncInitialized = false;
+  
+  let allConnectionsCache = [];
+  let connectionsUnsubscribe = null;
+  let activeRecipientUid = null;
+  let activeRecipientName = null;
+  let activeRecipientAvatar = null;
+  let messagesUnsubscribe = null;
+  let currentTypingStatus = false;
+  let typingUnsubscribe = null;
+  
+  let showConversationView = null;
+  let renderChatRooms = null;
+  let renderConversationFeed = null;
+  let showChatRoomsView = null;
 
 
   // Placeholders for page-specific UI update functions defined inside bindBlogPageEvents
@@ -835,6 +850,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setupNotificationsSync();
     followsSyncInitialized = false;
     setupFollowsSync();
+    setupConnectionsSync();
+    updateChatBadge();
     if (typeof window.customizeNavbarForCurrentPage === "function") {
       window.customizeNavbarForCurrentPage();
     }
@@ -1054,6 +1071,16 @@ document.addEventListener("DOMContentLoaded", () => {
           ${actionsHtml}
         </div>
       `;
+      item.style.cursor = "pointer";
+      item.addEventListener("click", (e) => {
+        if (e.target.closest("button") || e.target.closest("img") || e.target.closest("strong") || e.target.closest("a")) return;
+        window.closeNotificationsModal();
+        if (notif.type === "message") {
+          window.startChatWithAuthor(notif.senderUid, notif.senderName, notif.senderPhoto);
+        } else {
+          window.showUserProfileModal(notif.senderUid);
+        }
+      });
       listContainer.appendChild(item);
     });
 
@@ -1168,7 +1195,272 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function setupFollowsSync() {
+  function setupConnectionsSync() {
+    if (!currentUser) {
+      allConnectionsCache = [];
+      return;
+    }
+
+    if (isMockFirebase) {
+      const loadMockConns = () => {
+        let conns = [];
+        try {
+          conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+        } catch(e){}
+        allConnectionsCache = conns.filter(c => c.participants && c.participants.includes(currentUser.uid));
+        
+        // Trigger UI updates
+        const modal = document.getElementById("profile-modal-backdrop");
+        if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
+          window.showUserProfileModal(modal.dataset.activeUid);
+        }
+        if (activeRecipientUid) {
+          if (typeof showConversationView === "function") {
+            showConversationView(activeRecipientUid, activeRecipientName, activeRecipientAvatar);
+          }
+        }
+      };
+      
+      loadMockConns();
+      window.removeEventListener("mock_conn_update", loadMockConns);
+      window.addEventListener("mock_conn_update", loadMockConns);
+    } else if (db) {
+      if (connectionsUnsubscribe) connectionsUnsubscribe();
+      connectionsUnsubscribe = db.collection("connections")
+        .where("participants", "array-contains", currentUser.uid)
+        .onSnapshot((snapshot) => {
+          allConnectionsCache = [];
+          snapshot.forEach(doc => {
+            allConnectionsCache.push({ id: doc.id, ...doc.data() });
+          });
+          
+          // Trigger UI updates
+          const modal = document.getElementById("profile-modal-backdrop");
+          if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
+            window.showUserProfileModal(modal.dataset.activeUid);
+          }
+          if (activeRecipientUid) {
+            if (typeof showConversationView === "function") {
+              showConversationView(activeRecipientUid, activeRecipientName, activeRecipientAvatar);
+            }
+          }
+        }, (err) => {
+          console.error("Connections sync error:", err);
+        });
+    }
+  }
+
+  function updateChatBadge() {
+    const badge = document.getElementById("chat-badge-count");
+    if (!badge) return;
+    if (!currentUser) {
+      badge.style.display = "none";
+      return;
+    }
+    const msgs = window.allUserMessages || [];
+    const unreadCount = msgs.filter(m => m.receiverUid === currentUser.uid && !m.read).length;
+    if (unreadCount > 0) {
+      badge.style.display = "inline-block";
+      badge.textContent = unreadCount;
+      badge.style.background = "#ff4d4d";
+      badge.style.color = "#ffffff";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  window.markChatMessagesAsRead = async (senderUid) => {
+    if (!currentUser || !senderUid) return;
+    
+    // In-memory update
+    const msgs = window.allUserMessages || [];
+    let updatedLocal = false;
+    msgs.forEach(m => {
+      if (m.senderUid === senderUid && m.receiverUid === currentUser.uid && !m.read) {
+        m.read = true;
+        updatedLocal = true;
+      }
+    });
+    
+    if (updatedLocal) {
+      updateChatBadge();
+      if (typeof renderChatRooms === "function") {
+        renderChatRooms(msgs);
+      }
+    }
+    
+    try {
+      if (isMockFirebase) {
+        const allMsgs = JSON.parse(localStorage.getItem("jabzen_mock_messages") || "[]");
+        let changed = false;
+        allMsgs.forEach(m => {
+          if (m.senderUid === senderUid && m.receiverUid === currentUser.uid && !m.read) {
+            m.read = true;
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem("jabzen_mock_messages", JSON.stringify(allMsgs));
+          window.dispatchEvent(new CustomEvent("mock_msg_update"));
+        }
+      } else if (db) {
+        const snap = await db.collection("messages")
+          .where("senderUid", "==", senderUid)
+          .where("receiverUid", "==", currentUser.uid)
+          .where("read", "==", false)
+          .get();
+          
+        if (!snap.empty) {
+          const batch = db.batch();
+          snap.forEach(doc => {
+            batch.update(doc.ref, { read: true });
+          });
+          await batch.commit();
+        }
+      }
+    } catch (e) {
+      console.error("Error marking messages as read:", e);
+    }
+  };
+
+
+    function updateRecipientOnlineStatus() {
+    const statusEl = document.getElementById("chat-recipient-status");
+    if (!statusEl || !activeRecipientUid) return;
+    
+    const isOnline = activeUsersList.some(u => u.uid === activeRecipientUid);
+    
+    if (currentTypingStatus) {
+      statusEl.innerHTML = `<span style="color: var(--brand-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-keyboard fa-bounce"></i> typing...</span>`;
+    } else if (isOnline) {
+      statusEl.innerHTML = `<span style="color: #25D366; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #25D366; display: inline-block;"></span> Online</span>`;
+    } else {
+      statusEl.innerHTML = `<span style="color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary); opacity: 0.6; display: inline-block;"></span> Offline</span>`;
+    }
+  }
+
+
+  function setupTypingListener(recipientUid) {
+    if (typingUnsubscribe) {
+      typingUnsubscribe();
+      typingUnsubscribe = null;
+    }
+    
+    currentTypingStatus = false;
+    updateRecipientOnlineStatus();
+    
+    if (isMockFirebase) {
+      const checkMockTyping = () => {
+        const typingStates = JSON.parse(localStorage.getItem("jabzen_mock_typing") || "{}");
+        const isTyping = typingStates[`${recipientUid}_${currentUser.uid}`] || false;
+        currentTypingStatus = isTyping;
+        updateRecipientOnlineStatus();
+      };
+      
+      checkMockTyping();
+      window.removeEventListener("mock_typing_update", checkMockTyping);
+      window.addEventListener("mock_typing_update", checkMockTyping);
+      typingUnsubscribe = () => {
+        window.removeEventListener("mock_typing_update", checkMockTyping);
+      };
+    } else if (db) {
+      typingUnsubscribe = db.collection("typing")
+        .doc(`${recipientUid}_${currentUser.uid}`)
+        .onSnapshot((doc) => {
+          currentTypingStatus = doc.exists ? doc.data().typing : false;
+          updateRecipientOnlineStatus();
+        }, (err) => {
+          console.error("Error syncing typing status:", err);
+        });
+    }
+  }
+
+
+  window.showUserFollowersList = async (uid) => {
+    const follows = allFollowsCache.filter(f => f.followingUid === uid);
+    
+    let backdrop = document.getElementById("followers-modal-backdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.id = "followers-modal-backdrop";
+      backdrop.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2100; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; transition: opacity 0.2s ease;";
+      backdrop.onclick = window.closeFollowersModal;
+      backdrop.innerHTML = `
+        <div class="followers-modal-card" onclick="event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); width: 400px; max-width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 70vh; position: relative;">
+          <button class="profile-modal-close" onclick="window.closeFollowersModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.2rem; color: var(--text-primary); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-users" style="color: var(--brand-primary);"></i> Followers
+            </h3>
+          </div>
+          <div id="followers-modal-list" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; background: var(--bg);">
+            <p style="text-align: center; color: var(--text-secondary);">Loading followers...</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(backdrop);
+    }
+    
+    const listContainer = document.getElementById("followers-modal-list");
+    if (listContainer) {
+      listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Loading followers...</p>';
+    }
+    
+    backdrop.style.display = "flex";
+    setTimeout(() => backdrop.style.opacity = "1", 10);
+    
+    try {
+      if (follows.length === 0) {
+        listContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding: 1.5rem 0;">No followers yet.</p>';
+        return;
+      }
+      
+      const followerProfiles = await Promise.all(
+        follows.map(async (f) => {
+          try {
+            return await window.getUserProfile(f.followerUid);
+          } catch (e) {
+            return { uid: f.followerUid, displayName: "User", photoURL: "https://www.gravatar.com/avatar/?d=mp" };
+          }
+        })
+      );
+      
+      listContainer.innerHTML = "";
+      followerProfiles.forEach(prof => {
+        const item = document.createElement("div");
+        item.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 0.6rem 0.8rem; border-radius: 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s;";
+        item.onclick = () => {
+          window.closeFollowersModal();
+          window.showUserProfileModal(prof.uid);
+        };
+        item.innerHTML = `
+          <img src="${prof.photoURL || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${prof.displayName}</div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${prof.company || 'Independent'}</div>
+          </div>
+          <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.5;"></i>
+        `;
+        listContainer.appendChild(item);
+      });
+    } catch (err) {
+      console.error("Error loading followers list:", err);
+      if (listContainer) {
+        listContainer.innerHTML = '<p style="text-align: center; color: #ff4d4d; font-size: 0.9rem;">Failed to load followers.</p>';
+      }
+    }
+  };
+  
+  window.closeFollowersModal = () => {
+    const backdrop = document.getElementById("followers-modal-backdrop");
+    if (backdrop) {
+      backdrop.style.opacity = "0";
+      setTimeout(() => backdrop.style.display = "none", 200);
+    }
+  };
+
+
+      function setupFollowsSync() {
     if (db) {
       if (!followsSyncInitialized) {
         if (followsUnsubscribe) followsUnsubscribe();
@@ -2421,6 +2713,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalOnline = baseCount + activeUsersList.length;
 
     statusEl.innerHTML = `<span class="online-indicator-dot"></span> ${totalOnline} online now`;
+    updateRecipientOnlineStatus();
     avatarsEl.innerHTML = "";
 
     // Show up to 5 avatars
@@ -3251,10 +3544,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  let activeRecipientUid = null;
-  let activeRecipientName = null;
-  let activeRecipientAvatar = null;
-  let messagesUnsubscribe = null;
+  // (Moved messaging state variables to DOMContentLoaded outer scope)
 
   window.toggleChatDrawer = (show) => {
     const drawer = document.getElementById("chat-drawer");
@@ -3282,6 +3572,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setupRealtimeMessages();
       }
     } else {
+      if (typeof setMyTypingStatus === "function") {
+        setMyTypingStatus(false);
+      }
       drawer.classList.remove("active");
       backdrop.classList.remove("active");
       document.body.style.overflow = "";
@@ -3290,10 +3583,14 @@ document.addEventListener("DOMContentLoaded", () => {
         messagesUnsubscribe();
         messagesUnsubscribe = null;
       }
+      if (typingUnsubscribe) {
+        typingUnsubscribe();
+        typingUnsubscribe = null;
+      }
     }
   };
 
-  const showChatRoomsView = () => {
+  showChatRoomsView = () => {
     activeRecipientUid = null;
     const roomsView = document.getElementById("chat-rooms-view");
     const convView = document.getElementById("chat-conversation-view");
@@ -3301,7 +3598,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (convView) convView.style.display = "none";
   };
 
-  const showConversationView = async (recipientUid, recipientName, recipientAvatar) => {
+  showConversationView = async (recipientUid, recipientName, recipientAvatar) => {
     activeRecipientUid = recipientUid;
     activeRecipientName = recipientName;
     activeRecipientAvatar = recipientAvatar || "https://www.gravatar.com/avatar/?d=mp";
@@ -3318,6 +3615,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Check connection state
     const conn = await window.getConnectionState(recipientUid);
+    
+    // Mark messages from this sender to me as read
+    await window.markChatMessagesAsRead(recipientUid);
+    updateRecipientOnlineStatus();
+    setupTypingListener(recipientUid);
     
     // Check messages feed container
     const messagesFeed = document.getElementById("chat-messages-feed");
@@ -3381,7 +3683,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const renderChatRooms = (allMessages) => {
+  renderChatRooms = (allMessages) => {
     const roomsContainer = document.getElementById("chat-rooms-view");
     if (!roomsContainer || !currentUser) return;
     roomsContainer.innerHTML = "";
@@ -3415,21 +3717,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     roomsList.forEach(room => {
+      const unreadCount = myMsgs.filter(m => m.senderUid === room.uid && m.receiverUid === currentUser.uid && !m.read).length;
+      let badgeHtml = "";
+      if (unreadCount > 0) {
+        badgeHtml = `<span class="badge" style="background: #ff4d4d !important; color: #fff !important; position: static; margin-left: auto; box-shadow: 0 2px 6px rgba(255, 77, 77, 0.4);">${unreadCount}</span>`;
+      }
+      
       const item = document.createElement("div");
       item.className = "chat-room-item";
-      item.onclick = () => showConversationView(room.uid, room.name, room.photo);
+      item.onclick = () => {
+        showConversationView(room.uid, room.name, room.photo);
+      };
       item.innerHTML = `
         <img class="chat-room-avatar" src="${room.photo}" alt="">
-        <div class="chat-room-details">
-          <span class="chat-room-name">${room.name}</span>
-          <span class="chat-room-last-msg">${room.lastText}</span>
+        <div class="chat-room-details" style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px;">
+            <span class="chat-room-name" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: ${unreadCount > 0 ? '800' : '600'}; color: ${unreadCount > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'};">${room.name}</span>
+            ${badgeHtml}
+          </div>
+          <span class="chat-room-last-msg" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: ${unreadCount > 0 ? '600' : '400'}; color: ${unreadCount > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'};">${room.lastText}</span>
         </div>
       `;
       roomsContainer.appendChild(item);
     });
   };
 
-  const renderConversationFeed = (allMessages) => {
+  renderConversationFeed = (allMessages) => {
     const feedContainer = document.getElementById("chat-messages-feed");
     if (!feedContainer || !currentUser || !activeRecipientUid) return;
     feedContainer.innerHTML = "";
@@ -3486,10 +3799,14 @@ document.addEventListener("DOMContentLoaded", () => {
       receiverUid: activeRecipientUid,
       receiverName: activeRecipientName,
       receiverPhoto: activeRecipientAvatar,
-      text: window.encryptMessage(text)
+      text: window.encryptMessage(text),
+      read: false
     };
     
     input.value = "";
+    if (typeof setMyTypingStatus === "function") {
+      setMyTypingStatus(false);
+    }
     
     if (isMockFirebase) {
       msgData.createdAt = new Date().toISOString();
@@ -3592,8 +3909,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  window.getConnectionState = async (otherUid) => {
+    window.getConnectionState = async (otherUid) => {
     if (!currentUser || !otherUid) return { status: "none", docId: null, isSender: false };
+    
+    const conn = allConnectionsCache.find(c => 
+      c.participants && c.participants.includes(currentUser.uid) && c.participants.includes(otherUid)
+    );
+    
+    if (!conn) return { status: "none", docId: null, isSender: false };
+    return {
+      status: conn.status,
+      docId: conn.id || conn.docId,
+      isSender: conn.senderUid === currentUser.uid
+    };
+  };
     
     if (isMockFirebase) {
       const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
@@ -3819,12 +4148,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!followersEl) {
       followersEl = document.createElement("div");
       followersEl.id = "profile-modal-followers-wrap";
-      followersEl.style.cssText = "margin-bottom: 1.25rem; font-size: 0.88rem; font-weight: 700; color: var(--brand-primary); display: flex; align-items: center; gap: 6px; justify-content: center; background: rgba(111, 143, 114, 0.1); padding: 0.4rem 1rem; border-radius: 20px;";
+      followersEl.style.cssText = "margin-bottom: 1.25rem; font-size: 0.88rem; font-weight: 700; color: var(--brand-primary); display: flex; align-items: center; gap: 6px; justify-content: center; background: rgba(111, 143, 114, 0.1); padding: 0.4rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.2s;";
+      
+      // Interactive hover feedback
+      followersEl.addEventListener("mouseenter", () => {
+        followersEl.style.background = "rgba(111, 143, 114, 0.2)";
+        followersEl.style.transform = "scale(1.02)";
+      });
+      followersEl.addEventListener("mouseleave", () => {
+        followersEl.style.background = "rgba(111, 143, 114, 0.1)";
+        followersEl.style.transform = "scale(1)";
+      });
       
       if (emailEl) {
         emailEl.parentNode.insertBefore(followersEl, emailEl.nextSibling);
       }
     }
+    // Clicking on followers count opens followers list modal
+    followersEl.onclick = () => window.showUserFollowersList(uid);
     
     const followersCount = allFollowsCache.filter(f => f.followingUid === uid).length;
     followersEl.innerHTML = `<i class="fa-solid fa-users"></i> <span>${followersCount} ${followersCount === 1 ? 'follower' : 'followers'}</span>`;
@@ -4170,7 +4511,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         window.allUserMessages = msgs;
         renderChatRooms(msgs);
+        updateChatBadge();
         if (activeRecipientUid) {
+          const hasUnreadFromActive = msgs.some(m => m.senderUid === activeRecipientUid && m.receiverUid === currentUser.uid && !m.read);
+          if (hasUnreadFromActive) {
+            window.markChatMessagesAsRead(activeRecipientUid);
+          }
           renderConversationFeed(msgs);
         }
       }, (err) => {
@@ -4183,7 +4529,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgs = getMockMessages();
     window.allUserMessages = msgs;
     renderChatRooms(msgs);
+    updateChatBadge();
     if (activeRecipientUid) {
+      const hasUnreadFromActive = msgs.some(m => m.senderUid === activeRecipientUid && m.receiverUid === currentUser.uid && !m.read);
+      if (hasUnreadFromActive) {
+        window.markChatMessagesAsRead(activeRecipientUid);
+      }
       renderConversationFeed(msgs);
     }
   });
@@ -4194,6 +4545,44 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const chatInputForm = document.getElementById("chat-input-form");
   if (chatInputForm) chatInputForm.addEventListener("submit", handleSendMessage);
+
+  // Typing state tracker variables and event listeners
+  let typingTimeout = null;
+  let isCurrentlyTyping = false;
+
+  const setMyTypingStatus = async (typing) => {
+    if (!currentUser || !activeRecipientUid) return;
+    if (isCurrentlyTyping === typing) return;
+    isCurrentlyTyping = typing;
+    
+    try {
+      if (isMockFirebase) {
+        const typingStates = JSON.parse(localStorage.getItem("jabzen_mock_typing") || "{}");
+        typingStates[`${currentUser.uid}_${activeRecipientUid}`] = typing;
+        localStorage.setItem("jabzen_mock_typing", JSON.stringify(typingStates));
+        window.dispatchEvent(new Event("mock_typing_update"));
+      } else if (db) {
+        await db.collection("typing").doc(`${currentUser.uid}_${activeRecipientUid}`).set({
+          typing: typing,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    } catch (e) {}
+  };
+
+  const handleChatInputKeyPress = () => {
+    setMyTypingStatus(true);
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      setMyTypingStatus(false);
+    }, 2500);
+  };
+
+  const chatInput = document.getElementById("chat-message-input");
+  if (chatInput) {
+    chatInput.addEventListener("input", handleChatInputKeyPress);
+    chatInput.addEventListener("blur", () => setMyTypingStatus(false));
+  }
 
 
   // C. 4-Step Logout Wizard Modal logic
@@ -4300,6 +4689,23 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     updateAuthUI(null);
   }
+
+  // Periodically update lastSeen for online status (runs every 30 seconds if user is logged in)
+  setInterval(() => {
+    if (currentUser) {
+      const nowStr = new Date().toISOString();
+      if (isMockFirebase) {
+        const mockUsers = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+        const idx = mockUsers.findIndex(u => u.uid === currentUser.uid);
+        if (idx !== -1) {
+          mockUsers[idx].lastSeen = nowStr;
+          localStorage.setItem("jabzen_mock_users", JSON.stringify(mockUsers));
+        }
+      } else if (db) {
+        db.collection("users").doc(currentUser.uid).update({ lastSeen: nowStr }).catch(() => {});
+      }
+    }
+  }, 30000);
   
   // Close the block
   
