@@ -440,7 +440,7 @@ def generate_blog_page():
               <a href="#" id="menu-saved" class="menu-item" onclick="window.selectMenuTab('saved'); return false;"><i class="fa-solid fa-bookmark"></i> Saved Articles</a>
               <a href="#" id="menu-messages" class="menu-item" onclick="window.toggleChatDrawer(true); return false;"><i class="fa-solid fa-comments"></i> Messages <span class="badge" id="chat-badge-count">0</span></a>
               <a href="#" id="menu-following" class="menu-item" onclick="window.selectMenuTab('following'); return false;"><i class="fa-solid fa-user-group"></i> Following</a>
-              <a href="#" id="menu-notifications" class="menu-item" onclick="window.showNotifications(); return false;"><i class="fa-solid fa-bell"></i> Notifications <span class="badge badge-accent">5</span></a>
+              <a href="#" id="menu-notifications" class="menu-item" onclick="window.showNotifications(); return false;"><i class="fa-solid fa-bell"></i> Notifications <span class="badge badge-accent" style="display: none;">0</span></a>
             </div>
 
             <!-- Categories Section -->

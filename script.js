@@ -765,6 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
+    setupNotificationsSync();
   };
   window.updateAuthUI = updateAuthUI;
 
@@ -1859,9 +1860,352 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  window.showNotifications = () => {
-    alert("You are fully caught up! No new notifications.");
+  let notificationsUnsubscribe = null;
+  let allNotifications = [];
+
+  const setupNotificationsSync = () => {
+    if (!currentUser) {
+      updateNotificationsBadge(0);
+      return;
+    }
+
+    if (isMockFirebase) {
+      const loadMockNotifs = () => {
+        let notifs = [];
+        try {
+          notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        } catch(e){}
+        if (notifs.length === 0) {
+          notifs = [
+            {
+              id: "notif-init-1",
+              receiverUid: currentUser.uid,
+              senderUid: "uid-auden-rivers",
+              senderName: "Auden Rivers",
+              senderPhoto: "assets/avatar-auden.jpg",
+              text: "liked your draft 'Creative Storytelling in 2026'",
+              type: "like",
+              read: false,
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+              id: "notif-init-2",
+              receiverUid: currentUser.uid,
+              senderUid: "uid-james-carter",
+              senderName: "James Carter",
+              senderPhoto: "assets/avatar-james.jpg",
+              text: "accepted your connection request",
+              type: "connection_accepted",
+              read: false,
+              createdAt: new Date(Date.now() - 7200000).toISOString()
+            }
+          ];
+          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+        }
+        allNotifications = notifs.filter(n => n.receiverUid === currentUser.uid);
+        const unreadCount = allNotifications.filter(n => !n.read).length;
+        updateNotificationsBadge(unreadCount);
+      };
+
+      loadMockNotifs();
+      window.addEventListener("mock_notif_update", loadMockNotifs);
+    } else if (db) {
+      if (notificationsUnsubscribe) notificationsUnsubscribe();
+      notificationsUnsubscribe = db.collection("notifications")
+        .where("receiverUid", "==", currentUser.uid)
+        .orderBy("createdAt", "desc")
+        .onSnapshot((snapshot) => {
+          allNotifications = [];
+          snapshot.forEach(doc => {
+            allNotifications.push({ id: doc.id, ...doc.data() });
+          });
+          const unreadCount = allNotifications.filter(n => !n.read).length;
+          updateNotificationsBadge(unreadCount);
+        }, (err) => {
+          console.error("Notifications sync error:", err);
+        });
+    }
   };
+
+  const updateNotificationsBadge = (count) => {
+    const badge = document.querySelector("#menu-notifications .badge");
+    if (badge) {
+      if (count > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = count;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+  };
+
+  window.addMockNotification = (receiverUid, senderName, senderPhoto, text, type) => {
+    if (!receiverUid) return;
+    const newNotif = {
+      id: Math.random().toString(36).substring(2, 11),
+      receiverUid: receiverUid,
+      senderUid: currentUser ? currentUser.uid : "guest",
+      senderName: senderName || "Guest",
+      senderPhoto: senderPhoto || "https://www.gravatar.com/avatar/?d=mp",
+      text: text || "",
+      type: type || "info",
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    try {
+      const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+      notifs.unshift(newNotif);
+      localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+      window.dispatchEvent(new Event("mock_notif_update"));
+    } catch(e){}
+  };
+
+  window.createNotification = async (receiverUid, text, type) => {
+    if (!receiverUid || (currentUser && receiverUid === currentUser.uid)) return;
+    const profile = currentUser ? parseUserProfile(currentUser) : { name: "Guest" };
+    const senderPhoto = currentUser ? (currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`) : "https://www.gravatar.com/avatar/?d=mp";
+    if (isMockFirebase) {
+      window.addMockNotification(receiverUid, profile.name, senderPhoto, text, type);
+    } else if (db) {
+      try {
+        await db.collection("notifications").add({
+          receiverUid: receiverUid,
+          senderUid: currentUser ? currentUser.uid : "guest",
+          senderName: profile.name,
+          senderPhoto: senderPhoto,
+          text: text,
+          type: type,
+          read: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) {}
+    }
+  };
+
+  window.showNotifications = () => {
+    if (!currentUser) {
+      alert("Please sign in to view notifications.");
+      window.toggleDrawer(true);
+      return;
+    }
+    let backdrop = document.getElementById("notifications-modal-backdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.id = "notifications-modal-backdrop";
+      backdrop.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; transition: opacity 0.2s ease;";
+      backdrop.onclick = window.closeNotificationsModal;
+      backdrop.innerHTML = `
+        <div class="notifications-modal-card" onclick="event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); width: 460px; max-width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; position: relative;">
+          <button class="profile-modal-close" onclick="window.closeNotificationsModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-bell" style="color: var(--brand-primary);"></i> Notifications
+            </h3>
+          </div>
+          <div id="notifications-modal-list" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; background: var(--bg);">
+            <!-- Dynamic notifications list -->
+          </div>
+          <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary);">
+            <button class="btn btn-outline" onclick="window.markAllNotificationsRead()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 600; min-height: unset;">Mark all as read</button>
+            <button class="btn btn-primary" onclick="window.closeNotificationsModal()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 700; min-height: unset;">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(backdrop);
+    }
+    renderNotificationsList();
+    backdrop.style.display = "flex";
+    setTimeout(() => backdrop.style.opacity = "1", 10);
+  };
+
+  window.closeNotificationsModal = () => {
+    const backdrop = document.getElementById("notifications-modal-backdrop");
+    if (backdrop) {
+      backdrop.style.opacity = "0";
+      setTimeout(() => backdrop.style.display = "none", 200);
+    }
+  };
+
+  const renderNotificationsList = () => {
+    const listContainer = document.getElementById("notifications-modal-list");
+    if (!listContainer) return;
+    listContainer.innerHTML = "";
+    if (allNotifications.length === 0) {
+      listContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary);">
+          <i class="fa-regular fa-bell-slash" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p style="margin: 0; font-size: 0.9rem;">You are completely caught up!</p>
+        </div>
+      `;
+      return;
+    }
+    allNotifications.forEach(notif => {
+      const item = document.createElement("div");
+      item.style.cssText = `display: flex; gap: 12px; align-items: flex-start; padding: 0.75rem 1rem; border-radius: 12px; background: ${notif.read ? 'var(--bg-secondary)' : 'rgba(214, 173, 45, 0.05)'}; border: 1px solid ${notif.read ? 'transparent' : 'rgba(214, 173, 45, 0.15)'}; transition: var(--transition-smooth);`;
+      const timeStr = notif.createdAt ? new Date(notif.createdAt.seconds ? notif.createdAt.seconds * 1000 : notif.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now";
+      let icon = "";
+      if (notif.type === "like") icon = '<i class="fa-solid fa-heart" style="color: #ff4d4d; font-size: 0.8rem;"></i>';
+      else if (notif.type === "comment") icon = '<i class="fa-solid fa-comment" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      else if (notif.type === "connection_request") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-cta); font-size: 0.8rem;"></i>';
+      else if (notif.type === "connection_accepted") icon = '<i class="fa-solid fa-circle-check" style="color: #25D366; font-size: 0.8rem;"></i>';
+      item.innerHTML = `
+        <div style="position: relative;">
+          <img src="${notif.senderPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">
+          <div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+            ${icon}
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <p style="margin: 0; font-size: 0.86rem; color: var(--text-primary); line-height: 1.4; word-break: break-word;">
+            <strong style="color: var(--text-primary); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">${notif.senderName}</strong> ${notif.text}
+          </p>
+          <span style="font-size: 0.72rem; color: var(--text-secondary); opacity: 0.8; display: block; margin-top: 4px;">${timeStr}</span>
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+  };
+
+  window.markAllNotificationsRead = async () => {
+    if (!currentUser) return;
+    if (isMockFirebase) {
+      try {
+        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        notifs.forEach(n => {
+          if (n.receiverUid === currentUser.uid) n.read = true;
+        });
+        localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+        window.dispatchEvent(new Event("mock_notif_update"));
+      } catch(e){}
+    } else if (db) {
+      const batch = db.batch();
+      allNotifications.forEach(n => {
+        if (!n.read) {
+          const ref = db.collection("notifications").doc(n.id);
+          batch.update(ref, { read: true });
+        }
+      });
+      try {
+        await batch.commit();
+      } catch(e) {}
+    }
+    renderNotificationsList();
+  };
+
+  const renderRightSidebarWidgets = () => {
+    const trendingContainer = document.querySelector(".trending-topics-list");
+    if (trendingContainer) {
+      trendingContainer.innerHTML = "";
+      const counts = {};
+      blogsCache.forEach(blog => {
+        const cat = blog.category || "Others";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+      const sortedCats = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
+      if (sortedCats.length === 0) {
+        trendingContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No trending topics yet.</p>";
+      } else {
+        sortedCats.forEach(cat => {
+          const item = document.createElement("div");
+          item.className = "trending-topic-item";
+          item.onclick = () => { window.selectCategory(cat === "All Topics" ? "all" : cat); return false; };
+          item.innerHTML = `
+            <div class="topic-left">
+              <span class="topic-hashtag"># ${cat}</span>
+              <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+            </div>
+            <span class="topic-stats">${counts[cat]} posts</span>
+          `;
+          trendingContainer.appendChild(item);
+        });
+      }
+    }
+
+    const writersContainer = document.querySelector(".top-writers-list");
+    if (writersContainer) {
+      writersContainer.innerHTML = "";
+      const writersMap = {};
+      blogsCache.forEach(blog => {
+        const uid = blog.authorUid;
+        if (!uid) return;
+        if (!writersMap[uid]) {
+          writersMap[uid] = {
+            uid: uid,
+            name: blog.authorName || "Creator",
+            photo: blog.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
+            likes: 0,
+            posts: 0
+          };
+        }
+        writersMap[uid].likes += blog.likes || 0;
+        writersMap[uid].posts += 1;
+      });
+
+      const topWriters = Object.values(writersMap).sort((a,b) => (b.likes + b.posts) - (a.likes + a.posts)).slice(0, 3);
+      let followedWriters = [];
+      try {
+        followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
+      } catch(e){}
+
+      if (topWriters.length === 0) {
+        writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No writers registered yet.</p>";
+      } else {
+        topWriters.forEach(writer => {
+          const isFollowing = followedWriters.includes(writer.uid);
+          let baseFollowers = 150;
+          if (writer.uid === "uid-auden-rivers") baseFollowers = 12400;
+          else if (writer.uid === "uid-mira-kapoor") baseFollowers = 8700;
+          else if (writer.uid === "uid-james-carter") baseFollowers = 6300;
+          
+          const totalFollowers = baseFollowers + (isFollowing ? 1 : 0);
+          const followersText = totalFollowers >= 1000 ? (totalFollowers / 1000).toFixed(1) + "k" : totalFollowers;
+
+          const item = document.createElement("div");
+          item.className = "writer-item";
+          item.innerHTML = `
+            <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
+            <div class="writer-details">
+              <span class="writer-name" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer; font-weight:700;">${writer.name}</span>
+              <span class="writer-followers">${followersText} followers</span>
+            </div>
+            <button class="btn btn-outline btn-follow ${isFollowing ? 'following' : ''}" onclick="window.toggleFollowWriter(this, '${writer.uid}'); return false;">${isFollowing ? 'Following' : 'Follow'}</button>
+          `;
+          writersContainer.appendChild(item);
+        });
+      }
+    }
+
+    const popularContainer = document.querySelector(".popular-posts-list");
+    if (popularContainer) {
+      popularContainer.innerHTML = "";
+      const popularBlogs = [...blogsCache].sort((a,b) => {
+        const scoreA = (a.likes || 0) + (a.commentsCount || 0);
+        const scoreB = (b.likes || 0) + (b.commentsCount || 0);
+        return scoreB - scoreA;
+      }).slice(0, 3);
+
+      if (popularBlogs.length === 0) {
+        popularContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No popular posts yet.</p>";
+      } else {
+        popularBlogs.forEach(blog => {
+          const item = document.createElement("div");
+          item.className = "popular-post-item";
+          item.onclick = () => { window.toggleCommentsInline(blog.id); return false; };
+          item.innerHTML = `
+            <span class="popular-post-category">${blog.category || 'Story'}</span>
+            <h4 class="popular-post-title">${blog.title}</h4>
+            <div class="popular-post-meta">
+              <span>By ${blog.authorName}</span>
+              <span>&bull;</span>
+              <span>${blog.likes || 0} Likes</span>
+            </div>
+          `;
+          popularContainer.appendChild(item);
+        });
+      }
+    }
+  };
+
 
   const isCreatedThisWeek = (createdAt) => {
     if (!createdAt) return false;
@@ -2211,18 +2555,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const likeDelta = hasLiked ? -1 : 1;
 
     try {
+      let authorUid = null;
+      let title = "";
       if (isMockFirebase) {
         const blogs = JSON.parse(localStorage.getItem("jabzen_mock_blogs") || "[]");
         const idx = blogs.findIndex(b => b.id === id);
         if (idx !== -1) {
           blogs[idx].likes = Math.max(0, (blogs[idx].likes || 0) + likeDelta);
           window.saveMockBlogsGlobal(blogs);
+          authorUid = blogs[idx].authorUid;
+          title = blogs[idx].title;
         }
       } else {
         const increment = firebase.firestore.FieldValue.increment(likeDelta);
         await db.collection("blogs").doc(id).update({
           likes: increment
         });
+        const doc = await db.collection("blogs").doc(id).get();
+        if (doc.exists) {
+          authorUid = doc.data().authorUid;
+          title = doc.data().title;
+        }
+      }
+
+      if (likeDelta > 0 && authorUid && currentUser && authorUid !== currentUser.uid) {
+        window.createNotification(authorUid, `liked your post "${title}"`, "like");
       }
 
       if (hasLiked) {
@@ -2261,6 +2618,7 @@ document.addEventListener("DOMContentLoaded", () => {
       filterAndRenderBlogs();
       renderSidebarCategories();
       updateFollowButtonsUI();
+      renderRightSidebarWidgets();
       
       // Update statistics counters for current logged-in user dynamically
       if (currentUser) {
@@ -2856,6 +3214,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showConversationView(receiverUid, receiverProfile.displayName, receiverProfile.photoURL);
         }
       }
+      window.createNotification(receiverUid, "sent you a connection request", "connection_request");
     } catch (e) {
       console.error("Error sending connection:", e);
       alert("Failed to send connection request. Please try again.");
@@ -2907,6 +3266,9 @@ document.addEventListener("DOMContentLoaded", () => {
             showConversationView(otherUid, otherName, otherPhoto);
           }
         }
+      }
+      if (otherUid) {
+        window.createNotification(otherUid, "accepted your connection request", "connection_accepted");
       }
     } catch (e) {
       console.error("Error accepting connection:", e);
@@ -3185,6 +3547,8 @@ document.addEventListener("DOMContentLoaded", () => {
     input.value = "";
     
     try {
+      let authorUid = null;
+      let title = "";
       if (isMockFirebase) {
         const comments = JSON.parse(localStorage.getItem("jabzen_mock_comments") || "[]");
         comments.push(commentDoc);
@@ -3195,6 +3559,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (idx !== -1) {
           blogs[idx].commentsCount = (blogs[idx].commentsCount || 0) + 1;
           window.saveMockBlogsGlobal(blogs);
+          authorUid = blogs[idx].authorUid;
+          title = blogs[idx].title;
         }
       } else if (db) {
         commentDoc.createdAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -3203,6 +3569,11 @@ document.addEventListener("DOMContentLoaded", () => {
         await db.collection("blogs").doc(postId).update({
           commentsCount: firebase.firestore.FieldValue.increment(1)
         });
+        const doc = await db.collection("blogs").doc(postId).get();
+        if (doc.exists) {
+          authorUid = doc.data().authorUid;
+          title = doc.data().title;
+        }
       }
       
       document.querySelectorAll(`.comments-header-count-${postId}`).forEach(el => {
@@ -3211,6 +3582,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       
       await loadCommentsInline(postId);
+      if (authorUid && currentUser && authorUid !== currentUser.uid) {
+        window.createNotification(
+          authorUid,
+          `commented on your post "${title}": "${text.substring(0, 30)}..."`,
+          "comment"
+        );
+      }
     } catch (e) {
       console.error("Error posting comment:", e);
       alert("Failed to post comment. Please try again.");
