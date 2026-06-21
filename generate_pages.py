@@ -533,30 +533,7 @@ def generate_blog_page():
                 <a href="#" class="widget-link">View all</a>
               </div>
               <div class="top-writers-list">
-                <div class="writer-item">
-                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=Auden+Rivers&background=6f8f72&color=fff" alt="">
-                  <div class="writer-details">
-                    <span class="writer-name">Auden Rivers</span>
-                    <span class="writer-followers">12.4k followers</span>
-                  </div>
-                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-auden-rivers'); return false;">Follow</button>
-                </div>
-                <div class="writer-item">
-                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=Mira+Kapoor&background=d6ad2d&color=121212" alt="">
-                  <div class="writer-details">
-                    <span class="writer-name">Mira Kapoor</span>
-                    <span class="writer-followers">8.7k followers</span>
-                  </div>
-                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-mira-kapoor'); return false;">Follow</button>
-                </div>
-                <div class="writer-item">
-                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=James+Carter&background=64748b&color=fff" alt="">
-                  <div class="writer-details">
-                    <span class="writer-name">James Carter</span>
-                    <span class="writer-followers">6.3k followers</span>
-                  </div>
-                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-james-carter'); return false;">Follow</button>
-                </div>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;">Available Soon (Count: 0)</p>
               </div>
             </div>
 
@@ -567,27 +544,7 @@ def generate_blog_page():
                 <a href="#" class="widget-link">View all</a>
               </div>
               <div class="popular-posts-list">
-                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
-                  <span class="post-rank">1</span>
-                  <div class="popular-post-details">
-                    <span class="popular-post-title">AI Marketing: Complete Framework</span>
-                    <span class="popular-post-views">2.1k views</span>
-                  </div>
-                </div>
-                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
-                  <span class="post-rank">2</span>
-                  <div class="popular-post-details">
-                    <span class="popular-post-title">How to Build a Personal Brand in 2026</span>
-                    <span class="popular-post-views">1.6k views</span>
-                  </div>
-                </div>
-                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
-                  <span class="post-rank">3</span>
-                  <div class="popular-post-details">
-                    <span class="popular-post-title">The Ultimate SEO Strategy Guide</span>
-                    <span class="popular-post-views">1.3k views</span>
-                  </div>
-                </div>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;">Available Soon (Count: 0)</p>
               </div>
             </div>
 
@@ -597,15 +554,9 @@ def generate_blog_page():
                 <h3 class="widget-title"><i class="fa-solid fa-user-group" style="color: var(--brand-primary);"></i> Active Community</h3>
               </div>
               <div class="active-community-status">
-                <span class="online-indicator-dot"></span> 24 online now
+                <span class="online-indicator-dot" style="display: none;"></span> 0 online now
               </div>
               <div class="active-community-avatars">
-                <img src="https://ui-avatars.com/api/?name=User+A&background=6f8f72&color=fff" alt="">
-                <img src="https://ui-avatars.com/api/?name=User+B&background=d6ad2d&color=121212" alt="">
-                <img src="https://ui-avatars.com/api/?name=User+C&background=64748b&color=fff" alt="">
-                <img src="https://ui-avatars.com/api/?name=User+D&background=1e293b&color=fff" alt="">
-                <img src="https://ui-avatars.com/api/?name=User+E&background=b45309&color=fff" alt="">
-                <div class="avatars-overflow">+18</div>
               </div>
               <button class="btn btn-primary btn-open-chat-large" onclick="window.toggleChatDrawer(true); return false;" style="width: 100%; border-radius: 30px; margin-top: 1rem; font-weight:700;"><i class="fa-solid fa-comments"></i> Open Chat</button>
             </div>

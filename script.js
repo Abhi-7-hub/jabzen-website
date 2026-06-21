@@ -504,27 +504,72 @@ window.isMockFirebase = isMockFirebase;
 
 // Dynamic Blog Platform Logic
 document.addEventListener("DOMContentLoaded", () => {
-  // Customize Navbar for Blog Page
-  if (document.body.classList.contains("page-blog")) {
+  // Define custom navbar customizer
+  window.customizeNavbarForCurrentPage = () => {
+    const isBlogPage = document.body.classList.contains("page-blog");
+    
+    // Hide Write link and Write button on all pages
     document.querySelectorAll(".nav-write-link, #nav-write-btn").forEach(el => {
       el.style.setProperty("display", "none", "important");
     });
     
+    // Desktop Profile dropdown
+    const headerUserProfile = document.getElementById("header-user-profile");
+    if (headerUserProfile) {
+      if (currentUser && isBlogPage) {
+        headerUserProfile.style.setProperty("display", "block", "important");
+      } else {
+        headerUserProfile.style.setProperty("display", "none", "important");
+      }
+    }
+    
+    // Mobile Profile container
+    const mobileUserProfile = document.getElementById("mobile-user-profile");
+    if (mobileUserProfile) {
+      if (currentUser && isBlogPage) {
+        mobileUserProfile.style.setProperty("display", "block", "important");
+      } else {
+        mobileUserProfile.style.setProperty("display", "none", "important");
+      }
+    }
+    
+    // Mobile login button
+    const mobileLoginBtn = document.getElementById("mobile-login-btn");
+    if (mobileLoginBtn) {
+      if (!currentUser && isBlogPage) {
+        mobileLoginBtn.style.setProperty("display", "", "important");
+      } else {
+        mobileLoginBtn.style.setProperty("display", "none", "important");
+      }
+    }
+    
+    // Customize Blog button (header cta)
     document.querySelectorAll(".header-cta-btn").forEach(btn => {
-      btn.textContent = "Switch to Blog Mode";
-      btn.setAttribute("href", "#");
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (typeof window.selectMenuTab === "function") {
-          window.selectMenuTab("home");
-        }
-        const mainEl = document.getElementById("main");
-        if (mainEl) {
-          mainEl.scrollIntoView({ behavior: "smooth" });
-        }
-      });
+      if (isBlogPage) {
+        btn.textContent = "Switch to Blog Mode";
+        btn.setAttribute("href", "#");
+        btn.onclick = (e) => {
+          e.preventDefault();
+          if (typeof window.selectMenuTab === "function") {
+            window.selectMenuTab("home");
+          }
+          const mainEl = document.getElementById("main");
+          if (mainEl) {
+            mainEl.scrollIntoView({ behavior: "smooth" });
+          }
+          return false;
+        };
+      } else {
+        btn.textContent = "Blog";
+        btn.setAttribute("href", "blog");
+        btn.onclick = null;
+      }
+      btn.style.setProperty("display", "", "important");
     });
-  }
+  };
+
+  // Run navbar customization initially
+  window.customizeNavbarForCurrentPage();
 
   let setAuthMode;
   let setDashboardTab;
@@ -766,6 +811,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     setupNotificationsSync();
+    if (typeof window.customizeNavbarForCurrentPage === "function") {
+      window.customizeNavbarForCurrentPage();
+    }
   };
   window.updateAuthUI = updateAuthUI;
 
@@ -1789,7 +1837,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
-  window.toggleFollowWriter = (btnEl, authorUid) => {
+  window.toggleFollowWriter = async (btnEl, authorUid) => {
     if (!currentUser) {
       alert("Please sign in to follow writers.");
       window.toggleDrawer(true);
@@ -1804,41 +1852,57 @@ document.addEventListener("DOMContentLoaded", () => {
       else if (name === "James Carter") authorUid = "uid-james-carter";
       else authorUid = "uid-" + name.toLowerCase().replace(/\s+/g, "-");
     }
+
+    if (authorUid === currentUser.uid) {
+      alert("You cannot follow yourself.");
+      return;
+    }
+
+    const isFollowing = allFollowsCache.some(f => f.followerUid === currentUser.uid && f.followingUid === authorUid);
     
-    let followedWriters = [];
     try {
-      followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
-    } catch(e){}
-    
-    const idx = followedWriters.indexOf(authorUid);
-    let isFollowingNow = false;
-    if (idx === -1) {
-      followedWriters.push(authorUid);
-      isFollowingNow = true;
-    } else {
-      followedWriters.splice(idx, 1);
-    }
-    localStorage.setItem("jabzen_followed_writers", JSON.stringify(followedWriters));
-    
-    if (isFollowingNow) {
-      btnEl.textContent = "Following";
-      btnEl.classList.add("following");
-    } else {
-      btnEl.textContent = "Follow";
-      btnEl.classList.remove("following");
-    }
-    
-    if (currentMenuTab === "following") {
-      filterAndRenderBlogs();
+      if (isMockFirebase) {
+        let follows = JSON.parse(localStorage.getItem("jabzen_mock_follows") || "[]");
+        if (isFollowing) {
+          follows = follows.filter(f => !(f.followerUid === currentUser.uid && f.followingUid === authorUid));
+        } else {
+          follows.push({ followerUid: currentUser.uid, followingUid: authorUid });
+        }
+        localStorage.setItem("jabzen_mock_follows", JSON.stringify(follows));
+        
+        // Also keep followed_writers local sync
+        let followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
+        if (isFollowing) {
+          followedWriters = followedWriters.filter(uid => uid !== authorUid);
+        } else {
+          followedWriters.push(authorUid);
+        }
+        localStorage.setItem("jabzen_followed_writers", JSON.stringify(followedWriters));
+        
+        window.dispatchEvent(new Event("mock_follows_update"));
+      } else if (db) {
+        const followDocId = `${currentUser.uid}_${authorUid}`;
+        if (isFollowing) {
+          await db.collection("follows").doc(followDocId).delete();
+        } else {
+          await db.collection("follows").doc(followDocId).set({
+            followerUid: currentUser.uid,
+            followingUid: authorUid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      }
+      
+      if (currentMenuTab === "following") {
+        filterAndRenderBlogs();
+      }
+    } catch (err) {
+      console.error("Failed to toggle follow:", err);
     }
   };
 
   const updateFollowButtonsUI = () => {
-    let followedWriters = [];
-    try {
-      followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
-    } catch(e){}
-    
+    if (!currentUser) return;
     document.querySelectorAll(".writer-item").forEach((item) => {
       const nameEl = item.querySelector(".writer-name");
       const btnEl = item.querySelector(".btn-follow");
@@ -1849,7 +1913,9 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (name === "Mira Kapoor") authorUid = "uid-mira-kapoor";
         else if (name === "James Carter") authorUid = "uid-james-carter";
         
-        if (followedWriters.includes(authorUid)) {
+        const isFollowing = allFollowsCache.some(f => f.followerUid === currentUser.uid && f.followingUid === authorUid);
+        
+        if (isFollowing) {
           btnEl.textContent = "Following";
           btnEl.classList.add("following");
         } else {
@@ -2092,6 +2158,38 @@ document.addEventListener("DOMContentLoaded", () => {
     renderNotificationsList();
   };
 
+  let followsUnsubscribe = null;
+  let allFollowsCache = [];
+
+  const setupFollowsSync = () => {
+    if (isMockFirebase) {
+      const loadMockFollows = () => {
+        let follows = [];
+        try {
+          follows = JSON.parse(localStorage.getItem("jabzen_mock_follows") || "[]");
+        } catch(e){}
+        allFollowsCache = follows;
+        renderRightSidebarWidgets();
+      };
+      loadMockFollows();
+      window.addEventListener("mock_follows_update", loadMockFollows);
+    } else if (db) {
+      if (followsUnsubscribe) followsUnsubscribe();
+      followsUnsubscribe = db.collection("follows")
+        .onSnapshot((snapshot) => {
+          allFollowsCache = [];
+          snapshot.forEach(doc => {
+            allFollowsCache.push(doc.data());
+          });
+          renderRightSidebarWidgets();
+        }, (err) => {
+          console.error("Follows sync error:", err);
+          allFollowsCache = [];
+          renderRightSidebarWidgets();
+        });
+    }
+  };
+
   let activeUsersList = [];
   let usersUnsubscribe = null;
 
@@ -2146,6 +2244,8 @@ document.addEventListener("DOMContentLoaded", () => {
           renderActiveCommunityUI();
         }, (err) => {
           console.error("Users status sync error:", err);
+          activeUsersList = [];
+          renderActiveCommunityUI();
         });
     }
   };
@@ -2209,58 +2309,72 @@ document.addEventListener("DOMContentLoaded", () => {
     const writersContainer = document.querySelector(".top-writers-list");
     if (writersContainer) {
       writersContainer.innerHTML = "";
-      if (blogsCache.length === 0) {
+      
+      // Calculate writers from blogsCache
+      const writersMap = {};
+      blogsCache.forEach(blog => {
+        const uid = blog.authorUid;
+        if (!uid) return;
+        if (!writersMap[uid]) {
+          writersMap[uid] = {
+            uid: uid,
+            name: blog.authorName || "Creator",
+            photo: blog.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
+            likes: 0,
+            posts: 0
+          };
+        }
+        writersMap[uid].likes += blog.likes || 0;
+        writersMap[uid].posts += 1;
+      });
+
+      // ALWAYS ensure default writers are present
+      const defaultWriters = [
+        { uid: "uid-auden-rivers", name: "Auden Rivers", photo: "assets/avatar-auden.jpg", likes: 0, posts: 0 },
+        { uid: "uid-mira-kapoor", name: "Mira Kapoor", photo: "assets/avatar-mira.jpg", likes: 0, posts: 0 },
+        { uid: "uid-james-carter", name: "James Carter", photo: "assets/avatar-james.jpg", likes: 0, posts: 0 }
+      ];
+      defaultWriters.forEach(dw => {
+        if (!writersMap[dw.uid]) {
+          writersMap[dw.uid] = dw;
+        }
+      });
+
+      const topWriters = Object.values(writersMap).sort((a, b) => {
+        const followersA = allFollowsCache.filter(f => f.followingUid === a.uid).length;
+        const followersB = allFollowsCache.filter(f => f.followingUid === b.uid).length;
+        if (followersB !== followersA) {
+          return followersB - followersA;
+        }
+        return (b.likes + b.posts) - (a.likes + a.posts);
+      }).slice(0, 3);
+
+      let followedWriters = [];
+      try {
+        followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
+      } catch(e){}
+
+      if (topWriters.length === 0) {
         writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon (Count: 0)</p>";
       } else {
-        const writersMap = {};
-        blogsCache.forEach(blog => {
-          const uid = blog.authorUid;
-          if (!uid) return;
-          if (!writersMap[uid]) {
-            writersMap[uid] = {
-              uid: uid,
-              name: blog.authorName || "Creator",
-              photo: blog.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
-              likes: 0,
-              posts: 0
-            };
-          }
-          writersMap[uid].likes += blog.likes || 0;
-          writersMap[uid].posts += 1;
+        topWriters.forEach(writer => {
+          const isFollowing = followedWriters.includes(writer.uid);
+          const followersForWriter = allFollowsCache.filter(f => f.followingUid === writer.uid);
+          const totalFollowers = followersForWriter.length;
+          const followersText = totalFollowers === 1 ? "1 follower" : `${totalFollowers} followers`;
+
+          const item = document.createElement("div");
+          item.className = "writer-item";
+          item.innerHTML = `
+            <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
+            <div class="writer-details">
+              <span class="writer-name" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer; font-weight:700;">${writer.name}</span>
+              <span class="writer-followers">${followersText}</span>
+            </div>
+            <button class="btn btn-outline btn-follow ${isFollowing ? 'following' : ''}" onclick="window.toggleFollowWriter(this, '${writer.uid}'); return false;">${isFollowing ? 'Following' : 'Follow'}</button>
+          `;
+          writersContainer.appendChild(item);
         });
-
-        const topWriters = Object.values(writersMap).sort((a,b) => (b.likes + b.posts) - (a.likes + a.posts)).slice(0, 3);
-        let followedWriters = [];
-        try {
-          followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
-        } catch(e){}
-
-        if (topWriters.length === 0) {
-          writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon (Count: 0)</p>";
-        } else {
-          topWriters.forEach(writer => {
-            const isFollowing = followedWriters.includes(writer.uid);
-            let baseFollowers = 150;
-            if (writer.uid === "uid-auden-rivers") baseFollowers = 12400;
-            else if (writer.uid === "uid-mira-kapoor") baseFollowers = 8700;
-            else if (writer.uid === "uid-james-carter") baseFollowers = 6300;
-            
-            const totalFollowers = baseFollowers + (isFollowing ? 1 : 0);
-            const followersText = totalFollowers >= 1000 ? (totalFollowers / 1000).toFixed(1) + "k" : totalFollowers;
-
-            const item = document.createElement("div");
-            item.className = "writer-item";
-            item.innerHTML = `
-              <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
-              <div class="writer-details">
-                <span class="writer-name" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer; font-weight:700;">${writer.name}</span>
-                <span class="writer-followers">${followersText} followers</span>
-              </div>
-              <button class="btn btn-outline btn-follow ${isFollowing ? 'following' : ''}" onclick="window.toggleFollowWriter(this, '${writer.uid}'); return false;">${isFollowing ? 'Following' : 'Follow'}</button>
-            `;
-            writersContainer.appendChild(item);
-          });
-        }
       }
     }
 
@@ -2283,8 +2397,9 @@ document.addEventListener("DOMContentLoaded", () => {
           item.innerHTML = `
             <span class="post-rank">${index + 1}</span>
             <div class="popular-post-details">
+              <span class="popular-post-category" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; color: var(--brand-primary); margin-bottom: 2px;">${blog.category || 'Story'}</span>
               <span class="popular-post-title">${blog.title}</span>
-              <span class="popular-post-views">${blog.category || 'Story'} &bull; By ${blog.authorName} &bull; ${blog.likes || 0} Likes</span>
+              <span class="popular-post-views">By ${blog.authorName} &bull; ${blog.likes || 0} Likes</span>
             </div>
           `;
           popularContainer.appendChild(item);
@@ -3837,6 +3952,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   window.bindBlogPageEvents();
   setupActiveCommunitySync();
+  setupFollowsSync();
   
   // Close the block
   
@@ -4437,6 +4553,10 @@ window.reinitializeAllPageEvents = () => {
     if (blogId && typeof window.initializeReadBlogPage === "function") {
       window.initializeReadBlogPage(blogId);
     }
+  }
+
+  if (typeof window.customizeNavbarForCurrentPage === "function") {
+    window.customizeNavbarForCurrentPage();
   }
 };
 
