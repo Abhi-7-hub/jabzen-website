@@ -206,8 +206,8 @@ HTML_FOOTER = """
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 JABZEN. All rights reserved. &bull; <a href="sitemap" style="color: var(--text-secondary); text-decoration: none; font-weight: 600;">Sitemap</a></span>
-        <span>Aesthetic growth systems built for scaling brands.</span>
+        <span>&copy; 2026 JABZEN. Proprietary brand of Abhishek Pratap Singh, Independent Consultant &bull; <a href="sitemap" style="color: var(--text-secondary); text-decoration: none; font-weight: 600;">Sitemap</a></span>
+        <span>Lucknow, India &bull; Serving Clients Globally</span>
       </div>
     </div>
   </footer>
@@ -386,7 +386,7 @@ def generate_service_pages():
           <div class="form-grid" style="grid-template-columns: 1fr;">
             <div class="field">
               <label for="lead-name" style="color: var(--text-primary);">Full Name</label>
-              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
+              <input id="lead-name" name="name" autocomplete="name" required placeholder="Type your name">
             </div>
             <div class="field">
               <label for="lead-phone" style="color: var(--text-primary);">Phone Number</label>
@@ -665,7 +665,7 @@ def generate_blog_page():
                 <div id="signup-extra-fields" style="display: none; flex-direction: column; gap: 1rem;">
                   <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
                     <label for="auth-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
-                    <input id="auth-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                    <input id="auth-name" placeholder="Type your name" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
                   </div>
                   <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
                     <label for="auth-company-input" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
@@ -703,7 +703,7 @@ def generate_blog_page():
                 <div id="phone-details-group" style="display: flex; flex-direction: column; gap: 1rem;">
                   <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
                     <label for="auth-phone-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
-                    <input id="auth-phone-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                    <input id="auth-phone-name" placeholder="Type your name" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
                   </div>
                   <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
                     <label for="auth-phone-company" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
@@ -1006,7 +1006,7 @@ def generate_contact_page():
           <div class="form-grid" style="grid-template-columns: 1fr;">
             <div class="field">
               <label for="lead-name">Full Name</label>
-              <input id="lead-name" name="name" autocomplete="name" required placeholder="John Doe">
+              <input id="lead-name" name="name" autocomplete="name" required placeholder="Type your name">
             </div>
             <div class="field">
               <label for="lead-phone">Phone Number</label>
@@ -1067,7 +1067,10 @@ def generate_about_page():
           <div class="letter-signature">
             <span>Sincerely,</span>
             <span class="handwritten-signature">Abhishek Pratap Singh</span>
-            <span class="role">Founder, Jabzen</span>
+            <span class="role">Founder, Jabzen &bull; Lucknow, India</span>
+            <a href="https://www.linkedin.com/in/abhishek-pratap-singh-46549221b/" target="_blank" rel="noopener" style="font-size: 0.82rem; color: var(--brand-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-family: var(--font-body); font-weight: 600;">
+              <i class="fa-brands fa-linkedin"></i> Connect on LinkedIn
+            </a>
           </div>
         </div>
       </div>
