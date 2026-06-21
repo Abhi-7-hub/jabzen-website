@@ -321,6 +321,8 @@ if (isMockFirebase) {
             company: "JABZEN Agency",
             createdAt: { seconds: Math.floor(Date.now() / 1000) - 7200 },
             likes: 23,
+            commentsCount: 7,
+            sharesCount: 4,
             visibility: "Public",
             image: "assets/performance-marketing-banner.webp"
           },
@@ -335,6 +337,8 @@ if (isMockFirebase) {
             company: "TechPulse",
             createdAt: { seconds: Math.floor(Date.now() / 1000) - 18000 },
             likes: 15,
+            commentsCount: 3,
+            sharesCount: 2,
             visibility: "Public",
             image: "assets/blog-ai.webp"
           },
@@ -349,6 +353,8 @@ if (isMockFirebase) {
             company: "Independent",
             createdAt: { seconds: Math.floor(Date.now() / 1000) - 86400 },
             likes: 8,
+            commentsCount: 1,
+            sharesCount: 1,
             visibility: "Public",
             image: "assets/search-marketing-banner.webp"
           },
@@ -363,6 +369,8 @@ if (isMockFirebase) {
             company: "TechPulse",
             createdAt: { seconds: Math.floor(Date.now() / 1000) - 172800 },
             likes: 34,
+            commentsCount: 12,
+            sharesCount: 8,
             visibility: "Public"
           }
         ];
@@ -1545,6 +1553,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Success! Your blog post has been updated.");
       } else {
         blogData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        blogData.likes = 0;
+        blogData.commentsCount = 0;
+        blogData.sharesCount = 0;
         await db.collection("blogs").add(blogData);
         alert("Success! Your blog post has been published.");
       }
@@ -2699,8 +2710,8 @@ document.addEventListener("DOMContentLoaded", () => {
           `<i class="fa-solid fa-lock" title="Private to Author"></i>` : 
           `<i class="fa-solid fa-earth-americas" title="Public Feed"></i>`;
         
-        const commentsCount = blog.commentsCount || Math.floor(Math.random() * 8);
-        const sharesCount = blog.sharesCount || Math.floor(Math.random() * 5);
+        const commentsCount = typeof blog.commentsCount === 'number' ? blog.commentsCount : 0;
+        const sharesCount = typeof blog.sharesCount === 'number' ? blog.sharesCount : 0;
         const authorBadgeHtml = (blog.likes && blog.likes >= 5) ? `<span class="author-tag-badge gold">Top Writer</span>` : `<span class="author-tag-badge green">Top Pick</span>`;
 
         card.innerHTML = `
