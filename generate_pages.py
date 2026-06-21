@@ -594,7 +594,7 @@ def generate_blog_page():
               <button id="phone-login-toggle-btn" class="btn btn-outline" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; border-color: var(--border-color);"><i class="fa-solid fa-mobile-screen-button"></i> Sign In with Phone OTP</button>
               
               <!-- DB Fallback Selector widget -->
-              <div style="margin-top: 1rem; padding: 0.85rem; background: rgba(214, 173, 45, 0.04); border: 1px dashed var(--border-color); border-radius: var(--radius-soft); text-align: center;" id="db-mode-selector-wrap">
+              <div style="display: none !important;" id="db-mode-selector-wrap">
                 <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
                   <i class="fa-solid fa-database" style="color: var(--accent);"></i> Connection: <strong id="db-mode-status" style="color: var(--text-primary);">Real Firebase</strong>
                 </p>
