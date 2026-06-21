@@ -283,6 +283,12 @@ if (isMockFirebase) {
       mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
       return { user: mockCurrentUser };
     },
+    signInWithPhoneMock: async (newUser) => {
+      mockCurrentUser = newUser;
+      localStorage.setItem("jabzen_mock_current_user", JSON.stringify(mockCurrentUser));
+      mockAuthStateListeners.forEach(cb => cb(mockCurrentUser));
+      return { user: mockCurrentUser };
+    },
     signOut: async () => {
       mockCurrentUser = null;
       localStorage.removeItem("jabzen_mock_current_user");
@@ -1329,7 +1335,10 @@ document.addEventListener("DOMContentLoaded", () => {
             savedUsers.push(newUser);
             localStorage.setItem("jabzen_mock_users", JSON.stringify(savedUsers));
             
-            window.location.reload(); // Quick way to reload and update auth state cleanly
+            window.toggleDrawer(false);
+            if (auth && typeof auth.signInWithPhoneMock === "function") {
+              auth.signInWithPhoneMock(newUser);
+            }
           } else {
             alert("Invalid verification code. Use '123456' for the local mock demo.");
             verifyBtn.disabled = false;
@@ -1351,7 +1360,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }).then(() => {
               console.log("Phone profile updated.");
               phoneAuthForm.reset();
-              window.location.reload();
+              window.toggleDrawer(false);
+              if (typeof updateAuthUI === "function") {
+                updateAuthUI(user);
+              }
             });
           })
           .catch((err) => {
@@ -3691,6 +3703,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- INLINE COMMENTS SYSTEM ---
   const inlineCommentsCache = {}; 
   const commentsLimit = {}; 
+  const commentsUnsubscribeMap = {};
+
+  window.unsubscribeAllComments = () => {
+    Object.keys(commentsUnsubscribeMap).forEach(postId => {
+      if (typeof commentsUnsubscribeMap[postId] === "function") {
+        commentsUnsubscribeMap[postId]();
+      }
+      delete commentsUnsubscribeMap[postId];
+    });
+  };
 
   window.toggleCommentsInline = async (postId, event) => {
     if (event) {
@@ -3704,41 +3726,84 @@ document.addEventListener("DOMContentLoaded", () => {
     if (container.style.display === "none") {
       container.style.display = "block";
       commentsLimit[postId] = 3;
-      await loadCommentsInline(postId);
+      loadCommentsInline(postId);
     } else {
       container.style.display = "none";
+      if (commentsUnsubscribeMap[postId]) {
+        commentsUnsubscribeMap[postId]();
+        delete commentsUnsubscribeMap[postId];
+      }
     }
   };
 
-  const loadCommentsInline = async (postId) => {
+  const loadCommentsInline = (postId) => {
     const listContainer = document.getElementById(`comments-list-${postId}`);
     if (!listContainer) return;
     
     listContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Loading comments...</p>";
     
-    let comments = [];
-    if (isMockFirebase) {
-      const allComments = JSON.parse(localStorage.getItem("jabzen_mock_comments") || "[]");
-      comments = allComments.filter(c => c.postId === postId);
-    } else if (db) {
-      try {
-        const snap = await db.collection("comments").where("postId", "==", postId).get();
-        snap.forEach(doc => {
-          comments.push({ id: doc.id, ...doc.data() });
-        });
-      } catch (e) {
-        console.error("Error loading comments:", e);
-      }
+    if (commentsUnsubscribeMap[postId]) {
+      commentsUnsubscribeMap[postId]();
+      delete commentsUnsubscribeMap[postId];
     }
-    
-    comments.sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bTime - aTime;
-    });
-    
-    inlineCommentsCache[postId] = comments;
-    renderInlineComments(postId);
+
+    if (isMockFirebase) {
+      const updateMockComments = () => {
+        const allComments = JSON.parse(localStorage.getItem("jabzen_mock_comments") || "[]");
+        const comments = allComments.filter(c => c.postId === postId);
+        comments.sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
+        inlineCommentsCache[postId] = comments;
+        renderInlineComments(postId);
+        
+        document.querySelectorAll(`.comments-header-count-${postId}`).forEach(el => {
+          el.textContent = `${comments.length} Comments`;
+        });
+      };
+
+      updateMockComments();
+      const onMockCommentsUpdate = (e) => {
+        if (e.detail && e.detail.postId === postId) {
+          updateMockComments();
+        }
+      };
+      window.addEventListener("mock_comments_update", onMockCommentsUpdate);
+      commentsUnsubscribeMap[postId] = () => {
+        window.removeEventListener("mock_comments_update", onMockCommentsUpdate);
+      };
+    } else if (db) {
+      const unsubscribe = db.collection("comments")
+        .where("postId", "==", postId)
+        .onSnapshot((snap) => {
+          const comments = [];
+          snap.forEach(doc => {
+            comments.push({ id: doc.id, ...doc.data() });
+          });
+          comments.sort((a, b) => {
+            const getMs = (val) => {
+              if (!val) return 0;
+              if (val.seconds) return val.seconds * 1000;
+              if (typeof val.toDate === "function") return val.toDate().getTime();
+              return new Date(val).getTime();
+            };
+            return getMs(b.createdAt) - getMs(a.createdAt);
+          });
+          inlineCommentsCache[postId] = comments;
+          renderInlineComments(postId);
+          
+          document.querySelectorAll(`.comments-header-count-${postId}`).forEach(el => {
+            el.textContent = `${comments.length} Comments`;
+          });
+        }, (err) => {
+          console.error("Error listening to comments:", err);
+          listContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0; opacity: 0.8;'>Failed to load comments.</p>";
+        });
+
+      commentsUnsubscribeMap[postId] = unsubscribe;
+    }
   };
 
   const renderInlineComments = (postId) => {
@@ -3837,6 +3902,7 @@ document.addEventListener("DOMContentLoaded", () => {
           authorUid = blogs[idx].authorUid;
           title = blogs[idx].title;
         }
+        window.dispatchEvent(new CustomEvent("mock_comments_update", { detail: { postId } }));
       } else if (db) {
         commentDoc.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         await db.collection("comments").doc(commentDoc.id).set(commentDoc);
@@ -3851,12 +3917,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       
-      document.querySelectorAll(`.comments-header-count-${postId}`).forEach(el => {
-        const currentCount = parseInt(el.textContent) || 0;
-        el.textContent = `${currentCount + 1} Comments`;
-      });
-      
-      await loadCommentsInline(postId);
       if (authorUid && currentUser && authorUid !== currentUser.uid) {
         window.createNotification(
           authorUid,
@@ -4594,6 +4654,7 @@ window.addEventListener("popstate", () => {
 
 // --- STATE REINITIALIZATION ON PAGE TRANSITIONS ---
 window.reinitializeAllPageEvents = () => {
+  if (typeof window.unsubscribeAllComments === "function") window.unsubscribeAllComments();
   if (typeof window.initActiveNavLinks === "function") window.initActiveNavLinks();
   if (typeof window.initFaqs === "function") window.initFaqs();
   if (typeof window.initCarousels === "function") window.initCarousels();
