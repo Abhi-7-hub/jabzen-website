@@ -2092,19 +2092,104 @@ document.addEventListener("DOMContentLoaded", () => {
     renderNotificationsList();
   };
 
+  let activeUsersList = [];
+  let usersUnsubscribe = null;
+
+  const setupActiveCommunitySync = () => {
+    const statusEl = document.querySelector(".active-community-status");
+    const avatarsEl = document.querySelector(".active-community-avatars");
+    if (!statusEl || !avatarsEl) return;
+
+    if (isMockFirebase) {
+      const updateMockCommunity = () => {
+        let users = [];
+        try {
+          users = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+        } catch(e){}
+        
+        const defaultMockUids = ["uid-auden-rivers", "uid-mira-kapoor", "uid-james-carter"];
+        defaultMockUids.forEach(uid => {
+          if (!users.find(u => u.uid === uid)) {
+            users.push({
+              uid: uid,
+              displayName: uid === "uid-auden-rivers" ? "Auden Rivers" : uid === "uid-mira-kapoor" ? "Mira Kapoor" : "James Carter",
+              photoURL: uid === "uid-auden-rivers" ? "assets/avatar-auden.jpg" : uid === "uid-mira-kapoor" ? "assets/avatar-mira.jpg" : "assets/avatar-james.jpg",
+              lastSeen: new Date(Date.now() - 60000).toISOString()
+            });
+          }
+        });
+
+        const fiveMinsAgo = Date.now() - 300000;
+        activeUsersList = users.filter(u => {
+          const time = u.lastSeen ? new Date(u.lastSeen).getTime() : 0;
+          return time >= fiveMinsAgo;
+        });
+
+        renderActiveCommunityUI();
+      };
+
+      updateMockCommunity();
+      window.addEventListener("mock_user_update", updateMockCommunity);
+      window.addEventListener("mock_msg_update", updateMockCommunity);
+      window.addEventListener("mock_notif_update", updateMockCommunity);
+    } else if (db) {
+      if (usersUnsubscribe) usersUnsubscribe();
+      
+      const fiveMinsAgo = new Date(Date.now() - 300000).toISOString();
+      usersUnsubscribe = db.collection("users")
+        .where("lastSeen", ">=", fiveMinsAgo)
+        .onSnapshot((snapshot) => {
+          activeUsersList = [];
+          snapshot.forEach(doc => {
+            activeUsersList.push({ uid: doc.id, ...doc.data() });
+          });
+          renderActiveCommunityUI();
+        }, (err) => {
+          console.error("Users status sync error:", err);
+        });
+    }
+  };
+
+  const renderActiveCommunityUI = () => {
+    const statusEl = document.querySelector(".active-community-status");
+    const avatarsEl = document.querySelector(".active-community-avatars");
+    if (!statusEl || !avatarsEl) return;
+
+    statusEl.innerHTML = `<span class="online-indicator-dot"></span> ${activeUsersList.length} online now`;
+    avatarsEl.innerHTML = "";
+
+    const visibleUsers = activeUsersList.slice(0, 5);
+    visibleUsers.forEach(user => {
+      const img = document.createElement("img");
+      img.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
+      img.alt = user.displayName || "User";
+      img.style.cursor = "pointer";
+      img.title = user.displayName;
+      img.onclick = () => window.showUserProfileModal(user.uid);
+      avatarsEl.appendChild(img);
+    });
+
+    if (activeUsersList.length > 5) {
+      const overflow = document.createElement("div");
+      overflow.className = "avatars-overflow";
+      overflow.textContent = `+${activeUsersList.length - 5}`;
+      avatarsEl.appendChild(overflow);
+    }
+  };
+
   const renderRightSidebarWidgets = () => {
     const trendingContainer = document.querySelector(".trending-topics-list");
     if (trendingContainer) {
       trendingContainer.innerHTML = "";
-      const counts = {};
-      blogsCache.forEach(blog => {
-        const cat = blog.category || "Others";
-        counts[cat] = (counts[cat] || 0) + 1;
-      });
-      const sortedCats = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
-      if (sortedCats.length === 0) {
-        trendingContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No trending topics yet.</p>";
+      if (blogsCache.length === 0) {
+        trendingContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon</p>";
       } else {
+        const counts = {};
+        blogsCache.forEach(blog => {
+          const cat = blog.category || "Others";
+          counts[cat] = (counts[cat] || 0) + 1;
+        });
+        const sortedCats = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 5);
         sortedCats.forEach(cat => {
           const item = document.createElement("div");
           item.className = "trending-topic-item";
@@ -2124,80 +2209,82 @@ document.addEventListener("DOMContentLoaded", () => {
     const writersContainer = document.querySelector(".top-writers-list");
     if (writersContainer) {
       writersContainer.innerHTML = "";
-      const writersMap = {};
-      blogsCache.forEach(blog => {
-        const uid = blog.authorUid;
-        if (!uid) return;
-        if (!writersMap[uid]) {
-          writersMap[uid] = {
-            uid: uid,
-            name: blog.authorName || "Creator",
-            photo: blog.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
-            likes: 0,
-            posts: 0
-          };
-        }
-        writersMap[uid].likes += blog.likes || 0;
-        writersMap[uid].posts += 1;
-      });
-
-      const topWriters = Object.values(writersMap).sort((a,b) => (b.likes + b.posts) - (a.likes + a.posts)).slice(0, 3);
-      let followedWriters = [];
-      try {
-        followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
-      } catch(e){}
-
-      if (topWriters.length === 0) {
-        writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No writers registered yet.</p>";
+      if (blogsCache.length === 0) {
+        writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon (Count: 0)</p>";
       } else {
-        topWriters.forEach(writer => {
-          const isFollowing = followedWriters.includes(writer.uid);
-          let baseFollowers = 150;
-          if (writer.uid === "uid-auden-rivers") baseFollowers = 12400;
-          else if (writer.uid === "uid-mira-kapoor") baseFollowers = 8700;
-          else if (writer.uid === "uid-james-carter") baseFollowers = 6300;
-          
-          const totalFollowers = baseFollowers + (isFollowing ? 1 : 0);
-          const followersText = totalFollowers >= 1000 ? (totalFollowers / 1000).toFixed(1) + "k" : totalFollowers;
-
-          const item = document.createElement("div");
-          item.className = "writer-item";
-          item.innerHTML = `
-            <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
-            <div class="writer-details">
-              <span class="writer-name" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer; font-weight:700;">${writer.name}</span>
-              <span class="writer-followers">${followersText} followers</span>
-            </div>
-            <button class="btn btn-outline btn-follow ${isFollowing ? 'following' : ''}" onclick="window.toggleFollowWriter(this, '${writer.uid}'); return false;">${isFollowing ? 'Following' : 'Follow'}</button>
-          `;
-          writersContainer.appendChild(item);
+        const writersMap = {};
+        blogsCache.forEach(blog => {
+          const uid = blog.authorUid;
+          if (!uid) return;
+          if (!writersMap[uid]) {
+            writersMap[uid] = {
+              uid: uid,
+              name: blog.authorName || "Creator",
+              photo: blog.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
+              likes: 0,
+              posts: 0
+            };
+          }
+          writersMap[uid].likes += blog.likes || 0;
+          writersMap[uid].posts += 1;
         });
+
+        const topWriters = Object.values(writersMap).sort((a,b) => (b.likes + b.posts) - (a.likes + a.posts)).slice(0, 3);
+        let followedWriters = [];
+        try {
+          followedWriters = JSON.parse(localStorage.getItem("jabzen_followed_writers") || "[]");
+        } catch(e){}
+
+        if (topWriters.length === 0) {
+          writersContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon (Count: 0)</p>";
+        } else {
+          topWriters.forEach(writer => {
+            const isFollowing = followedWriters.includes(writer.uid);
+            let baseFollowers = 150;
+            if (writer.uid === "uid-auden-rivers") baseFollowers = 12400;
+            else if (writer.uid === "uid-mira-kapoor") baseFollowers = 8700;
+            else if (writer.uid === "uid-james-carter") baseFollowers = 6300;
+            
+            const totalFollowers = baseFollowers + (isFollowing ? 1 : 0);
+            const followersText = totalFollowers >= 1000 ? (totalFollowers / 1000).toFixed(1) + "k" : totalFollowers;
+
+            const item = document.createElement("div");
+            item.className = "writer-item";
+            item.innerHTML = `
+              <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
+              <div class="writer-details">
+                <span class="writer-name" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer; font-weight:700;">${writer.name}</span>
+                <span class="writer-followers">${followersText} followers</span>
+              </div>
+              <button class="btn btn-outline btn-follow ${isFollowing ? 'following' : ''}" onclick="window.toggleFollowWriter(this, '${writer.uid}'); return false;">${isFollowing ? 'Following' : 'Follow'}</button>
+            `;
+            writersContainer.appendChild(item);
+          });
+        }
       }
     }
 
     const popularContainer = document.querySelector(".popular-posts-list");
     if (popularContainer) {
       popularContainer.innerHTML = "";
-      const popularBlogs = [...blogsCache].sort((a,b) => {
-        const scoreA = (a.likes || 0) + (a.commentsCount || 0);
-        const scoreB = (b.likes || 0) + (b.commentsCount || 0);
-        return scoreB - scoreA;
-      }).slice(0, 3);
-
-      if (popularBlogs.length === 0) {
-        popularContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>No popular posts yet.</p>";
+      if (blogsCache.length === 0) {
+        popularContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Available Soon (Count: 0)</p>";
       } else {
-        popularBlogs.forEach(blog => {
+        const popularBlogs = [...blogsCache].sort((a,b) => {
+          const scoreA = (a.likes || 0) + (a.commentsCount || 0);
+          const scoreB = (b.likes || 0) + (b.commentsCount || 0);
+          return scoreB - scoreA;
+        }).slice(0, 3);
+
+        popularBlogs.forEach((blog, index) => {
           const item = document.createElement("div");
           item.className = "popular-post-item";
           item.onclick = () => { window.toggleCommentsInline(blog.id); return false; };
           item.innerHTML = `
-            <span class="popular-post-category">${blog.category || 'Story'}</span>
-            <h4 class="popular-post-title">${blog.title}</h4>
-            <div class="popular-post-meta">
-              <span>By ${blog.authorName}</span>
-              <span>&bull;</span>
-              <span>${blog.likes || 0} Likes</span>
+            <span class="post-rank">${index + 1}</span>
+            <div class="popular-post-details">
+              <span class="popular-post-title">${blog.title}</span>
+              <span class="popular-post-views">${blog.category || 'Story'} &bull; By ${blog.authorName} &bull; ${blog.likes || 0} Likes</span>
             </div>
           `;
           popularContainer.appendChild(item);
@@ -3749,6 +3836,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   };
   window.bindBlogPageEvents();
+  setupActiveCommunitySync();
   
   // Close the block
   
