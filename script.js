@@ -582,6 +582,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Run navbar customization initially
   window.customizeNavbarForCurrentPage();
 
+  // Global declarations for notifications and follows state
+  let allNotifications = [];
+  let notificationsUnsubscribe = null;
+  let allFollowsCache = [];
+  let followsUnsubscribe = null;
+
+
+  // Placeholders for page-specific UI update functions defined inside bindBlogPageEvents
+  let renderRightSidebarWidgets = null;
+  let updateFollowButtonsUI = null;
+
   let setAuthMode;
   let setDashboardTab;
 
@@ -668,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const updateAuthUI = (user) => {
+  function updateAuthUI(user) {
     currentUser = user;
     
     if (user) {
@@ -830,12 +841,372 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   window.updateAuthUI = updateAuthUI;
 
-  // Register state changed listener for all pages
-  if (auth) {
-    auth.onAuthStateChanged(updateAuthUI);
-  } else {
-    updateAuthUI(null);
-  }
+
+
+  function setupNotificationsSync() {
+    if (!currentUser) {
+      updateNotificationsBadge(0);
+      return;
+    }
+
+    if (isMockFirebase) {
+      const loadMockNotifs = () => {
+        let notifs = [];
+        try {
+          notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        } catch(e){}
+        if (notifs.length === 0) {
+          notifs = [
+            {
+              id: "notif-init-1",
+              receiverUid: currentUser.uid,
+              senderUid: "uid-auden-rivers",
+              senderName: "Auden Rivers",
+              senderPhoto: "assets/avatar-auden.jpg",
+              text: "liked your draft 'Creative Storytelling in 2026'",
+              type: "like",
+              read: false,
+              createdAt: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+              id: "notif-init-2",
+              receiverUid: currentUser.uid,
+              senderUid: "uid-james-carter",
+              senderName: "James Carter",
+              senderPhoto: "assets/avatar-james.jpg",
+              text: "accepted your connection request",
+              type: "connection_accepted",
+              read: false,
+              createdAt: new Date(Date.now() - 7200000).toISOString()
+            }
+          ];
+          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+        }
+        allNotifications = notifs.filter(n => n.receiverUid === currentUser.uid);
+        const unreadCount = allNotifications.filter(n => !n.read).length;
+        updateNotificationsBadge(unreadCount);
+      };
+
+      loadMockNotifs();
+      window.addEventListener("mock_notif_update", loadMockNotifs);
+    } else if (db) {
+      if (notificationsUnsubscribe) notificationsUnsubscribe();
+      notificationsUnsubscribe = db.collection("notifications")
+        .where("receiverUid", "==", currentUser.uid)
+        .orderBy("createdAt", "desc")
+        .onSnapshot((snapshot) => {
+          allNotifications = [];
+          snapshot.forEach(doc => {
+            allNotifications.push({ id: doc.id, ...doc.data() });
+          });
+          const unreadCount = allNotifications.filter(n => !n.read).length;
+          updateNotificationsBadge(unreadCount);
+        }, (err) => {
+          console.error("Notifications sync error:", err);
+        });
+    }
+  };
+
+  function updateNotificationsBadge(count) {
+    const badge = document.querySelector("#menu-notifications .badge");
+    if (badge) {
+      if (count > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = count;
+      } else {
+        badge.style.display = "none";
+      }
+    }
+  };
+
+  window.addMockNotification = (receiverUid, senderName, senderPhoto, text, type, connectionId = null) => {
+    if (!receiverUid) return;
+    const newNotif = {
+      id: Math.random().toString(36).substring(2, 11),
+      receiverUid: receiverUid,
+      senderUid: currentUser ? currentUser.uid : "guest",
+      senderName: senderName || "Guest",
+      senderPhoto: senderPhoto || "https://www.gravatar.com/avatar/?d=mp",
+      text: text || "",
+      type: type || "info",
+      read: false,
+      connectionId: connectionId || null,
+      createdAt: new Date().toISOString()
+    };
+    try {
+      const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+      notifs.unshift(newNotif);
+      localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+      window.dispatchEvent(new Event("mock_notif_update"));
+    } catch(e){}
+  };
+
+  window.createNotification = async (receiverUid, text, type, connectionId = null) => {
+    if (!receiverUid || (currentUser && receiverUid === currentUser.uid)) return;
+    const profile = currentUser ? parseUserProfile(currentUser) : { name: "Guest" };
+    const senderPhoto = currentUser ? (currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`) : "https://www.gravatar.com/avatar/?d=mp";
+    if (isMockFirebase) {
+      window.addMockNotification(receiverUid, profile.name, senderPhoto, text, type, connectionId);
+    } else if (db) {
+      try {
+        await db.collection("notifications").add({
+          receiverUid: receiverUid,
+          senderUid: currentUser ? currentUser.uid : "guest",
+          senderName: profile.name,
+          senderPhoto: senderPhoto,
+          text: text,
+          type: type,
+          read: false,
+          connectionId: connectionId || null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) {}
+    }
+  };
+
+  window.showNotifications = () => {
+    if (!currentUser) {
+      alert("Please sign in to view notifications.");
+      window.toggleDrawer(true);
+      return;
+    }
+    let backdrop = document.getElementById("notifications-modal-backdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.id = "notifications-modal-backdrop";
+      backdrop.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; transition: opacity 0.2s ease;";
+      backdrop.onclick = window.closeNotificationsModal;
+      backdrop.innerHTML = `
+        <div class="notifications-modal-card" onclick="event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); width: 460px; max-width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; position: relative;">
+          <button class="profile-modal-close" onclick="window.closeNotificationsModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-bell" style="color: var(--brand-primary);"></i> Notifications
+            </h3>
+          </div>
+          <div id="notifications-modal-list" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; background: var(--bg);">
+            <!-- Dynamic notifications list -->
+          </div>
+          <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary);">
+            <button class="btn btn-outline" onclick="window.markAllNotificationsRead()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 600; min-height: unset;">Mark all as read</button>
+            <button class="btn btn-primary" onclick="window.closeNotificationsModal()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 700; min-height: unset;">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(backdrop);
+    }
+    renderNotificationsList();
+    backdrop.style.display = "flex";
+    setTimeout(() => backdrop.style.opacity = "1", 10);
+  };
+
+  window.closeNotificationsModal = () => {
+    const backdrop = document.getElementById("notifications-modal-backdrop");
+    if (backdrop) {
+      backdrop.style.opacity = "0";
+      setTimeout(() => backdrop.style.display = "none", 200);
+    }
+  };
+
+  function renderNotificationsList() {
+    const listContainer = document.getElementById("notifications-modal-list");
+    if (!listContainer) return;
+    listContainer.innerHTML = "";
+    if (allNotifications.length === 0) {
+      listContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary);">
+          <i class="fa-regular fa-bell-slash" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p style="margin: 0; font-size: 0.9rem;">You are completely caught up!</p>
+        </div>
+      `;
+      return;
+    }
+    allNotifications.forEach(notif => {
+      const item = document.createElement("div");
+      item.style.cssText = `display: flex; gap: 12px; align-items: flex-start; padding: 0.75rem 1rem; border-radius: 12px; background: ${notif.read ? 'var(--bg-secondary)' : 'rgba(214, 173, 45, 0.05)'}; border: 1px solid ${notif.read ? 'transparent' : 'rgba(214, 173, 45, 0.15)'}; transition: var(--transition-smooth);`;
+      const timeStr = notif.createdAt ? new Date(notif.createdAt.seconds ? notif.createdAt.seconds * 1000 : notif.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now";
+      
+      let icon = "";
+      if (notif.type === "like") icon = '<i class="fa-solid fa-heart" style="color: #ff4d4d; font-size: 0.8rem;"></i>';
+      else if (notif.type === "comment") icon = '<i class="fa-solid fa-comment" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      else if (notif.type === "connection_request") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-cta); font-size: 0.8rem;"></i>';
+      else if (notif.type === "connection_accepted") icon = '<i class="fa-solid fa-circle-check" style="color: #25D366; font-size: 0.8rem;"></i>';
+      else if (notif.type === "follow") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      else if (notif.type === "message") icon = '<i class="fa-solid fa-message" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      
+      let actionsHtml = "";
+      if (notif.type === "connection_request") {
+        actionsHtml = `<div class="notif-actions-wrap" id="notif-actions-${notif.id}" data-connection-id="${notif.connectionId || ''}" data-sender-uid="${notif.senderUid}"></div>`;
+      }
+      
+      item.innerHTML = `
+        <div style="position: relative;">
+          <img src="${notif.senderPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">
+          <div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+            ${icon}
+          </div>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <p style="margin: 0; font-size: 0.86rem; color: var(--text-primary); line-height: 1.4; word-break: break-word;">
+            <strong style="color: var(--text-primary); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">${notif.senderName}</strong> ${notif.text}
+          </p>
+          <span style="font-size: 0.72rem; color: var(--text-secondary); opacity: 0.8; display: block; margin-top: 4px;">${timeStr}</span>
+          ${actionsHtml}
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+
+    // Resolve placeholders for connection actions asynchronously
+    listContainer.querySelectorAll(".notif-actions-wrap").forEach(async (wrap) => {
+      const notifId = wrap.id.replace("notif-actions-", "");
+      const senderUid = wrap.dataset.senderUid;
+      
+      const conn = await window.getConnectionState(senderUid);
+      if (conn.status === "pending" && !conn.isSender) {
+        wrap.innerHTML = `
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button class="btn btn-primary" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border: 1px solid var(--brand-cta);" onclick="window.handleNotificationConnectionAccept('${notifId}', '${conn.docId}')">Accept</button>
+            <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border-color: #ff4d4d; color: #ff4d4d;" onclick="window.handleNotificationConnectionIgnore('${notifId}', '${conn.docId}')">Ignore</button>
+          </div>
+        `;
+      } else if (conn.status === "accepted") {
+        wrap.innerHTML = `
+          <span style="font-size: 0.75rem; color: #25D366; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;">
+            <i class="fa-solid fa-circle-check"></i> Connected
+          </span>
+        `;
+      } else {
+        wrap.innerHTML = "";
+      }
+    });
+  };
+
+  window.markAllNotificationsRead = async () => {
+    if (!currentUser) return;
+    if (isMockFirebase) {
+      try {
+        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        notifs.forEach(n => {
+          if (n.receiverUid === currentUser.uid) n.read = true;
+        });
+        localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+        window.dispatchEvent(new Event("mock_notif_update"));
+      } catch(e){}
+    } else if (db) {
+      const batch = db.batch();
+      allNotifications.forEach(n => {
+        if (!n.read) {
+          const ref = db.collection("notifications").doc(n.id);
+          batch.update(ref, { read: true });
+        }
+      });
+      try {
+        await batch.commit();
+      } catch(e) {}
+    }
+    renderNotificationsList();
+  };
+
+  window.markSingleNotificationRead = async (notifId) => {
+    if (!currentUser) return;
+    if (isMockFirebase) {
+      try {
+        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        const idx = notifs.findIndex(n => n.id === notifId);
+        if (idx !== -1) {
+          notifs[idx].read = true;
+          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+          window.dispatchEvent(new Event("mock_notif_update"));
+        }
+      } catch(e){}
+    } else if (db) {
+      try {
+        await db.collection("notifications").doc(notifId).update({ read: true });
+      } catch(e) {}
+    }
+  };
+
+  window.handleNotificationConnectionAccept = async (notifId, docId) => {
+    await window.markSingleNotificationRead(notifId);
+    await window.handleAcceptConnection(docId);
+    renderNotificationsList();
+  };
+
+  window.handleNotificationConnectionIgnore = async (notifId, docId) => {
+    await window.markSingleNotificationRead(notifId);
+    await window.handleRejectConnection(docId);
+    renderNotificationsList();
+  };
+
+
+
+  function mergeLocalFollows() {
+    let localFollows = [];
+    try {
+      localFollows = JSON.parse(localStorage.getItem("jabzen_local_follows") || "[]");
+    } catch(e){}
+    localFollows.forEach(lf => {
+      const exists = allFollowsCache.some(f => f.followerUid === lf.followerUid && f.followingUid === lf.followingUid);
+      if (!exists) {
+        allFollowsCache.push(lf);
+      }
+    });
+  };
+
+  let followsSyncInitialized = false;
+
+  function updateUserProfileModalFollowers() {
+    const modal = document.getElementById("profile-modal-backdrop");
+    if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
+      const uid = modal.dataset.activeUid;
+      const followersEl = document.getElementById("profile-modal-followers-wrap");
+      if (followersEl) {
+        const followersCount = allFollowsCache.filter(f => f.followingUid === uid).length;
+        followersEl.innerHTML = `<i class="fa-solid fa-users"></i> <span>${followersCount} ${followersCount === 1 ? 'follower' : 'followers'}</span>`;
+      }
+    }
+  };
+
+  function setupFollowsSync() {
+    if (db) {
+      if (!followsSyncInitialized) {
+        if (followsUnsubscribe) followsUnsubscribe();
+        followsUnsubscribe = db.collection("follows")
+          .onSnapshot((snapshot) => {
+            allFollowsCache = [];
+            snapshot.forEach(doc => {
+              allFollowsCache.push(doc.data());
+            });
+            mergeLocalFollows();
+            if (typeof renderRightSidebarWidgets === 'function') { renderRightSidebarWidgets(); }
+            updateUserProfileModalFollowers();
+            if (typeof updateFollowButtonsUI === 'function') { updateFollowButtonsUI(); }
+          }, (err) => {
+            console.error("Follows sync error:", err);
+            allFollowsCache = [];
+            mergeLocalFollows();
+            if (typeof renderRightSidebarWidgets === 'function') { renderRightSidebarWidgets(); }
+            updateUserProfileModalFollowers();
+            if (typeof updateFollowButtonsUI === 'function') { updateFollowButtonsUI(); }
+          });
+        followsSyncInitialized = true;
+      } else {
+        mergeLocalFollows();
+        if (typeof renderRightSidebarWidgets === 'function') { renderRightSidebarWidgets(); }
+        updateUserProfileModalFollowers();
+            if (typeof updateFollowButtonsUI === 'function') { updateFollowButtonsUI(); }
+      }
+    } else {
+      allFollowsCache = [];
+      mergeLocalFollows();
+      if (typeof renderRightSidebarWidgets === 'function') { renderRightSidebarWidgets(); }
+      updateUserProfileModalFollowers();
+            if (typeof updateFollowButtonsUI === 'function') { updateFollowButtonsUI(); }
+    }
+  };
+
+
 
   // --- EDITOR DRAWER CONTROLS ---
   window.toggleDrawer = (show, defaultTab = null) => {
@@ -1977,7 +2348,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const updateFollowButtonsUI = () => {
+  updateFollowButtonsUI = () => {
     const myUid = currentUser ? currentUser.uid : guestUid;
     document.querySelectorAll(".writer-item").forEach((item) => {
       const nameEl = item.querySelector(".writer-name");
@@ -2007,368 +2378,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  let notificationsUnsubscribe = null;
-  let allNotifications = [];
+  // (Moved notifications & follows sync systems to global DOMContentLoaded scope)
 
-  const setupNotificationsSync = () => {
-    if (!currentUser) {
-      updateNotificationsBadge(0);
-      return;
-    }
-
-    if (isMockFirebase) {
-      const loadMockNotifs = () => {
-        let notifs = [];
-        try {
-          notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
-        } catch(e){}
-        if (notifs.length === 0) {
-          notifs = [
-            {
-              id: "notif-init-1",
-              receiverUid: currentUser.uid,
-              senderUid: "uid-auden-rivers",
-              senderName: "Auden Rivers",
-              senderPhoto: "assets/avatar-auden.jpg",
-              text: "liked your draft 'Creative Storytelling in 2026'",
-              type: "like",
-              read: false,
-              createdAt: new Date(Date.now() - 3600000).toISOString()
-            },
-            {
-              id: "notif-init-2",
-              receiverUid: currentUser.uid,
-              senderUid: "uid-james-carter",
-              senderName: "James Carter",
-              senderPhoto: "assets/avatar-james.jpg",
-              text: "accepted your connection request",
-              type: "connection_accepted",
-              read: false,
-              createdAt: new Date(Date.now() - 7200000).toISOString()
-            }
-          ];
-          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
-        }
-        allNotifications = notifs.filter(n => n.receiverUid === currentUser.uid);
-        const unreadCount = allNotifications.filter(n => !n.read).length;
-        updateNotificationsBadge(unreadCount);
-      };
-
-      loadMockNotifs();
-      window.addEventListener("mock_notif_update", loadMockNotifs);
-    } else if (db) {
-      if (notificationsUnsubscribe) notificationsUnsubscribe();
-      notificationsUnsubscribe = db.collection("notifications")
-        .where("receiverUid", "==", currentUser.uid)
-        .orderBy("createdAt", "desc")
-        .onSnapshot((snapshot) => {
-          allNotifications = [];
-          snapshot.forEach(doc => {
-            allNotifications.push({ id: doc.id, ...doc.data() });
-          });
-          const unreadCount = allNotifications.filter(n => !n.read).length;
-          updateNotificationsBadge(unreadCount);
-        }, (err) => {
-          console.error("Notifications sync error:", err);
-        });
-    }
-  };
-
-  const updateNotificationsBadge = (count) => {
-    const badge = document.querySelector("#menu-notifications .badge");
-    if (badge) {
-      if (count > 0) {
-        badge.style.display = "inline-block";
-        badge.textContent = count;
-      } else {
-        badge.style.display = "none";
-      }
-    }
-  };
-
-  window.addMockNotification = (receiverUid, senderName, senderPhoto, text, type, connectionId = null) => {
-    if (!receiverUid) return;
-    const newNotif = {
-      id: Math.random().toString(36).substring(2, 11),
-      receiverUid: receiverUid,
-      senderUid: currentUser ? currentUser.uid : "guest",
-      senderName: senderName || "Guest",
-      senderPhoto: senderPhoto || "https://www.gravatar.com/avatar/?d=mp",
-      text: text || "",
-      type: type || "info",
-      read: false,
-      connectionId: connectionId || null,
-      createdAt: new Date().toISOString()
-    };
-    try {
-      const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
-      notifs.unshift(newNotif);
-      localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
-      window.dispatchEvent(new Event("mock_notif_update"));
-    } catch(e){}
-  };
-
-  window.createNotification = async (receiverUid, text, type, connectionId = null) => {
-    if (!receiverUid || (currentUser && receiverUid === currentUser.uid)) return;
-    const profile = currentUser ? parseUserProfile(currentUser) : { name: "Guest" };
-    const senderPhoto = currentUser ? (currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`) : "https://www.gravatar.com/avatar/?d=mp";
-    if (isMockFirebase) {
-      window.addMockNotification(receiverUid, profile.name, senderPhoto, text, type, connectionId);
-    } else if (db) {
-      try {
-        await db.collection("notifications").add({
-          receiverUid: receiverUid,
-          senderUid: currentUser ? currentUser.uid : "guest",
-          senderName: profile.name,
-          senderPhoto: senderPhoto,
-          text: text,
-          type: type,
-          read: false,
-          connectionId: connectionId || null,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      } catch(e) {}
-    }
-  };
-
-  window.showNotifications = () => {
-    if (!currentUser) {
-      alert("Please sign in to view notifications.");
-      window.toggleDrawer(true);
-      return;
-    }
-    let backdrop = document.getElementById("notifications-modal-backdrop");
-    if (!backdrop) {
-      backdrop = document.createElement("div");
-      backdrop.id = "notifications-modal-backdrop";
-      backdrop.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box; transition: opacity 0.2s ease;";
-      backdrop.onclick = window.closeNotificationsModal;
-      backdrop.innerHTML = `
-        <div class="notifications-modal-card" onclick="event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); width: 460px; max-width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; max-height: 80vh; position: relative;">
-          <button class="profile-modal-close" onclick="window.closeNotificationsModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
-          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
-            <h3 style="margin: 0; font-family: var(--font-heading); font-size: 1.3rem; color: var(--text-primary); font-weight: 700; display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-bell" style="color: var(--brand-primary);"></i> Notifications
-            </h3>
-          </div>
-          <div id="notifications-modal-list" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; background: var(--bg);">
-            <!-- Dynamic notifications list -->
-          </div>
-          <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary);">
-            <button class="btn btn-outline" onclick="window.markAllNotificationsRead()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 600; min-height: unset;">Mark all as read</button>
-            <button class="btn btn-primary" onclick="window.closeNotificationsModal()" style="font-size: 0.78rem; padding: 0.5rem 1.25rem; border-radius: 30px; font-weight: 700; min-height: unset;">Close</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(backdrop);
-    }
-    renderNotificationsList();
-    backdrop.style.display = "flex";
-    setTimeout(() => backdrop.style.opacity = "1", 10);
-  };
-
-  window.closeNotificationsModal = () => {
-    const backdrop = document.getElementById("notifications-modal-backdrop");
-    if (backdrop) {
-      backdrop.style.opacity = "0";
-      setTimeout(() => backdrop.style.display = "none", 200);
-    }
-  };
-
-  const renderNotificationsList = () => {
-    const listContainer = document.getElementById("notifications-modal-list");
-    if (!listContainer) return;
-    listContainer.innerHTML = "";
-    if (allNotifications.length === 0) {
-      listContainer.innerHTML = `
-        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary);">
-          <i class="fa-regular fa-bell-slash" style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-          <p style="margin: 0; font-size: 0.9rem;">You are completely caught up!</p>
-        </div>
-      `;
-      return;
-    }
-    allNotifications.forEach(notif => {
-      const item = document.createElement("div");
-      item.style.cssText = `display: flex; gap: 12px; align-items: flex-start; padding: 0.75rem 1rem; border-radius: 12px; background: ${notif.read ? 'var(--bg-secondary)' : 'rgba(214, 173, 45, 0.05)'}; border: 1px solid ${notif.read ? 'transparent' : 'rgba(214, 173, 45, 0.15)'}; transition: var(--transition-smooth);`;
-      const timeStr = notif.createdAt ? new Date(notif.createdAt.seconds ? notif.createdAt.seconds * 1000 : notif.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now";
-      
-      let icon = "";
-      if (notif.type === "like") icon = '<i class="fa-solid fa-heart" style="color: #ff4d4d; font-size: 0.8rem;"></i>';
-      else if (notif.type === "comment") icon = '<i class="fa-solid fa-comment" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
-      else if (notif.type === "connection_request") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-cta); font-size: 0.8rem;"></i>';
-      else if (notif.type === "connection_accepted") icon = '<i class="fa-solid fa-circle-check" style="color: #25D366; font-size: 0.8rem;"></i>';
-      else if (notif.type === "follow") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
-      else if (notif.type === "message") icon = '<i class="fa-solid fa-message" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
-      
-      let actionsHtml = "";
-      if (notif.type === "connection_request") {
-        actionsHtml = `<div class="notif-actions-wrap" id="notif-actions-${notif.id}" data-connection-id="${notif.connectionId || ''}" data-sender-uid="${notif.senderUid}"></div>`;
-      }
-      
-      item.innerHTML = `
-        <div style="position: relative;">
-          <img src="${notif.senderPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">
-          <div style="position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
-            ${icon}
-          </div>
-        </div>
-        <div style="flex: 1; min-width: 0;">
-          <p style="margin: 0; font-size: 0.86rem; color: var(--text-primary); line-height: 1.4; word-break: break-word;">
-            <strong style="color: var(--text-primary); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">${notif.senderName}</strong> ${notif.text}
-          </p>
-          <span style="font-size: 0.72rem; color: var(--text-secondary); opacity: 0.8; display: block; margin-top: 4px;">${timeStr}</span>
-          ${actionsHtml}
-        </div>
-      `;
-      listContainer.appendChild(item);
-    });
-
-    // Resolve placeholders for connection actions asynchronously
-    listContainer.querySelectorAll(".notif-actions-wrap").forEach(async (wrap) => {
-      const notifId = wrap.id.replace("notif-actions-", "");
-      const senderUid = wrap.dataset.senderUid;
-      
-      const conn = await window.getConnectionState(senderUid);
-      if (conn.status === "pending" && !conn.isSender) {
-        wrap.innerHTML = `
-          <div style="display: flex; gap: 8px; margin-top: 8px;">
-            <button class="btn btn-primary" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border: 1px solid var(--brand-cta);" onclick="window.handleNotificationConnectionAccept('${notifId}', '${conn.docId}')">Accept</button>
-            <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border-color: #ff4d4d; color: #ff4d4d;" onclick="window.handleNotificationConnectionIgnore('${notifId}', '${conn.docId}')">Ignore</button>
-          </div>
-        `;
-      } else if (conn.status === "accepted") {
-        wrap.innerHTML = `
-          <span style="font-size: 0.75rem; color: #25D366; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;">
-            <i class="fa-solid fa-circle-check"></i> Connected
-          </span>
-        `;
-      } else {
-        wrap.innerHTML = "";
-      }
-    });
-  };
-
-  window.markAllNotificationsRead = async () => {
-    if (!currentUser) return;
-    if (isMockFirebase) {
-      try {
-        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
-        notifs.forEach(n => {
-          if (n.receiverUid === currentUser.uid) n.read = true;
-        });
-        localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
-        window.dispatchEvent(new Event("mock_notif_update"));
-      } catch(e){}
-    } else if (db) {
-      const batch = db.batch();
-      allNotifications.forEach(n => {
-        if (!n.read) {
-          const ref = db.collection("notifications").doc(n.id);
-          batch.update(ref, { read: true });
-        }
-      });
-      try {
-        await batch.commit();
-      } catch(e) {}
-    }
-    renderNotificationsList();
-  };
-
-  window.markSingleNotificationRead = async (notifId) => {
-    if (!currentUser) return;
-    if (isMockFirebase) {
-      try {
-        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
-        const idx = notifs.findIndex(n => n.id === notifId);
-        if (idx !== -1) {
-          notifs[idx].read = true;
-          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
-          window.dispatchEvent(new Event("mock_notif_update"));
-        }
-      } catch(e){}
-    } else if (db) {
-      try {
-        await db.collection("notifications").doc(notifId).update({ read: true });
-      } catch(e) {}
-    }
-  };
-
-  window.handleNotificationConnectionAccept = async (notifId, docId) => {
-    await window.markSingleNotificationRead(notifId);
-    await window.handleAcceptConnection(docId);
-    renderNotificationsList();
-  };
-
-  window.handleNotificationConnectionIgnore = async (notifId, docId) => {
-    await window.markSingleNotificationRead(notifId);
-    await window.handleRejectConnection(docId);
-    renderNotificationsList();
-  };
-
-  let followsUnsubscribe = null;
-  let allFollowsCache = [];
-
-  const mergeLocalFollows = () => {
-    let localFollows = [];
-    try {
-      localFollows = JSON.parse(localStorage.getItem("jabzen_local_follows") || "[]");
-    } catch(e){}
-    localFollows.forEach(lf => {
-      const exists = allFollowsCache.some(f => f.followerUid === lf.followerUid && f.followingUid === lf.followingUid);
-      if (!exists) {
-        allFollowsCache.push(lf);
-      }
-    });
-  };
-
-  let followsSyncInitialized = false;
-
-  const updateUserProfileModalFollowers = () => {
-    const modal = document.getElementById("profile-modal-backdrop");
-    if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
-      const uid = modal.dataset.activeUid;
-      const followersEl = document.getElementById("profile-modal-followers-wrap");
-      if (followersEl) {
-        const followersCount = allFollowsCache.filter(f => f.followingUid === uid).length;
-        followersEl.innerHTML = `<i class="fa-solid fa-users"></i> <span>${followersCount} ${followersCount === 1 ? 'follower' : 'followers'}</span>`;
-      }
-    }
-  };
-
-  const setupFollowsSync = () => {
-    if (db) {
-      if (!followsSyncInitialized) {
-        if (followsUnsubscribe) followsUnsubscribe();
-        followsUnsubscribe = db.collection("follows")
-          .onSnapshot((snapshot) => {
-            allFollowsCache = [];
-            snapshot.forEach(doc => {
-              allFollowsCache.push(doc.data());
-            });
-            mergeLocalFollows();
-            renderRightSidebarWidgets();
-            updateUserProfileModalFollowers();
-          }, (err) => {
-            console.error("Follows sync error:", err);
-            allFollowsCache = [];
-            mergeLocalFollows();
-            renderRightSidebarWidgets();
-            updateUserProfileModalFollowers();
-          });
-        followsSyncInitialized = true;
-      } else {
-        mergeLocalFollows();
-        renderRightSidebarWidgets();
-        updateUserProfileModalFollowers();
-      }
-    } else {
-      allFollowsCache = [];
-      mergeLocalFollows();
-      renderRightSidebarWidgets();
-      updateUserProfileModalFollowers();
-    }
-  };
 
   let activeUsersList = [];
   let usersUnsubscribe = null;
@@ -2453,7 +2464,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const renderRightSidebarWidgets = () => {
+  renderRightSidebarWidgets = () => {
     const trendingContainer = document.querySelector(".trending-topics-list");
     if (trendingContainer) {
       trendingContainer.innerHTML = "";
@@ -4282,7 +4293,13 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   window.bindBlogPageEvents();
   setupActiveCommunitySync();
-  setupFollowsSync();
+
+  // Register state changed listener for all pages after everything is initialized
+  if (auth) {
+    auth.onAuthStateChanged(updateAuthUI);
+  } else {
+    updateAuthUI(null);
+  }
   
   // Close the block
   
