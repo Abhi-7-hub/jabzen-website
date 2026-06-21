@@ -847,11 +847,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     }
-    setupNotificationsSync();
+    if (typeof window.setupNotificationsSync === "function") {
+      window.setupNotificationsSync();
+    }
     followsSyncInitialized = false;
-    setupFollowsSync();
-    setupConnectionsSync();
-    updateChatBadge();
+    if (typeof window.setupFollowsSync === "function") {
+      window.setupFollowsSync();
+    }
+    if (typeof window.setupConnectionsSync === "function") {
+      window.setupConnectionsSync();
+    }
+    if (typeof window.updateChatBadge === "function") {
+      window.updateChatBadge();
+    }
     if (typeof window.customizeNavbarForCurrentPage === "function") {
       window.customizeNavbarForCurrentPage();
     }
@@ -860,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  function setupNotificationsSync() {
+  window.setupNotificationsSync = function() {
     if (!currentUser) {
       updateNotificationsBadge(0);
       return;
@@ -910,11 +918,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (notificationsUnsubscribe) notificationsUnsubscribe();
       notificationsUnsubscribe = db.collection("notifications")
         .where("receiverUid", "==", currentUser.uid)
-        .orderBy("createdAt", "desc")
         .onSnapshot((snapshot) => {
           allNotifications = [];
           snapshot.forEach(doc => {
             allNotifications.push({ id: doc.id, ...doc.data() });
+          });
+          // Sort client-side by createdAt desc to avoid composite index error
+          allNotifications.sort((a, b) => {
+            const timeA = a.createdAt ? (a.createdAt.seconds || new Date(a.createdAt).getTime() / 1000) : 0;
+            const timeB = b.createdAt ? (b.createdAt.seconds || new Date(b.createdAt).getTime() / 1000) : 0;
+            return timeB - timeA;
           });
           const unreadCount = allNotifications.filter(n => !n.read).length;
           updateNotificationsBadge(unreadCount);
@@ -1195,7 +1208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function setupConnectionsSync() {
+  window.setupConnectionsSync = function() {
     if (!currentUser) {
       allConnectionsCache = [];
       return;
@@ -1250,7 +1263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function updateChatBadge() {
+  window.updateChatBadge = function() {
     const badge = document.getElementById("chat-badge-count");
     if (!badge) return;
     if (!currentUser) {
@@ -1283,7 +1296,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     if (updatedLocal) {
-      updateChatBadge();
+      if (typeof window.updateChatBadge === "function") window.updateChatBadge();
       if (typeof renderChatRooms === "function") {
         renderChatRooms(msgs);
       }
@@ -1460,7 +1473,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
 
-      function setupFollowsSync() {
+      window.setupFollowsSync = function() {
     if (db) {
       if (!followsSyncInitialized) {
         if (followsUnsubscribe) followsUnsubscribe();
@@ -2231,7 +2244,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     db.collection("blogs")
       .where("authorUid", "==", currentUser.uid)
-      .orderBy("createdAt", "desc")
       .get()
       .then((snapshot) => {
         myBlogsTableBody.innerHTML = "";
@@ -2240,9 +2252,17 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : new Date().toLocaleDateString();
+        // Sort client-side to avoid needing a Firestore composite index
+        const docs = [];
+        snapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
+        docs.sort((a, b) => {
+          const timeA = a.data.createdAt ? (a.data.createdAt.seconds || new Date(a.data.createdAt).getTime() / 1000) : 0;
+          const timeB = b.data.createdAt ? (b.data.createdAt.seconds || new Date(b.data.createdAt).getTime() / 1000) : 0;
+          return timeB - timeA;
+        });
+
+        docs.forEach(({ id, data }) => {
+          const date = data.createdAt ? new Date((data.createdAt.seconds || new Date(data.createdAt).getTime() / 1000) * 1000).toLocaleDateString() : new Date().toLocaleDateString();
           const tr = document.createElement("tr");
           tr.style.borderBottom = "1px solid var(--line)";
           
@@ -2251,8 +2271,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <td style="padding: 1rem;">${data.category}</td>
             <td style="padding: 1rem;">${date}</td>
             <td style="padding: 1rem; text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
-              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" onclick="window.editBlog('${doc.id}')"><i class="fa-solid fa-pencil"></i> Edit</button>
-              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);" onclick="window.deleteBlog('${doc.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" onclick="window.editBlog('${id}')"><i class="fa-solid fa-pencil"></i> Edit</button>
+              <button class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);" onclick="window.deleteBlog('${id}')"><i class="fa-solid fa-trash"></i> Delete</button>
             </td>
           `;
           myBlogsTableBody.appendChild(tr);
@@ -4511,7 +4531,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         window.allUserMessages = msgs;
         renderChatRooms(msgs);
-        updateChatBadge();
+        if (typeof window.updateChatBadge === "function") window.updateChatBadge();
         if (activeRecipientUid) {
           const hasUnreadFromActive = msgs.some(m => m.senderUid === activeRecipientUid && m.receiverUid === currentUser.uid && !m.read);
           if (hasUnreadFromActive) {
@@ -4529,7 +4549,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgs = getMockMessages();
     window.allUserMessages = msgs;
     renderChatRooms(msgs);
-    updateChatBadge();
+    if (typeof window.updateChatBadge === "function") window.updateChatBadge();
     if (activeRecipientUid) {
       const hasUnreadFromActive = msgs.some(m => m.senderUid === activeRecipientUid && m.receiverUid === currentUser.uid && !m.read);
       if (hasUnreadFromActive) {

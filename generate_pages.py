@@ -58,7 +58,7 @@ HTML_HEADER = """<!doctype html>
   <link rel="canonical" href="https://jabzen.com/{canonical_slug}">
   <link rel="icon" href="assets/favicon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.min.css?v=16">
+  <link rel="stylesheet" href="styles.min.css?v=17">
 </head>
 <body class="page-{canonical_slug}">
   <a class="skip-link" href="#main">Skip to content</a>
@@ -221,7 +221,7 @@ HTML_FOOTER = """
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
-  <script src="script.min.js?v=16" defer></script>
+  <script src="script.min.js?v=17" defer></script>
 </body>
 </html>
 """
