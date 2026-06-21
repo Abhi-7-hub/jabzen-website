@@ -3189,6 +3189,11 @@ body.page-read-blog .nav-actions .btn-primary {
 body.page-blog .header-search-bar,
 body.page-read-blog .header-search-bar {
   display: flex !important; /* Show only on blog pages */
+  margin-left: 0.75rem !important; /* Position it right next to the logo monogram */
+}
+body.page-blog .brand-text,
+body.page-read-blog .brand-text {
+  display: none !important;
 }
 .header-search-bar:focus-within {
   background: #ffffff;

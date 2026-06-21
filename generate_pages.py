@@ -71,7 +71,7 @@ HTML_HEADER = """<!doctype html>
       </a>
       <div class="header-search-bar">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="global-search-input" placeholder="Search articles, topics, authors...">
+        <input type="text" id="global-search-input" placeholder="Search JABZEN...">
       </div>
       <div class="nav-links" data-nav-links>
         <a href="./" class="nav-marketing-link">Marketing</a>
