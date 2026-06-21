@@ -822,6 +822,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     setupNotificationsSync();
+    followsSyncInitialized = false;
+    setupFollowsSync();
     if (typeof window.customizeNavbarForCurrentPage === "function") {
       window.customizeNavbarForCurrentPage();
     }
@@ -1851,8 +1853,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const isFollowing = allFollowsCache.some(f => f.followerUid === myUid && f.followingUid === authorUid);
     
+    // 1. OPTIMISTICALLY update the in-memory cache
+    if (isFollowing) {
+      allFollowsCache = allFollowsCache.filter(f => !(f.followerUid === myUid && f.followingUid === authorUid));
+    } else {
+      allFollowsCache.push({ followerUid: myUid, followingUid: authorUid });
+    }
+
+    // 2. IMMEDIATELY update UI for responsive feedback
+    renderRightSidebarWidgets();
+    updateUserProfileModalFollowers();
+    updateFollowButtonsUI();
+    if (currentMenuTab === "following") {
+      filterAndRenderBlogs();
+    }
+
     try {
-      // Always store locally first as a fallback / immediate sync
+      // 3. Always store locally first as a fallback / immediate sync
       let localFollows = [];
       try {
         localFollows = JSON.parse(localStorage.getItem("jabzen_local_follows") || "[]");
@@ -1865,29 +1882,48 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       localStorage.setItem("jabzen_local_follows", JSON.stringify(localFollows));
 
-      // Try live Firebase write if logged in
+      // 4. Try live Firebase write if logged in
       if (currentUser && db) {
-        try {
-          const followDocId = `${currentUser.uid}_${authorUid}`;
-          if (isFollowing) {
-            await db.collection("follows").doc(followDocId).delete();
-          } else {
-            await db.collection("follows").doc(followDocId).set({
+        const followDocId = `${currentUser.uid}_${authorUid}`;
+        const writePromise = isFollowing 
+          ? db.collection("follows").doc(followDocId).delete()
+          : db.collection("follows").doc(followDocId).set({
               followerUid: currentUser.uid,
               followingUid: authorUid,
               createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+
+        // Run non-blocking background write with revert mechanism
+        writePromise.catch((dbErr) => {
+          console.warn("Firestore follow write failed (reverting optimistic change):", dbErr);
+          
+          // Revert memory cache
+          if (isFollowing) {
+            allFollowsCache.push({ followerUid: myUid, followingUid: authorUid });
+          } else {
+            allFollowsCache = allFollowsCache.filter(f => !(f.followerUid === myUid && f.followingUid === authorUid));
           }
-        } catch (dbErr) {
-          console.warn("Firestore follow write failed (falling back to local):", dbErr);
-        }
-      }
-      
-      // Update local cache and refresh widgets/UI
-      setupFollowsSync();
-      
-      if (currentMenuTab === "following") {
-        filterAndRenderBlogs();
+          
+          // Revert local storage
+          let localFollowsRevert = [];
+          try {
+            localFollowsRevert = JSON.parse(localStorage.getItem("jabzen_local_follows") || "[]");
+          } catch (e) {}
+          if (isFollowing) {
+            localFollowsRevert.push({ followerUid: myUid, followingUid: authorUid });
+          } else {
+            localFollowsRevert = localFollowsRevert.filter(f => !(f.followerUid === myUid && f.followingUid === authorUid));
+          }
+          localStorage.setItem("jabzen_local_follows", JSON.stringify(localFollowsRevert));
+
+          // Redraw reverted state
+          renderRightSidebarWidgets();
+          updateUserProfileModalFollowers();
+          updateFollowButtonsUI();
+          if (currentMenuTab === "following") {
+            filterAndRenderBlogs();
+          }
+        });
       }
     } catch (err) {
       console.error("Failed to toggle follow:", err);
@@ -1899,21 +1935,26 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".writer-item").forEach((item) => {
       const nameEl = item.querySelector(".writer-name");
       const btnEl = item.querySelector(".btn-follow");
-      if (nameEl && btnEl) {
-        const name = nameEl.textContent.trim();
-        let authorUid = "uid-" + name.toLowerCase().replace(/\s+/g, "-");
-        if (name === "Auden Rivers") authorUid = "uid-auden-rivers";
-        else if (name === "Mira Kapoor") authorUid = "uid-mira-kapoor";
-        else if (name === "James Carter") authorUid = "uid-james-carter";
+      if (btnEl) {
+        let authorUid = item.dataset.writerUid;
+        if (!authorUid && nameEl) {
+          const name = nameEl.textContent.trim();
+          authorUid = "uid-" + name.toLowerCase().replace(/\s+/g, "-");
+          if (name === "Auden Rivers") authorUid = "uid-auden-rivers";
+          else if (name === "Mira Kapoor") authorUid = "uid-mira-kapoor";
+          else if (name === "James Carter") authorUid = "uid-james-carter";
+        }
         
-        const isFollowing = allFollowsCache.some(f => f.followerUid === myUid && f.followingUid === authorUid);
-        
-        if (isFollowing) {
-          btnEl.textContent = "Following";
-          btnEl.classList.add("following");
-        } else {
-          btnEl.textContent = "Follow";
-          btnEl.classList.remove("following");
+        if (authorUid) {
+          const isFollowing = allFollowsCache.some(f => f.followerUid === myUid && f.followingUid === authorUid);
+          
+          if (isFollowing) {
+            btnEl.textContent = "Following";
+            btnEl.classList.add("following");
+          } else {
+            btnEl.textContent = "Follow";
+            btnEl.classList.remove("following");
+          }
         }
       }
     });
@@ -2167,27 +2208,51 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  let followsSyncInitialized = false;
+
+  const updateUserProfileModalFollowers = () => {
+    const modal = document.getElementById("profile-modal-backdrop");
+    if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
+      const uid = modal.dataset.activeUid;
+      const followersEl = document.getElementById("profile-modal-followers-wrap");
+      if (followersEl) {
+        const followersCount = allFollowsCache.filter(f => f.followingUid === uid).length;
+        followersEl.innerHTML = `<i class="fa-solid fa-users"></i> <span>${followersCount} ${followersCount === 1 ? 'follower' : 'followers'}</span>`;
+      }
+    }
+  };
+
   const setupFollowsSync = () => {
     if (db) {
-      if (followsUnsubscribe) followsUnsubscribe();
-      followsUnsubscribe = db.collection("follows")
-        .onSnapshot((snapshot) => {
-          allFollowsCache = [];
-          snapshot.forEach(doc => {
-            allFollowsCache.push(doc.data());
+      if (!followsSyncInitialized) {
+        if (followsUnsubscribe) followsUnsubscribe();
+        followsUnsubscribe = db.collection("follows")
+          .onSnapshot((snapshot) => {
+            allFollowsCache = [];
+            snapshot.forEach(doc => {
+              allFollowsCache.push(doc.data());
+            });
+            mergeLocalFollows();
+            renderRightSidebarWidgets();
+            updateUserProfileModalFollowers();
+          }, (err) => {
+            console.error("Follows sync error:", err);
+            allFollowsCache = [];
+            mergeLocalFollows();
+            renderRightSidebarWidgets();
+            updateUserProfileModalFollowers();
           });
-          mergeLocalFollows();
-          renderRightSidebarWidgets();
-        }, (err) => {
-          console.error("Follows sync error:", err);
-          allFollowsCache = [];
-          mergeLocalFollows();
-          renderRightSidebarWidgets();
-        });
+        followsSyncInitialized = true;
+      } else {
+        mergeLocalFollows();
+        renderRightSidebarWidgets();
+        updateUserProfileModalFollowers();
+      }
     } else {
       allFollowsCache = [];
       mergeLocalFollows();
       renderRightSidebarWidgets();
+      updateUserProfileModalFollowers();
     }
   };
 
@@ -2373,6 +2438,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const item = document.createElement("div");
         item.className = "writer-item";
+        item.dataset.writerUid = writer.uid;
         item.innerHTML = `
           <img class="writer-avatar" src="${writer.photo}" alt="" onclick="window.showUserProfileModal('${writer.uid}')" style="cursor:pointer;">
           <div class="writer-details">
@@ -3635,6 +3701,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const modal = document.getElementById("profile-modal-backdrop");
     if (modal) {
+      modal.dataset.activeUid = uid;
       modal.style.display = "flex";
       modal.classList.add("active");
     }
@@ -3692,6 +3759,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("profile-modal-backdrop");
     if (modal) {
       modal.classList.remove("active");
+      delete modal.dataset.activeUid;
       setTimeout(() => {
         modal.style.display = "none";
       }, 200);
