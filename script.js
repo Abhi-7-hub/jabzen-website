@@ -1834,6 +1834,50 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
+  window.sendFollowConnectionRequest = async (receiverUid) => {
+    if (!currentUser || receiverUid === currentUser.uid) return;
+    
+    // Check if there is already a connection or request
+    const conn = await window.getConnectionState(receiverUid);
+    if (conn.status !== "none") return;
+    
+    const receiverProfile = await window.getUserProfile(receiverUid);
+    const senderProfile = parseUserProfile(currentUser);
+    const connDoc = {
+      id: Math.random().toString(36).substring(2, 11),
+      participants: [currentUser.uid, receiverUid],
+      senderUid: currentUser.uid,
+      senderName: senderProfile.name,
+      senderPhoto: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(senderProfile.name)}&background=d6ad2d&color=121212`,
+      receiverUid: receiverUid,
+      receiverName: receiverProfile.displayName,
+      receiverPhoto: receiverProfile.photoURL || "https://www.gravatar.com/avatar/?d=mp",
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+    
+    try {
+      if (isMockFirebase) {
+        const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+        conns.push(connDoc);
+        localStorage.setItem("jabzen_mock_connections", JSON.stringify(conns));
+      } else if (db) {
+        connDoc.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection("connections").doc(connDoc.id).set(connDoc);
+      }
+      
+      // Create follow / connection request notification
+      window.createNotification(
+        receiverUid, 
+        "followed you and sent a connection request", 
+        "connection_request", 
+        connDoc.id
+      );
+    } catch (e) {
+      console.error("Error sending follow connection request:", e);
+    }
+  };
+
   window.toggleFollowWriter = async (btnEl, authorUid) => {
     const myUid = currentUser ? currentUser.uid : guestUid;
     
@@ -1858,6 +1902,9 @@ document.addEventListener("DOMContentLoaded", () => {
       allFollowsCache = allFollowsCache.filter(f => !(f.followerUid === myUid && f.followingUid === authorUid));
     } else {
       allFollowsCache.push({ followerUid: myUid, followingUid: authorUid });
+      
+      // Automatically send a connection request in the background
+      window.sendFollowConnectionRequest(authorUid);
     }
 
     // 2. IMMEDIATELY update UI for responsive feedback
@@ -2039,7 +2086,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.addMockNotification = (receiverUid, senderName, senderPhoto, text, type) => {
+  window.addMockNotification = (receiverUid, senderName, senderPhoto, text, type, connectionId = null) => {
     if (!receiverUid) return;
     const newNotif = {
       id: Math.random().toString(36).substring(2, 11),
@@ -2050,6 +2097,7 @@ document.addEventListener("DOMContentLoaded", () => {
       text: text || "",
       type: type || "info",
       read: false,
+      connectionId: connectionId || null,
       createdAt: new Date().toISOString()
     };
     try {
@@ -2060,12 +2108,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch(e){}
   };
 
-  window.createNotification = async (receiverUid, text, type) => {
+  window.createNotification = async (receiverUid, text, type, connectionId = null) => {
     if (!receiverUid || (currentUser && receiverUid === currentUser.uid)) return;
     const profile = currentUser ? parseUserProfile(currentUser) : { name: "Guest" };
     const senderPhoto = currentUser ? (currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`) : "https://www.gravatar.com/avatar/?d=mp";
     if (isMockFirebase) {
-      window.addMockNotification(receiverUid, profile.name, senderPhoto, text, type);
+      window.addMockNotification(receiverUid, profile.name, senderPhoto, text, type, connectionId);
     } else if (db) {
       try {
         await db.collection("notifications").add({
@@ -2076,6 +2124,7 @@ document.addEventListener("DOMContentLoaded", () => {
           text: text,
           type: type,
           read: false,
+          connectionId: connectionId || null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       } catch(e) {}
@@ -2143,11 +2192,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const item = document.createElement("div");
       item.style.cssText = `display: flex; gap: 12px; align-items: flex-start; padding: 0.75rem 1rem; border-radius: 12px; background: ${notif.read ? 'var(--bg-secondary)' : 'rgba(214, 173, 45, 0.05)'}; border: 1px solid ${notif.read ? 'transparent' : 'rgba(214, 173, 45, 0.15)'}; transition: var(--transition-smooth);`;
       const timeStr = notif.createdAt ? new Date(notif.createdAt.seconds ? notif.createdAt.seconds * 1000 : notif.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now";
+      
       let icon = "";
       if (notif.type === "like") icon = '<i class="fa-solid fa-heart" style="color: #ff4d4d; font-size: 0.8rem;"></i>';
       else if (notif.type === "comment") icon = '<i class="fa-solid fa-comment" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
       else if (notif.type === "connection_request") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-cta); font-size: 0.8rem;"></i>';
       else if (notif.type === "connection_accepted") icon = '<i class="fa-solid fa-circle-check" style="color: #25D366; font-size: 0.8rem;"></i>';
+      else if (notif.type === "follow") icon = '<i class="fa-solid fa-user-plus" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      else if (notif.type === "message") icon = '<i class="fa-solid fa-message" style="color: var(--brand-primary); font-size: 0.8rem;"></i>';
+      
+      let actionsHtml = "";
+      if (notif.type === "connection_request") {
+        actionsHtml = `<div class="notif-actions-wrap" id="notif-actions-${notif.id}" data-connection-id="${notif.connectionId || ''}" data-sender-uid="${notif.senderUid}"></div>`;
+      }
+      
       item.innerHTML = `
         <div style="position: relative;">
           <img src="${notif.senderPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">
@@ -2160,9 +2218,34 @@ document.addEventListener("DOMContentLoaded", () => {
             <strong style="color: var(--text-primary); cursor: pointer;" onclick="window.closeNotificationsModal(); window.showUserProfileModal('${notif.senderUid}')">${notif.senderName}</strong> ${notif.text}
           </p>
           <span style="font-size: 0.72rem; color: var(--text-secondary); opacity: 0.8; display: block; margin-top: 4px;">${timeStr}</span>
+          ${actionsHtml}
         </div>
       `;
       listContainer.appendChild(item);
+    });
+
+    // Resolve placeholders for connection actions asynchronously
+    listContainer.querySelectorAll(".notif-actions-wrap").forEach(async (wrap) => {
+      const notifId = wrap.id.replace("notif-actions-", "");
+      const senderUid = wrap.dataset.senderUid;
+      
+      const conn = await window.getConnectionState(senderUid);
+      if (conn.status === "pending" && !conn.isSender) {
+        wrap.innerHTML = `
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button class="btn btn-primary" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border: 1px solid var(--brand-cta);" onclick="window.handleNotificationConnectionAccept('${notifId}', '${conn.docId}')">Accept</button>
+            <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.35rem 0.85rem; border-radius: 20px; font-weight: 700; min-height: unset; border-color: #ff4d4d; color: #ff4d4d;" onclick="window.handleNotificationConnectionIgnore('${notifId}', '${conn.docId}')">Ignore</button>
+          </div>
+        `;
+      } else if (conn.status === "accepted") {
+        wrap.innerHTML = `
+          <span style="font-size: 0.75rem; color: #25D366; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;">
+            <i class="fa-solid fa-circle-check"></i> Connected
+          </span>
+        `;
+      } else {
+        wrap.innerHTML = "";
+      }
     });
   };
 
@@ -2189,6 +2272,37 @@ document.addEventListener("DOMContentLoaded", () => {
         await batch.commit();
       } catch(e) {}
     }
+    renderNotificationsList();
+  };
+
+  window.markSingleNotificationRead = async (notifId) => {
+    if (!currentUser) return;
+    if (isMockFirebase) {
+      try {
+        const notifs = JSON.parse(localStorage.getItem("jabzen_mock_notifications") || "[]");
+        const idx = notifs.findIndex(n => n.id === notifId);
+        if (idx !== -1) {
+          notifs[idx].read = true;
+          localStorage.setItem("jabzen_mock_notifications", JSON.stringify(notifs));
+          window.dispatchEvent(new Event("mock_notif_update"));
+        }
+      } catch(e){}
+    } else if (db) {
+      try {
+        await db.collection("notifications").doc(notifId).update({ read: true });
+      } catch(e) {}
+    }
+  };
+
+  window.handleNotificationConnectionAccept = async (notifId, docId) => {
+    await window.markSingleNotificationRead(notifId);
+    await window.handleAcceptConnection(docId);
+    renderNotificationsList();
+  };
+
+  window.handleNotificationConnectionIgnore = async (notifId, docId) => {
+    await window.markSingleNotificationRead(notifId);
+    await window.handleRejectConnection(docId);
     renderNotificationsList();
   };
 
@@ -3369,10 +3483,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isMockFirebase) {
       msgData.createdAt = new Date().toISOString();
       saveMockMessage(msgData);
+      window.createNotification(activeRecipientUid, "sent you a message", "message");
     } else if (db) {
       msgData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       try {
         await db.collection("messages").add(msgData);
+        window.createNotification(activeRecipientUid, "sent you a message", "message");
       } catch (err) {
         console.error("Error sending message to Firestore:", err);
       }
@@ -3563,6 +3679,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let otherUid = null;
       let otherName = "";
       let otherPhoto = "";
+      const modal = document.getElementById("profile-modal-backdrop");
+      const isModalOpen = modal && modal.classList.contains("active");
+      
       if (isMockFirebase) {
         const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
         const idx = conns.findIndex(c => c.id === docId);
@@ -3575,7 +3694,9 @@ document.addEventListener("DOMContentLoaded", () => {
           otherName = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverName : conns[idx].senderName;
           otherPhoto = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverPhoto : conns[idx].senderPhoto;
           
-          window.showUserProfileModal(otherUid);
+          if (isModalOpen && otherUid) {
+            window.showUserProfileModal(otherUid);
+          }
           if (activeRecipientUid === otherUid) {
             showConversationView(otherUid, otherName, otherPhoto);
           }
@@ -3598,7 +3719,9 @@ document.addEventListener("DOMContentLoaded", () => {
           otherName = data.senderUid === currentUser.uid ? data.receiverName : data.senderName;
           otherPhoto = data.senderUid === currentUser.uid ? data.receiverPhoto : data.senderPhoto;
           
-          window.showUserProfileModal(otherUid);
+          if (isModalOpen && otherUid) {
+            window.showUserProfileModal(otherUid);
+          }
           if (activeRecipientUid === otherUid) {
             showConversationView(otherUid, otherName, otherPhoto);
           }
@@ -3618,6 +3741,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let otherUid = null;
       let otherName = "";
       let otherPhoto = "";
+      const modal = document.getElementById("profile-modal-backdrop");
+      const isModalOpen = modal && modal.classList.contains("active");
+      
       if (isMockFirebase) {
         const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
         const idx = conns.findIndex(c => c.id === docId);
@@ -3628,7 +3754,9 @@ document.addEventListener("DOMContentLoaded", () => {
           conns.splice(idx, 1);
           localStorage.setItem("jabzen_mock_connections", JSON.stringify(conns));
           alert("Connection request ignored.");
-          if (otherUid) window.showUserProfileModal(otherUid);
+          if (isModalOpen && otherUid) {
+            window.showUserProfileModal(otherUid);
+          }
           if (activeRecipientUid === otherUid) {
             showConversationView(otherUid, otherName, otherPhoto);
           }
@@ -3643,7 +3771,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         await db.collection("connections").doc(docId).delete();
         alert("Connection request ignored.");
-        if (otherUid) window.showUserProfileModal(otherUid);
+        if (isModalOpen && otherUid) {
+          window.showUserProfileModal(otherUid);
+        }
         if (activeRecipientUid === otherUid) {
           showConversationView(otherUid, otherName, otherPhoto);
         }
