@@ -3,24 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About & Results | JABZEN | Premium Growth Partner</title>
-  <meta name="description" content="Learn about JABZEN's philosophy, the team, and the verifiable growth metrics achieved across SEO, paid ads, and content systems.">
+  <title>My Story & Jabzen | Abhishek Pratap Singh</title>
+  <meta name="description" content="The honest story of Abhishek Pratap Singh, founder of Jabzen. How a college conversation in Lucknow survived detours, anxiety, and quiet failures to become a creative storytelling company.">
   <link rel="canonical" href="https://jabzen.com/about">
   <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.min.css?v=16">
 </head>
-<body>
+<body class="page-about">
   <a class="skip-link" href="#main">Skip to content</a>
   <!-- Header -->
   <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="./" aria-label="JABZEN home">
-        <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
+        <img src="assets/logo-monogram.png?v=3" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
         <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
+      <div class="header-search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="global-search-input" placeholder="Search articles, topics, authors...">
+      </div>
       <div class="nav-links" data-nav-links>
-        <a href="./">Home</a>
-        <div class="nav-dropdown">
+        <a href="./" class="nav-marketing-link">Marketing</a>
+        <a href="./" class="nav-normal-link">Marketing</a>
+        <div class="nav-dropdown nav-normal-link">
           <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">Services <span class="arrow">&darr;</span></a>
           <ul class="dropdown-menu">
             <li><a href="search-marketing">Search Marketing (SEO)</a></li>
@@ -29,14 +35,18 @@
             <li><a href="ai-solutions">AI Marketing Solutions</a></li>
           </ul>
         </div>
-        <a href="about">About</a>
-        <a href="blog">Blog</a>
-        <a href="contact">Contact</a>
+        <a href="about" class="nav-normal-link">About</a>
+        <a href="contact" class="nav-normal-link">Contact</a>
       </div>
       <div class="nav-actions">
+        <a href="blog#write" id="nav-write-btn" class="nav-write-link">
+          <i class="fa-solid fa-pen-to-square"></i> Write
+        </a>
         <div id="header-user-profile" class="header-profile-container" style="display: none;">
           <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
             <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
+            <span id="header-profile-display-name" class="header-profile-display-name">Author</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
           </button>
           <div id="header-profile-dropdown" class="header-profile-dropdown">
             <div class="dropdown-user-info">
@@ -44,73 +54,171 @@
               <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
             </div>
             <a href="blog#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <a href="blog#settings" class="dropdown-link"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a href="blog#privacy" class="dropdown-link"><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Security</a>
             <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 8px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
           </div>
         </div>
-        <a class="btn btn-primary" href="#contact">Book Strategy Call</a>
+        <a class="btn btn-primary header-cta-btn" href="blog">Blog</a>
         <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">&equiv;</button>
       </div>
     </nav>
   </header>
   <main id="main">
-    <!-- Hero Section -->
-    <section class="page-hero" aria-labelledby="about-hero-title">
-      <div class="container reveal">
-        <span class="eyebrow">About JABZEN</span>
-        <h1 id="about-hero-title">A modern growth partner<br>with verifiable performance.</h1>
-        <p class="lead">We combine human-first positioning with rigorous analytics to build clean customer acquisition channels.</p>
+    <!-- Hero Section / Personal Letter Intro -->
+    <section class="about-story-hero" aria-labelledby="about-hero-title">
+      <div class="container about-hero-grid">
+        <div class="about-hero-copy reveal">
+          <span class="eyebrow">The Founder's Story</span>
+          <h1 id="about-hero-title">It started with a conversation between friends in Lucknow, back in 2012.</h1>
+          <p class="letter-intro">Hello. I'm Abhishek Pratap Singh. Jabzen isn't a massive corporate marketing agency, and it didn't start with a high-tech business roadmap. This is just the honest story of how a college dream survived years of detours, quiet failures, and starting over.</p>
+        </div>
+        <div class="reveal" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="about-hero-image-wrap">
+            <img src="assets/founder.png" alt="Abhishek Pratap Singh, Founder of JABZEN" fetchpriority="high">
+          </div>
+          <div class="handwritten-quote-card">
+            &ldquo;Jabzen is not the story of someone who had everything figured out. It is the story of someone who kept moving, even when he didn't.&rdquo;
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Section 2: Narrative -->
-    <section class="section" aria-labelledby="narrative-title">
+    <!-- The Personal Letter Section -->
+    <section class="personal-letter-section secondary-bg">
+      <div class="container letter-container reveal">
+        <div class="letter-body">
+          <p>Dear Friend,</p>
+          
+          <p>If I look back, the roots of Jabzen go back to the years between 2012 and 2015, during my college days at Shri Ramswaroop in Lucknow. Back then, there were three of us—three close friends, including myself—who would sit together and talk for hours about doing something of our own. We dreamed of building a creative space, designing, writing, and creating something that truly mattered. We didn't have a corporate roadmap or a business plan; we just had a shared enthusiasm. That conversation was the seed.</p>
+          
+          <p>The monogram logo we use today carries that memory. It is based on a picture taken with my two friends during those college days at Shri Ramswaroop. I designed the logo as a tribute to the three of us and those early dreams. Even though life took us in different directions and our paths evolved, the spirit of those conversations never left me. The logo is still there to remind me of where I started, and to keep that shared dream alive.</p>
+          
+          <p>After college, things got complicated. The dreams we had in college didn't match the reality of bills, jobs, and career detours. I went through years of uncertainty. I failed multiple times—not the kind of big, dramatic failures you read about in startup blogs, but the quiet, frustrating kind. Projects that quietly fizzled out, clients that walked away, and ideas that never got off the ground. The kind of setbacks many people experience but rarely talk about openly.</p>
+          
+          <p>There were months of feeling completely lost, struggling with anxiety, and wondering if I was just wasting my time. I lost my confidence more times than I care to admit. But through all those phases—the jobs I didn't want and the times I felt like giving up—the idea of Jabzen stayed in the back of my mind. It didn't shout for attention. It was just always there, refusing to go away.</p>
+          
+          <div class="letter-signature">
+            <span>Sincerely,</span>
+            <span class="handwritten-signature">Abhishek Pratap Singh</span>
+            <span class="role">Founder, Jabzen</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline of The Long Road -->
+    <section class="section" aria-labelledby="timeline-heading">
+      <div class="container" style="max-width: 900px;">
+        <div class="services-intro reveal" style="text-align: center; margin: 0 auto 3rem;">
+          <span class="eyebrow">The Timeline</span>
+          <h2 id="timeline-heading">A few milestones and failures along the way</h2>
+          <p style="color: var(--text-secondary); margin-top: 1rem;">Setbacks are the quieter parts of the journey that forge resilience.</p>
+        </div>
+        
+        <div class="timeline-container reveal">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2012 &ndash; 2015</div>
+            <div class="timeline-title">Lucknow College Days</div>
+            <div class="timeline-desc">Conversations with friends at Shri Ramswaroop, Lucknow, talking about starting something of our own. The monogram logo was created in memory of that time and that picture.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2016 &ndash; 2020</div>
+            <div class="timeline-title">The Detours &amp; Real Life</div>
+            <div class="timeline-desc">Trying different jobs, facing career setbacks, and learning how hard it is to build something from scratch. Quiet failures where plans simply didn't work out.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2021 &ndash; 2024</div>
+            <div class="timeline-title">Quiet Struggles &amp; Persistence</div>
+            <div class="timeline-desc">Dealing with anxiety, doubts, and quiet failures. The project remains alive, waiting in the background as a constant spark of hope.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2025 &ndash; Present</div>
+            <div class="timeline-title">Building Jabzen</div>
+            <div class="timeline-desc">Finally bringing the dream into the real world as a creative marketing and storytelling partner, helping other brands tell their stories honestly.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Belief Section -->
+    <section class="section secondary-bg" aria-labelledby="belief-heading" style="padding: 6rem 2rem;">
+      <div class="container reveal" style="text-align: center; max-width: 800px;">
+        <span class="eyebrow" id="belief-heading">Our Core Belief</span>
+        <blockquote style="font-family: var(--font-heading); font-style: italic; font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: var(--text-primary); line-height: 1.35; margin-bottom: 2rem;">
+          &ldquo;Human beings connect through stories. Before technology, before algorithms, and before marketing, there were stories. Stories help us understand ourselves, understand each other, and help ideas survive.&rdquo;
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- What We Do Today -->
+    <section class="section" aria-labelledby="today-heading">
       <div class="container">
         <div class="philosophy-split reveal">
           <div class="philosophy-left">
-            <h2 id="narrative-title">Our Core<br>Belief.</h2>
+            <span class="eyebrow">Current Focus</span>
+            <h2 id="today-heading" style="font-size: clamp(2rem, 4vw, 3rem);">What Jabzen Is Today</h2>
           </div>
           <div class="philosophy-right">
-            <p style="font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--text-primary);">We believe digital growth shouldn't feel noisy, generic, or intrusive. The best marketing builds bridges of trust between exceptional companies and their future customers.</p>
-            <p>JABZEN operates as a premium consulting group rather than a high-volume agency. By limiting our client partnerships, we focus deeply on unit economics, attribution loops, and premium design standards.</p>
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--text-primary);">Today, Jabzen operates as a creative marketing and storytelling company. Our mission is not merely marketing, but helping ideas reach people through clear and aesthetic communication.</p>
+            <p>Our focus includes content creation, brand storytelling, digital growth, and educational blogs.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Section 3: Performance Case Audits (Original Results content) -->
-    <section class="section secondary-bg" aria-labelledby="results-grid-title">
+    <!-- The Future Is Open -->
+    <section class="section secondary-bg" aria-labelledby="future-heading">
       <div class="container">
-        <div class="services-intro reveal" style="text-align: center; margin-bottom: 4rem;">
-          <span class="eyebrow">Metrics Summary</span>
-          <h2 id="results-grid-title">Core Performance Metrics &amp; Case Audits</h2>
+        <div class="services-intro reveal" style="max-width: 700px; margin-bottom: 3rem;">
+          <span class="eyebrow">Possibilities</span>
+          <h2 id="future-heading" style="font-size: clamp(2rem, 4vw, 3rem);">The Future is Open</h2>
+          <p style="color: var(--text-secondary); margin-top: 1rem;">We don't describe our future plans as promises, but as possibilities. Creativity grows through exploration, and we intentionally keep the future open to new forms of expression:</p>
         </div>
         
-        <div class="grid grid-2">
-          <!-- Card 1 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Organic SEO Channel</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">+312% Search Volume</h3>
-            <p>We craft dense semantic clusters, technical structure, and programmatic pages for service providers to dominate target keywords and capture LLM citations.</p>
+        <div class="about-grid-3 reveal">
+          <div class="grid-card">
+            <h3 class="grid-card-title">Storytelling &amp; Media</h3>
+            <p class="grid-card-desc">Ventures into creative productions, short films, media projects, and digital ecosystems that explore storytelling.</p>
           </div>
-          <!-- Card 2 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Paid Campaigns</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">4.6x Meta &amp; Google ROAS</h3>
-            <p>We execute targeted ad creatives, direct-response copy variations, and custom landers that filter low-intent clicks and scale conversion rates.</p>
+          <div class="grid-card">
+            <h3 class="grid-card-title">Education &amp; Writing</h3>
+            <p class="grid-card-desc">Building platforms and content ecosystems designed to share what we have learned about writing and marketing.</p>
           </div>
-          <!-- Card 3 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Creative Assets</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">5.8M Views &amp; Growth</h3>
-            <p>We script and produce educational concept Reels, short-form food videos, and vertical brand upgrades that convert visual hooks into booked consultations.</p>
-          </div>
-          <!-- Card 4 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">AI Systems</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">10x Content Velocity</h3>
-            <p>We build prompt workflows, text-to-video assets, and automated CRM follow-ups that keep operation overhead low and execution speed high.</p>
+          <div class="grid-card">
+            <h3 class="grid-card-title">Art &amp; Music</h3>
+            <p class="grid-card-desc">Music-related creative projects, digital products, and new forms of creative expression that do not yet exist today.</p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Gratitude & Note of Thanks -->
+    <section class="section" aria-labelledby="gratitude-heading">
+      <div class="container">
+        <div class="gratitude-box reveal">
+          <span class="eyebrow" id="gratitude-heading">No Journey Is Built Alone</span>
+          <h3>A Note of Gratitude</h3>
+          <p>I don't believe in the myth of the 'self-made' person. I didn't get here alone. Every single step forward was possible because someone gave me a chance, offered advice, or simply stood by me. I am deeply grateful to my family, my college friends, my mentors, and the clients who trusted me when things were just starting.</p>
+          <p>I also acknowledge my deep gratitude toward God—not in a preachy way, but with a quiet sense of humility. Many things happened through grace, timing, and support beyond personal effort alone. Hard work matters, but many blessings cannot be earned alone.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Reflection Section -->
+    <section class="section secondary-bg" style="border-top: 1px solid var(--border-color); padding: 8rem 2rem;">
+      <div class="container reveal" style="text-align: center; max-width: 800px;">
+        <span class="eyebrow">Final Reflection</span>
+        <blockquote style="font-family: var(--font-heading); font-size: clamp(1.4rem, 2.5vw, 2rem); line-height: 1.5; color: var(--text-primary); margin-bottom: 3rem;">
+          &ldquo;Jabzen is not the story of someone who had everything figured out. It is the story of someone who kept moving, even when he didn't. A dream that began in a college conversation survived years of uncertainty and eventually found its way back into the real world. This is only the beginning. And for everyone who has been part of the journey &mdash; family, friends, mentors, supporters, and God &mdash; thank you.&rdquo;
+        </blockquote>
       </div>
     </section>
   </main>
@@ -134,7 +242,7 @@
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       </a>
     </div>
-    <a href="https://wa.me/918840863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
+    <a href="https://wa.me/91880863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
       <svg class="icon-svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.003 5.324 5.328 0 11.859 0c3.166.001 6.141 1.233 8.378 3.469 2.237 2.235 3.469 5.21 3.468 8.379-.003 6.534-5.329 11.858-11.86 11.858-2.001-.001-3.97-.508-5.717-1.474L0 24zm6.549-3.238c1.658.983 3.284 1.503 4.909 1.504 5.405 0 9.805-4.394 9.807-9.8.002-2.617-1.013-5.078-2.86-6.928C16.607 3.687 14.15 2.673 11.53 2.673c-5.405 0-9.807 4.394-9.809 9.8-.001 1.83.499 3.613 1.447 5.174l-.953 3.478 3.567-.936c1.554.848 3.023 1.157 4.372 1.157zm12.355-6.702c-.3-.15-1.771-.875-2.046-.975-.275-.1-.475-.15-.675.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-3.519-1.758-5.314-3.717-6.525-5.8-.3-.513.233-.474.723-.974.137-.14.225-.263.292-.375.068-.112.034-.213-.017-.313-.05-.1-.475-1.143-.65-1.562-.171-.41-.363-.356-.5-.356-.1-.004-.217-.004-.334-.004-.117 0-.308.043-.469.22C7.307 4.7 6.8 5.176 6.8 6.161s.717 1.932.817 2.067c.1.135 1.414 2.158 3.424 3.028 1.636.709 2.27.765 3.09.684.514-.05 1.54-.63 1.754-1.24.214-.61.214-1.133.15-1.24-.064-.108-.244-.16-.544-.31z"/>
       </svg>
@@ -147,7 +255,7 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a class="brand" href="./" aria-label="JABZEN home">
-            <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
+            <img src="assets/logo-monogram.png?v=3" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
             <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
           </a>
           <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
@@ -174,13 +282,13 @@
           <h3>Contact</h3>
           <ul>
             <li><a href="mailto:info@jabzen.com">info@jabzen.com</a></li>
-            <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
+            <li><a href="https://wa.me/91880863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
             <li><span>India &bull; Serving Globally</span></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 JABZEN. All rights reserved.</span>
+        <span>&copy; 2026 JABZEN. All rights reserved. &bull; <a href="sitemap" style="color: var(--text-secondary); text-decoration: none; font-weight: 600;">Sitemap</a></span>
         <span>Aesthetic growth systems built for scaling brands.</span>
       </div>
     </div>

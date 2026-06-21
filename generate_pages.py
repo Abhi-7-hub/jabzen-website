@@ -57,20 +57,26 @@ HTML_HEADER = """<!doctype html>
   <meta name="description" content="{description}">
   <link rel="canonical" href="https://jabzen.com/{canonical_slug}">
   <link rel="icon" href="assets/favicon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.min.css?v=16">
 </head>
-<body>
+<body class="page-{canonical_slug}">
   <a class="skip-link" href="#main">Skip to content</a>
   <!-- Header -->
   <header class="site-header" id="site-header">
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="./" aria-label="JABZEN home">
-        <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
+        <img src="assets/logo-monogram.png?v=3" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
         <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
       </a>
+      <div class="header-search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="global-search-input" placeholder="Search articles, topics, authors...">
+      </div>
       <div class="nav-links" data-nav-links>
-        <a href="./">Home</a>
-        <div class="nav-dropdown">
+        <a href="./" class="nav-marketing-link">Marketing</a>
+        <a href="./" class="nav-normal-link">Marketing</a>
+        <div class="nav-dropdown nav-normal-link">
           <a href="#" class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">Services <span class="arrow">&darr;</span></a>
           <ul class="dropdown-menu">
             <li><a href="search-marketing">Search Marketing (SEO)</a></li>
@@ -79,14 +85,18 @@ HTML_HEADER = """<!doctype html>
             <li><a href="ai-solutions">AI Marketing Solutions</a></li>
           </ul>
         </div>
-        <a href="about">About</a>
-        <a href="blog">Blog</a>
-        <a href="contact">Contact</a>
+        <a href="about" class="nav-normal-link">About</a>
+        <a href="contact" class="nav-normal-link">Contact</a>
       </div>
       <div class="nav-actions">
+        <a href="blog#write" id="nav-write-btn" class="nav-write-link">
+          <i class="fa-solid fa-pen-to-square"></i> Write
+        </a>
         <div id="header-user-profile" class="header-profile-container" style="display: none;">
           <button id="header-profile-btn" class="header-profile-btn" aria-label="User profile" type="button">
             <img id="header-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile">
+            <span id="header-profile-display-name" class="header-profile-display-name">Author</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
           </button>
           <div id="header-profile-dropdown" class="header-profile-dropdown">
             <div class="dropdown-user-info">
@@ -94,10 +104,12 @@ HTML_HEADER = """<!doctype html>
               <div id="header-profile-email" class="dropdown-user-email">email@example.com</div>
             </div>
             <a href="blog#blog-auth-section" class="dropdown-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <a href="blog#settings" class="dropdown-link"><i class="fa-solid fa-gear"></i> Settings</a>
+            <a href="blog#privacy" class="dropdown-link"><i class="fa-solid fa-shield-halved"></i> Privacy &amp; Security</a>
             <button id="header-logout-btn" type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; min-height: unset; border-radius: 8px; font-weight: 500; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
           </div>
         </div>
-        <a class="btn btn-primary" href="#contact">Book Strategy Call</a>
+        <a class="btn btn-primary header-cta-btn" href="blog">Blog</a>
         <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">&equiv;</button>
       </div>
     </nav>
@@ -124,7 +136,7 @@ HTML_FOOTER = """
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       </a>
     </div>
-    <a href="https://wa.me/918840863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
+    <a href="https://wa.me/91880863659" target="_blank" rel="noopener" class="fab-main-trigger whatsapp" aria-label="WhatsApp chat">
       <svg class="icon-svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.003 5.324 5.328 0 11.859 0c3.166.001 6.141 1.233 8.378 3.469 2.237 2.235 3.469 5.21 3.468 8.379-.003 6.534-5.329 11.858-11.86 11.858-2.001-.001-3.97-.508-5.717-1.474L0 24zm6.549-3.238c1.658.983 3.284 1.503 4.909 1.504 5.405 0 9.805-4.394 9.807-9.8.002-2.617-1.013-5.078-2.86-6.928C16.607 3.687 14.15 2.673 11.53 2.673c-5.405 0-9.807 4.394-9.809 9.8-.001 1.83.499 3.613 1.447 5.174l-.953 3.478 3.567-.936c1.554.848 3.023 1.157 4.372 1.157zm12.355-6.702c-.3-.15-1.771-.875-2.046-.975-.275-.1-.475-.15-.675.15-.2.3-.775.975-.95 1.175-.175.2-.35.225-.65.075-3.519-1.758-5.314-3.717-6.525-5.8-.3-.513.233-.474.723-.974.137-.14.225-.263.292-.375.068-.112.034-.213-.017-.313-.05-.1-.475-1.143-.65-1.562-.171-.41-.363-.356-.5-.356-.1-.004-.217-.004-.334-.004-.117 0-.308.043-.469.22C7.307 4.7 6.8 5.176 6.8 6.161s.717 1.932.817 2.067c.1.135 1.414 2.158 3.424 3.028 1.636.709 2.27.765 3.09.684.514-.05 1.54-.63 1.754-1.24.214-.61.214-1.133.15-1.24-.064-.108-.244-.16-.544-.31z"/>
       </svg>
@@ -137,7 +149,7 @@ HTML_FOOTER = """
       <div class="footer-grid">
         <div class="footer-brand">
           <a class="brand" href="./" aria-label="JABZEN home">
-            <img src="assets/logo-monogram.png" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
+            <img src="assets/logo-monogram.png?v=3" alt="JABZEN Logo" class="brand-logo-img" style="width: 52px; height: 52px; object-fit: contain;">
             <span class="brand-text">JABZEN<small>Creative Marketing</small></span>
           </a>
           <p>Bespoke acquisition pipelines designed for long-term scalability and authority.</p>
@@ -164,13 +176,13 @@ HTML_FOOTER = """
           <h3>Contact</h3>
           <ul>
             <li><a href="mailto:info@jabzen.com">info@jabzen.com</a></li>
-            <li><a href="https://wa.me/918840863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
+            <li><a href="https://wa.me/91880863659" target="_blank" rel="noopener">WhatsApp Live</a></li>
             <li><span>India &bull; Serving Globally</span></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 JABZEN. All rights reserved.</span>
+        <span>&copy; 2026 JABZEN. All rights reserved. &bull; <a href="sitemap" style="color: var(--text-secondary); text-decoration: none; font-weight: 600;">Sitemap</a></span>
         <span>Aesthetic growth systems built for scaling brands.</span>
       </div>
     </div>
@@ -375,315 +387,555 @@ def generate_blog_page():
     desc = "Expert guides, industry frameworks, and tactical blueprints on SEO, AI, Meta Ads, and Branding."
     
     body_html = """  <main id="main">
-    <section class="page-hero">
-      <div class="container">
-        <h1>Latest Marketing & Strategy Insights</h1>
-        <p class="lead" style="text-align: left; margin-top: 1.5rem; max-width: 800px; color: var(--text-secondary);">Frameworks, case reviews, and search patterns to help service brands scale lead generation.</p>
+    <section class="section" style="padding: 120px 0 60px 0; background: var(--bg);">
+      <div class="container" style="max-width: 1400px; width: 95%;">
+        <div class="blog-layout-grid">
+          
+          <!-- LEFT COLUMN: Navigation & Profile -->
+          <aside class="blog-left-sidebar">
+            <!-- Profile Card -->
+            <div class="sidebar-profile-card">
+              <img id="sidebar-user-avatar" class="sidebar-user-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Avatar">
+              <div class="sidebar-user-details">
+                <h4 id="sidebar-user-name" class="sidebar-user-name">Guest User</h4>
+                <a href="#" onclick="window.toggleDrawer(true); return false;" class="sidebar-user-link">View Profile</a>
+              </div>
+            </div>
+
+            <!-- Sidebar Navigation Menu -->
+            <div class="sidebar-menu">
+              <a href="#" id="menu-home" class="menu-item active" onclick="window.selectMenuTab('home'); return false;"><i class="fa-solid fa-house"></i> Home Feed</a>
+              <a href="#" id="menu-trending" class="menu-item" onclick="window.selectMenuTab('trending'); return false;"><i class="fa-solid fa-chart-line"></i> Trending</a>
+              <a href="#" id="menu-myposts" class="menu-item" onclick="window.selectMenuTab('myposts'); return false;"><i class="fa-solid fa-file-invoice"></i> My Posts</a>
+              <a href="#" id="menu-saved" class="menu-item" onclick="window.selectMenuTab('saved'); return false;"><i class="fa-solid fa-bookmark"></i> Saved Articles</a>
+              <a href="#" id="menu-messages" class="menu-item" onclick="window.toggleChatDrawer(true); return false;"><i class="fa-solid fa-comments"></i> Messages <span class="badge" id="chat-badge-count">0</span></a>
+              <a href="#" id="menu-following" class="menu-item" onclick="window.selectMenuTab('following'); return false;"><i class="fa-solid fa-user-group"></i> Following</a>
+              <a href="#" id="menu-notifications" class="menu-item" onclick="window.showNotifications(); return false;"><i class="fa-solid fa-bell"></i> Notifications <span class="badge badge-accent">5</span></a>
+            </div>
+
+            <!-- Categories Section -->
+            <div class="sidebar-categories-section">
+              <span class="sidebar-label">Categories</span>
+              <div id="sidebar-categories-list" class="sidebar-categories-list">
+                <!-- populated dynamically -->
+              </div>
+              <button class="btn btn-outline btn-create-category" onclick="window.createCategoryPrompt()" style="width:100%; border-radius:30px; font-size:0.8rem; margin-top: 1rem; border-color: var(--border-color); font-weight:700;"><i class="fa-solid fa-plus"></i> Create Category</button>
+            </div>
+          </aside>
+          
+          <!-- CENTER COLUMN: Feed & Composer -->
+          <div class="blog-center-feed">
+            <!-- Composer Card -->
+            <div class="feed-composer-card" id="feed-composer-card">
+              <div class="composer-top-row">
+                <img id="composer-user-avatar" class="composer-user-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="">
+                <div class="composer-input-wrap">
+                  <h4 id="composer-greeting" class="composer-greeting">What's on your mind, Guest?</h4>
+                  <textarea id="composer-placeholder-input" class="composer-placeholder-input" placeholder="Share your thoughts..." readonly onclick="window.toggleDrawer(true, 'write')"></textarea>
+                </div>
+              </div>
+              <div class="composer-actions-row">
+                <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-pen-to-square"></i> Write Article</button>
+                <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-arrow-up-from-bracket"></i> Upload</button>
+                <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-square-poll-horizontal"></i> Poll</button>
+              </div>
+            </div>
+
+            <!-- Main Post list feed -->
+            <div id="dynamic-blogs-container"></div>
+          </div>
+
+          <!-- RIGHT COLUMN: Widgets -->
+          <aside class="blog-right-sidebar">
+            <!-- Trending Topics -->
+            <div class="right-widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title"><i class="fa-solid fa-fire" style="color: var(--brand-cta);"></i> Trending Topics</h3>
+                <a href="#" class="widget-link">View all</a>
+              </div>
+              <div class="trending-topics-list">
+                <div class="trending-topic-item" onclick="window.selectCategory('Marketing'); return false;">
+                  <div class="topic-left">
+                    <span class="topic-hashtag"># Marketing Strategy</span>
+                    <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+                  </div>
+                  <span class="topic-stats">1.2k posts</span>
+                </div>
+                <div class="trending-topic-item" onclick="window.selectCategory('Marketing'); return false;">
+                  <div class="topic-left">
+                    <span class="topic-hashtag"># Lead Generation</span>
+                    <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+                  </div>
+                  <span class="topic-stats">980 posts</span>
+                </div>
+                <div class="trending-topic-item" onclick="window.selectCategory('SEO'); return false;">
+                  <div class="topic-left">
+                    <span class="topic-hashtag"># Content Marketing</span>
+                    <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+                  </div>
+                  <span class="topic-stats">870 posts</span>
+                </div>
+                <div class="trending-topic-item" onclick="window.selectCategory('Branding'); return false;">
+                  <div class="topic-left">
+                    <span class="topic-hashtag"># Branding</span>
+                    <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+                  </div>
+                  <span class="topic-stats">650 posts</span>
+                </div>
+                <div class="trending-topic-item" onclick="window.selectCategory('AI & Tech'); return false;">
+                  <div class="topic-left">
+                    <span class="topic-hashtag"># AI in Marketing</span>
+                    <i class="fa-solid fa-arrow-trend-up topic-trend-icon"></i>
+                  </div>
+                  <span class="topic-stats">540 posts</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Writers -->
+            <div class="right-widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title"><i class="fa-solid fa-star" style="color: var(--brand-cta);"></i> Top Writers</h3>
+                <a href="#" class="widget-link">View all</a>
+              </div>
+              <div class="top-writers-list">
+                <div class="writer-item">
+                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=Auden+Rivers&background=6f8f72&color=fff" alt="">
+                  <div class="writer-details">
+                    <span class="writer-name">Auden Rivers</span>
+                    <span class="writer-followers">12.4k followers</span>
+                  </div>
+                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-auden-rivers'); return false;">Follow</button>
+                </div>
+                <div class="writer-item">
+                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=Mira+Kapoor&background=d6ad2d&color=121212" alt="">
+                  <div class="writer-details">
+                    <span class="writer-name">Mira Kapoor</span>
+                    <span class="writer-followers">8.7k followers</span>
+                  </div>
+                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-mira-kapoor'); return false;">Follow</button>
+                </div>
+                <div class="writer-item">
+                  <img class="writer-avatar" src="https://ui-avatars.com/api/?name=James+Carter&background=64748b&color=fff" alt="">
+                  <div class="writer-details">
+                    <span class="writer-name">James Carter</span>
+                    <span class="writer-followers">6.3k followers</span>
+                  </div>
+                  <button class="btn btn-outline btn-follow" onclick="window.toggleFollowWriter(this, 'uid-james-carter'); return false;">Follow</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Popular Posts -->
+            <div class="right-widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title"><i class="fa-solid fa-chart-line" style="color: var(--brand-primary);"></i> Popular Posts</h3>
+                <a href="#" class="widget-link">View all</a>
+              </div>
+              <div class="popular-posts-list">
+                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
+                  <span class="post-rank">1</span>
+                  <div class="popular-post-details">
+                    <span class="popular-post-title">AI Marketing: Complete Framework</span>
+                    <span class="popular-post-views">2.1k views</span>
+                  </div>
+                </div>
+                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
+                  <span class="post-rank">2</span>
+                  <div class="popular-post-details">
+                    <span class="popular-post-title">How to Build a Personal Brand in 2026</span>
+                    <span class="popular-post-views">1.6k views</span>
+                  </div>
+                </div>
+                <div class="popular-post-item" onclick="window.selectMenuTab('trending'); return false;">
+                  <span class="post-rank">3</span>
+                  <div class="popular-post-details">
+                    <span class="popular-post-title">The Ultimate SEO Strategy Guide</span>
+                    <span class="popular-post-views">1.3k views</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Community -->
+            <div class="right-widget-card">
+              <div class="widget-header">
+                <h3 class="widget-title"><i class="fa-solid fa-user-group" style="color: var(--brand-primary);"></i> Active Community</h3>
+              </div>
+              <div class="active-community-status">
+                <span class="online-indicator-dot"></span> 24 online now
+              </div>
+              <div class="active-community-avatars">
+                <img src="https://ui-avatars.com/api/?name=User+A&background=6f8f72&color=fff" alt="">
+                <img src="https://ui-avatars.com/api/?name=User+B&background=d6ad2d&color=121212" alt="">
+                <img src="https://ui-avatars.com/api/?name=User+C&background=64748b&color=fff" alt="">
+                <img src="https://ui-avatars.com/api/?name=User+D&background=1e293b&color=fff" alt="">
+                <img src="https://ui-avatars.com/api/?name=User+E&background=b45309&color=fff" alt="">
+                <div class="avatars-overflow">+18</div>
+              </div>
+              <button class="btn btn-primary btn-open-chat-large" onclick="window.toggleChatDrawer(true); return false;" style="width: 100%; border-radius: 30px; margin-top: 1rem; font-weight:700;"><i class="fa-solid fa-comments"></i> Open Chat</button>
+            </div>
+          </aside>
+          
+        </div>
+      </div>
+    </section>
+          
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="container">
-        <!-- Auth state and Dashboard Panel -->
-        <div id="blog-auth-section" style="margin-bottom: 3rem; background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); position: relative;">
-          
-          <!-- GUEST VIEW: Google + Email/Password forms -->
-          <div id="guest-auth-container" style="display: block;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem;">
+    <!-- SLIDING DRAWER BACKDROP -->
+    <div id="drawer-backdrop" class="drawer-backdrop" onclick="window.toggleDrawer(false)"></div>
+
+    <!-- SLIDING EDITOR & AUTH DRAWER -->
+    <div id="editor-drawer" class="editor-drawer">
+      <div class="editor-drawer-header">
+        <h2 id="drawer-title" class="editor-drawer-title"><i class="fa-solid fa-feather-pointed" style="color: var(--accent);"></i> Dashboard</h2>
+        <button type="button" class="editor-drawer-close" onclick="window.toggleDrawer(false)">&times;</button>
+      </div>
+
+      <!-- Auth state and Dashboard Panel -->
+      <div id="blog-auth-section" style="position: relative; flex-grow: 1;">
+        
+        <!-- GUEST VIEW: Google + Email/Password forms -->
+        <div id="guest-auth-container" style="display: block;">
+          <div style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <!-- Top panel: Social Sign-In Promo -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+              <p style="color: var(--text-secondary); margin: 0; font-size: 0.92rem; line-height: 1.6;">Share your strategy, marketing frameworks, and creative stories. Login instantly to write, edit, and publish your posts.</p>
+              <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 0.5rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
+              <button id="phone-login-toggle-btn" class="btn btn-outline" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; border-color: var(--border-color);"><i class="fa-solid fa-mobile-screen-button"></i> Sign In with Phone OTP</button>
               
-              <!-- Left panel: Social Sign-In -->
-              <div style="display: flex; flex-direction: column; justify-content: center; gap: 1rem; border-right: 1px solid var(--line); padding-right: 2rem;">
-                <h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-feather-pointed" style="color: var(--accent);"></i> JABZEN Blog Platform</h2>
-                <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem; line-height: 1.5;">Share your strategy, marketing frameworks, and insights. Login instantly to write, edit, and publish blogs.</p>
-                <button id="google-login-btn" class="btn btn-secondary" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; margin-top: 0.5rem;"><i class="fa-brands fa-google"></i> Sign In with Google</button>
-                <button id="phone-login-toggle-btn" class="btn btn-outline" style="padding: 0.75rem 1.5rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 30px; justify-content: center; border-color: var(--line);"><i class="fa-solid fa-mobile-screen-button"></i> Sign In with Phone OTP</button>
-                
-                <!-- DB Fallback Selector widget -->
-                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(214, 173, 45, 0.05); border: 1px dashed var(--line); border-radius: var(--radius); text-align: center;" id="db-mode-selector-wrap">
-                  <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.6rem 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                    <i class="fa-solid fa-database" style="color: var(--accent);"></i> Connection: <strong id="db-mode-status" style="color: var(--text-primary);">Real Firebase</strong>
-                  </p>
-                  <button type="button" id="toggle-db-mode-btn" class="btn btn-outline" style="min-height: unset; padding: 0.45rem 1rem; font-size: 0.75rem; border-radius: 30px; font-weight: 700; width: 100%; border-color: var(--line);"><i class="fa-solid fa-rotate"></i> Switch to Mock Demo</button>
-                </div>
+              <!-- DB Fallback Selector widget -->
+              <div style="margin-top: 1rem; padding: 0.85rem; background: rgba(214, 173, 45, 0.04); border: 1px dashed var(--border-color); border-radius: var(--radius-soft); text-align: center;" id="db-mode-selector-wrap">
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <i class="fa-solid fa-database" style="color: var(--accent);"></i> Connection: <strong id="db-mode-status" style="color: var(--text-primary);">Real Firebase</strong>
+                </p>
+                <button type="button" id="toggle-db-mode-btn" class="btn btn-outline" style="min-height: unset; padding: 0.4rem 1rem; font-size: 0.72rem; border-radius: 30px; font-weight: 700; width: 100%; border-color: var(--border-color);"><i class="fa-solid fa-rotate"></i> Switch to Mock Demo</button>
               </div>
-              
-              <!-- Right panel: Email Sign-In / Register / Phone OTP Forms -->
-              <div>
-                <!-- Toggle mode header -->
-                <div id="email-auth-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
-                  <button type="button" id="auth-mode-signin" style="background: none; border: none; color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid var(--accent);">Sign In</button>
-                  <button type="button" id="auth-mode-signup" style="background: none; border: none; color: var(--text-secondary); font-weight: 600; font-size: 1rem; cursor: pointer; padding-bottom: 4px;">Register</button>
-                </div>
-                
-                <!-- Email/Password Auth Form -->
-                <form id="email-auth-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                  <!-- Sign Up fields (Only visible when Register is active) -->
-                  <div id="signup-extra-fields" style="display: none; flex-direction: column; gap: 1rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
-                      <input id="auth-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                    </div>
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-company-input" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
-                      <input id="auth-company-input" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                    </div>
-                  </div>
-                  
-                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <label for="auth-email" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Email Address *</label>
-                    <input id="auth-email" type="email" required placeholder="name@company.com" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                  </div>
-                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                      <label for="auth-password" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Password *</label>
-                      <button type="button" id="forgot-password-btn" style="background: none; border: none; color: var(--accent); font-size: 0.8rem; cursor: pointer; font-weight: 600; padding: 0;">Forgot Password?</button>
-                    </div>
-                    <input id="auth-password" type="password" required placeholder="••••••••" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                  </div>
-                  
-                  <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; margin-top: 0.5rem; border-radius: 30px;">Sign In</button>
-                  
-                  <!-- Mode Switch Text Link -->
-                  <p id="auth-mode-switch-p" style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.75rem; margin-bottom: 0;">
-                    Don't have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Register Now</a>
-                  </p>
-                </form>
-
-                <!-- Phone OTP Auth Form -->
-                <form id="phone-auth-form" style="display: none; flex-direction: column; gap: 1rem;">
-                  <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 0.75rem; margin-bottom: 0.25rem;">
-                    <h3 style="font-size: 1.1rem; color: var(--accent); margin: 0; font-weight: 700;">Phone OTP Sign In / Register</h3>
-                  </div>
-
-                  <!-- Details Group (For Profile updates) -->
-                  <div id="phone-details-group" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-phone-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
-                      <input id="auth-phone-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                    </div>
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-phone-company" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
-                      <input id="auth-phone-company" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                    </div>
-                  </div>
-                  
-                  <!-- Phone Input Group -->
-                  <div id="phone-input-group" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-phone" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Phone Number (with country code, e.g., +91XXXXXXXXXX) *</label>
-                      <input id="auth-phone" type="tel" required placeholder="+91 8840863659" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem;">
-                    </div>
-                    <!-- Recaptcha Container -->
-                    <div id="recaptcha-container" style="margin: 0.25rem 0;"></div>
-                    <button type="button" id="send-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Send Verification SMS</button>
-                  </div>
-
-                  <!-- OTP Code Input Group -->
-                  <div id="otp-input-group" style="display: none; flex-direction: column; gap: 1rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="auth-otp" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">6-Digit Verification Code *</label>
-                      <input id="auth-otp" type="text" placeholder="123456" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.65rem; text-align: center; letter-spacing: 0.4rem; font-size: 1.25rem; font-weight: 700;">
-                    </div>
-                    <button type="submit" id="verify-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Verify & Sign In</button>
-                  </div>
-
-                  <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem; margin-bottom: 0;">
-                    Use another method? <a href="#" id="phone-switch-to-email-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Use Email/Password</a>
-                  </p>
-                </form>
-              </div>
-              
-            </div>
-          </div>
-          
-          <!-- LOGGED-IN AUTHOR VIEW: Dashboard Tabs -->
-          <div id="user-dashboard-container" style="display: none;">
-            <!-- Dashboard Profile Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <img id="dash-avatar" src="https://www.gravatar.com/avatar/?d=mp" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);" alt="Avatar">
-                <div>
-                  <h3 id="dash-name" style="margin: 0; font-size: 1.1rem; color: var(--text-primary); font-weight: 700;">Author Name</h3>
-                  <small id="dash-meta" style="color: var(--text-secondary); display: block; font-size: 0.8rem;">Company Name | Email</small>
-                </div>
-              </div>
-              <button id="dashboard-logout-btn" class="btn btn-outline" style="padding: 0.5rem 1.25rem; font-size: 0.82rem; min-height: unset; border-radius: 30px; font-weight: 700;">Sign Out</button>
             </div>
             
-            <!-- Dashboard Navigation Tabs -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
-              <button id="tab-btn-write" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; min-height: unset; border-radius: 30px; font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Write Blog</button>
-              <button id="tab-btn-manage" class="btn btn-secondary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem; min-height: unset; border-radius: 30px; font-weight: 700; background: var(--soft); border-color: var(--line); color: var(--text-secondary);"><i class="fa-solid fa-list"></i> My Posts (<span id="my-posts-count">0</span>)</button>
-            </div>
-            
-            <!-- Tab Contents -->
+            <!-- Bottom panel: Email Sign-In / Register / Phone OTP Forms -->
             <div>
-              
-              <!-- Tab 1: Write Blog Form -->
-              <div id="tab-content-write" style="display: block;">
-                <form id="write-blog-form">
-                  <h3 id="form-heading" style="font-size: 1.2rem; color: var(--text-primary); margin: 0 0 1.25rem 0; font-weight: 700;">Publish a New Post</h3>
-                  <input type="hidden" id="editing-doc-id" value="">
-                  
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.25rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="blog-title" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Blog Title *</label>
-                      <input id="blog-title" required placeholder="The future of search engines..." style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
-                    </div>
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="blog-category" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Category / Tags *</label>
-                      <select id="blog-category" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
-                        <option value="SEO">SEO</option>
-                        <option value="AI Marketing">AI Marketing</option>
-                        <option value="Meta Ads">Meta Ads</option>
-                        <option value="Google Ads">Google Ads</option>
-                        <option value="Branding">Branding</option>
-                        <option value="Strategy">Strategy</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.25rem;">
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="blog-company" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Display Company Name *</label>
-                      <input id="blog-company" required placeholder="Acme Corp / Freelancer" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem;">
-                    </div>
-                    <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
-                      <label for="blog-image" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Cover Image (Optional)</label>
-                      <input id="blog-image" type="file" accept="image/*" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.55rem;">
-                      <span id="image-size-error" style="color: #ff4d4d; font-size: 0.8rem; display: none; margin-top: 4px; font-weight: 700;">File size exceeds 1MB. Please choose a smaller image.</span>
-                    </div>
-                  </div>
-
-                  <div class="field" style="margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                    <label for="blog-content" style="color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">Blog Content *</label>
-                    <textarea id="blog-content" required placeholder="Write your blog post content here..." rows="8" style="width: 100%; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); color: var(--text-primary); padding: 0.75rem; font-family: inherit; line-height: 1.6; resize: vertical;"></textarea>
-                  </div>
-                  
-                  <div id="image-preview-wrap" style="display: none; margin-bottom: 1.25rem; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; max-width: 300px; aspect-ratio: 16/9;">
-                    <img id="image-preview" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
-                  </div>
-
-                  <div style="display: flex; gap: 1rem;">
-                    <button type="submit" id="submit-blog-btn" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 900; border-radius: 30px;"><i class="fa-solid fa-circle-check"></i> Publish Post</button>
-                    <button type="button" id="cancel-write-btn" class="btn btn-outline" style="padding: 0.75rem 2rem; border-radius: 30px;">Cancel</button>
-                  </div>
-                </form>
+              <!-- Toggle mode header -->
+              <div id="email-auth-header" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                <button type="button" id="auth-mode-signin" style="background: none; border: none; color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid var(--accent);">Sign In</button>
+                <button type="button" id="auth-mode-signup" style="background: none; border: none; color: var(--text-secondary); font-weight: 600; font-size: 1rem; cursor: pointer; padding-bottom: 4px;">Register</button>
               </div>
               
-              <!-- Tab 2: Manage My Blogs List -->
-              <div id="tab-content-manage" style="display: none;">
-                <h3 style="font-size: 1.2rem; color: var(--text-primary); margin: 0 0 1rem 0; font-weight: 700;">Manage Your Published Posts</h3>
+              <!-- Email/Password Auth Form -->
+              <form id="email-auth-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Sign Up fields (Only visible when Register is active) -->
+                <div id="signup-extra-fields" style="display: none; flex-direction: column; gap: 1rem;">
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
+                    <input id="auth-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-company-input" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
+                    <input id="auth-company-input" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                </div>
                 
-                <div style="overflow-x: auto; width: 100%; border-radius: var(--radius); border: 1px solid var(--line);">
-                  <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                      <tr style="background: var(--soft); border-bottom: 1px solid var(--line); color: var(--text-primary);">
-                        <th style="padding: 1rem; font-weight: 700;">Title</th>
-                        <th style="padding: 1rem; font-weight: 700;">Category</th>
-                        <th style="padding: 1rem; font-weight: 700;">Date</th>
-                        <th style="padding: 1rem; font-weight: 700; text-align: center;">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="my-blogs-table-body" style="color: var(--text-secondary);">
-                      <tr>
-                        <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No posts published yet.</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <label for="auth-email" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Email Address *</label>
+                  <input id="auth-email" type="email" required placeholder="name@company.com" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                </div>
+                <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="auth-password" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Password *</label>
+                    <button type="button" id="forgot-password-btn" style="background: none; border: none; color: var(--accent); font-size: 0.8rem; cursor: pointer; font-weight: 600; padding: 0;">Forgot Password?</button>
+                  </div>
+                  <input id="auth-password" type="password" required placeholder="••••••••" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                </div>
+                
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; margin-top: 0.5rem; border-radius: 30px;">Sign In</button>
+                
+                <!-- Mode Switch Text Link -->
+                <p id="auth-mode-switch-p" style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.75rem; margin-bottom: 0;">
+                  Don't have an account? <a href="#" id="auth-switch-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Register Now</a>
+                </p>
+              </form>
+
+              <!-- Phone OTP Auth Form -->
+              <form id="phone-auth-form" style="display: none; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.25rem;">
+                  <h3 style="font-size: 1.1rem; color: var(--accent); margin: 0; font-weight: 700;">Phone OTP Sign In / Register</h3>
+                </div>
+
+                <!-- Details Group (For Profile updates) -->
+                <div id="phone-details-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-phone-name" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Full Name *</label>
+                    <input id="auth-phone-name" placeholder="John Doe" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-phone-company" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Company Name *</label>
+                    <input id="auth-phone-company" placeholder="e.g. Acme Corp" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                </div>
+                
+                <!-- Phone Input Group -->
+                <div id="phone-input-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-phone" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Phone Number (with country code, e.g., +91XXXXXXXXXX) *</label>
+                    <input id="auth-phone" type="tel" required placeholder="+91 880863659" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem;">
+                  </div>
+                  <!-- Recaptcha Container -->
+                  <div id="recaptcha-container" style="margin: 0.25rem 0;"></div>
+                  <button type="button" id="send-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Send Verification SMS</button>
+                </div>
+
+                <!-- OTP Code Input Group -->
+                <div id="otp-input-group" style="display: none; flex-direction: column; gap: 1rem;">
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="auth-otp" style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">6-Digit Verification Code *</label>
+                    <input id="auth-otp" type="text" placeholder="123456" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; text-align: center; letter-spacing: 0.4rem; font-size: 1.25rem; font-weight: 700;">
+                  </div>
+                  <button type="submit" id="verify-otp-btn" class="btn btn-primary" style="padding: 0.65rem; font-weight: 700; width: 100%; border-radius: 30px;">Verify & Sign In</button>
+                </div>
+
+                <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 0.5rem; margin-bottom: 0;">
+                  Use another method? <a href="#" id="phone-switch-to-email-link" style="color: var(--accent); font-weight: 700; text-decoration: none;">Use Email/Password</a>
+                </p>
+              </form>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- LOGGED-IN AUTHOR VIEW: Dashboard Tabs -->
+        <div id="user-dashboard-container" style="display: none;">
+          <!-- Premium Creator Profile Card (Drawer Style) -->
+          <div class="creator-profile-card" style="grid-template-columns: 1fr; gap: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="profile-avatar-wrap" style="flex-direction: row; text-align: left; gap: 1rem; align-items: center; width: 100%;">
+              <img id="dash-avatar" src="https://www.gravatar.com/avatar/?d=mp" class="profile-avatar-img" style="width: 70px; height: 70px; border-width: 2px;" alt="">
+              <div>
+                <h3 id="dash-name" style="margin: 0; font-size: 1.3rem; color: var(--text-primary); font-weight: 700; line-height: 1.2;">Author Name</h3>
+                <span class="profile-badge" style="margin-top: 4px; font-size: 0.65rem;">Creative Partner</span>
+              </div>
+            </div>
+            <div class="profile-details-wrap" style="gap: 1rem; width: 100%;">
+              <div>
+                <p id="dash-meta" style="color: var(--brand-primary); font-weight: 600; font-size: 0.85rem; margin: 0 0 0.5rem 0;">Company Name &bull; Email</p>
+                <p id="dash-bio" style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin: 0; font-style: italic;">Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.</p>
+              </div>
+              
+              <!-- Stats grid -->
+              <div class="profile-stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                <div class="profile-stat-badge" style="padding: 0.5rem 0.25rem;">
+                  <div id="stat-posts-count" class="profile-stat-val" style="font-size: 1.3rem;">0</div>
+                  <div class="profile-stat-label" style="font-size: 0.6rem;">Total Posts</div>
+                </div>
+                <div class="profile-stat-badge" style="padding: 0.5rem 0.25rem;">
+                  <div id="stat-likes-count" class="profile-stat-val" style="font-size: 1.3rem;">0</div>
+                  <div class="profile-stat-label" style="font-size: 0.6rem;">Likes Received</div>
+                </div>
+                <div class="profile-stat-badge" style="padding: 0.5rem 0.25rem;">
+                  <div class="profile-stat-val" style="font-size: 1.3rem;">Weekly</div>
+                  <div class="profile-stat-label" style="font-size: 0.6rem;">Trending Active</div>
                 </div>
               </div>
-              
+
+              <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; width: 100%;">
+                <button type="button" id="edit-bio-toggle-btn" class="btn btn-outline" style="flex: 1; padding: 0.4rem 1rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; border-color: var(--border-color);"><i class="fa-solid fa-user-pen"></i> Edit Profile</button>
+                <button id="dashboard-logout-btn" class="btn btn-outline" style="flex: 1; padding: 0.4rem 1rem; font-size: 0.8rem; min-height: unset; border-radius: 30px; font-weight: 700; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2);">Sign Out</button>
+              </div>
             </div>
           </div>
-          
-        </div>
 
-        <div class="grid grid-3" id="blogs-grid">
-          <!-- Dynamic blogs container -->
-          <div id="dynamic-blogs-container" style="display: contents;"></div>
+          <!-- Profile Info Editor (Initially Collapsed) -->
+          <div id="edit-profile-fields-wrap" style="display: none; margin-bottom: 1.5rem;">
+            <form id="edit-profile-form" style="max-width: 100%; padding: 1.5rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-soft);">
+              <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">Update Your Profile Info</h3>
+              <div class="edit-profile-fields" style="grid-template-columns: 1fr; padding: 0; background: none; border: none;">
+                <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <label for="edit-profile-name" style="font-weight: 600; font-size: 0.82rem; color: var(--text-primary);">Display Name</label>
+                  <input id="edit-profile-name" placeholder="Name" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); padding: 0.55rem; font-size: 0.85rem;">
+                </div>
+                <div class="field" style="margin: 1rem 0 0 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <label for="edit-profile-company" style="font-weight: 600; font-size: 0.82rem; color: var(--text-primary);">Company / Role</label>
+                  <input id="edit-profile-company" placeholder="e.g. Writer / Independent" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); padding: 0.55rem; font-size: 0.85rem;">
+                </div>
+              </div>
+              <div class="field" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                <label for="edit-profile-bio" style="font-weight: 600; font-size: 0.82rem; color: var(--text-primary);">Short Bio</label>
+                <textarea id="edit-profile-bio" placeholder="Write a short description..." rows="2" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); padding: 0.55rem; font-size: 0.85rem; font-family: inherit; resize: vertical;"></textarea>
+              </div>
+              <div class="field" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                <label for="edit-profile-interests" style="font-weight: 600; font-size: 0.82rem; color: var(--text-primary);">Interests / Keywords (comma separated, e.g. SEO, Poetry, AI)</label>
+                <input id="edit-profile-interests" placeholder="SEO, Poetry, AI" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); padding: 0.55rem; font-size: 0.85rem;">
+              </div>
+              <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.45rem 1.25rem; border-radius: 30px; font-size: 0.8rem; font-weight: 700;">Save Details</button>
+                <button type="button" id="edit-profile-cancel-btn" class="btn btn-outline" style="padding: 0.45rem 1.25rem; border-radius: 30px; font-size: 0.8rem; font-weight: 700;">Cancel</button>
+              </div>
+            </form>
+          </div>
           
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-seo.webp" alt="Generative Search SEO" style="width: 100%; height: 100%; object-fit: cover;">
+          <!-- Dashboard Navigation Tabs -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button id="tab-btn-write" class="btn btn-primary" style="flex: 1; padding: 0.45rem 1.25rem; font-size: 0.85rem; min-height: unset; border-radius: 30px; font-weight: 700;"><i class="fa-solid fa-pen-to-square"></i> Write Post</button>
+            <button id="tab-btn-manage" class="btn btn-secondary" style="flex: 1; padding: 0.45rem 1.25rem; font-size: 0.85rem; min-height: unset; border-radius: 30px; font-weight: 700; background: var(--soft); border-color: var(--line); color: var(--text-secondary);"><i class="fa-solid fa-list"></i> My Posts (<span id="my-posts-count">0</span>)</button>
+          </div>
+          
+          <!-- Tab Contents -->
+          <div>
+            
+            <!-- Tab 1: Write Blog Form -->
+            <div id="tab-content-write" style="display: block;">
+              <form id="write-blog-form">
+                <h3 id="form-heading" style="font-size: 1.1rem; color: var(--text-primary); margin: 0 0 1rem 0; font-weight: 700;">Publish a New Post</h3>
+                <input type="hidden" id="editing-doc-id" value="">
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-title" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Title *</label>
+                    <input id="blog-title" required placeholder="The future of search engines..." style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; font-size: 0.88rem;">
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-category" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Category *</label>
+                    <select id="blog-category" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; font-size: 0.88rem; cursor: pointer;">
+                      <option value="Blog">Blog</option>
+                      <option value="Story">Story</option>
+                      <option value="Poetry">Poetry</option>
+                      <option value="Article">Article</option>
+                      <option value="Other">Other</option>
+                      <option value="SEO">SEO</option>
+                      <option value="AI Marketing">AI Marketing</option>
+                      <option value="Meta Ads">Meta Ads</option>
+                      <option value="Google Ads">Google Ads</option>
+                      <option value="Branding">Branding</option>
+                      <option value="Strategy">Strategy</option>
+                    </select>
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-visibility" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Visibility *</label>
+                    <select id="blog-visibility" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; font-size: 0.88rem; cursor: pointer;">
+                      <option value="Public">Public</option>
+                      <option value="Private">Private</option>
+                    </select>
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-company" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Display Role/Company *</label>
+                    <input id="blog-company" required placeholder="Acme Corp / Writer" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; font-size: 0.88rem;">
+                  </div>
+                  <div class="field" style="margin: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="blog-image" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Cover Image (Optional)</label>
+                    <input id="blog-image" type="file" accept="image/*" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.5rem; font-size: 0.85rem;">
+                    <span id="image-size-error" style="color: #ff4d4d; font-size: 0.78rem; display: none; margin-top: 4px; font-weight: 700;">File size exceeds 1MB. Please choose a smaller image.</span>
+                  </div>
+                </div>
+
+                <div class="field" style="margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <label for="blog-content" style="color: var(--text-primary); font-weight: 600; font-size: 0.85rem;">Content *</label>
+                  <textarea id="blog-content" required placeholder="Write content here..." rows="8" style="width: 100%; border-radius: var(--radius-soft); background: var(--soft); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.65rem; font-size: 0.88rem; font-family: inherit; line-height: 1.6; resize: vertical;"></textarea>
+                </div>
+                
+                <div id="image-preview-wrap" style="display: none; margin-bottom: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-soft); overflow: hidden; max-width: 200px; aspect-ratio: 16/9;">
+                  <img id="image-preview" src="" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                  <button type="submit" id="submit-blog-btn" class="btn btn-primary" style="padding: 0.55rem 1.5rem; font-weight: 900; border-radius: 30px; font-size: 0.85rem;"><i class="fa-solid fa-circle-check"></i> Publish Post</button>
+                  <button type="button" id="cancel-write-btn" class="btn btn-outline" onclick="window.toggleDrawer(false)" style="padding: 0.55rem 1.5rem; border-radius: 30px; font-size: 0.85rem;">Cancel</button>
+                </div>
+              </form>
             </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">SEO</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Future of Search: Navigating the Generative Search Era</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How Gemini, ChatGPT, and AI-driven answer summaries are changing search behavior, and how to stay ahead in organic search rankings.</p>
+            
+            <!-- Tab 2: Manage My Blogs List -->
+            <div id="tab-content-manage" style="display: none;">
+              <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 0 0 1rem 0; font-weight: 700;">Manage Your Published Posts</h3>
+              
+              <div style="overflow-x: auto; width: 100%; border-radius: var(--radius-soft); border: 1px solid var(--border-color);">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                  <thead>
+                    <tr style="background: var(--soft); border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+                      <th style="padding: 0.75rem 1rem; font-weight: 700;">Title</th>
+                      <th style="padding: 0.75rem 1rem; font-weight: 700;">Category</th>
+                      <th style="padding: 0.75rem 1rem; font-weight: 700; text-align: center;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="my-blogs-table-body" style="color: var(--text-secondary);">
+                    <tr>
+                      <td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No posts published yet.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+            
+          </div>
+      </div>
+    </div>
+
+    <!-- CHAT DRAWER BACKDROP -->
+    <div id="chat-drawer-backdrop" class="chat-drawer-backdrop" onclick="window.toggleChatDrawer(false)"></div>
+
+    <!-- LEFT SIDE CHAT DRAWER -->
+    <div id="chat-drawer" class="chat-drawer">
+      <div class="chat-drawer-header">
+        <h3 class="chat-drawer-title"><i class="fa-solid fa-comments" style="color: var(--brand-primary);"></i> Messages</h3>
+        <button type="button" class="chat-drawer-close" onclick="window.toggleChatDrawer(false)">&times;</button>
+      </div>
+      <div class="chat-drawer-body">
+        <!-- View 1: List of Active Chat Rooms -->
+        <div id="chat-rooms-view" class="chat-rooms-view">
+          <p style="text-align: center; color: var(--text-secondary); font-size: 0.88rem; margin: 2rem 0;">No active conversations yet.</p>
+        </div>
+        
+        <!-- View 2: Active Chat Conversation Feed -->
+        <div id="chat-conversation-view" class="chat-conversation-view">
+          <div class="chat-conversation-header">
+            <button id="chat-back-btn" class="btn btn-outline" style="min-height: unset; padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 30px;" type="button">
+              <i class="fa-solid fa-arrow-left"></i> Rooms
+            </button>
+            <div id="chat-recipient-avatar-wrap">
+              <img id="chat-recipient-avatar" class="chat-room-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="">
             </div>
-          </article>
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-ai.webp" alt="AI Content Automation" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">AI Marketing</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Leveraging Gemini & LLMs to Automate Content Velocity</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">A step-by-step framework to repurpose long-form assets into Reels, blogs, and social threads using modern AI automation pipelines.</p>
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
-            </div>
-          </article>
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-meta-ads.webp" alt="Meta Ads Optimization" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Meta Ads</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">High-ROAS Ad Copy Secrets for High-Ticket Clients</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">Visual hook patterns, direct response copy outlines, and creative formats that convert cold traffic into booked consultation calls.</p>
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
-            </div>
-          </article>
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-google-ads.webp" alt="Google Ads Scaling" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Google Ads</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Scaling Performance Max Campaigns Without Wasting Spend</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How to configure asset groups, target audiences, and placement exclusions for high-intent search engine dominance profitably.</p>
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
-            </div>
-          </article>
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-branding.webp" alt="Branding Guidelines" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Branding</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">The Anatomy of a Premium Personal Brand Portfolio</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">How to position yourself as an authority creative specialist by optimizing visual hierarchy, layouts, and trust signals.</p>
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
-            </div>
-          </article>
-          <article class="card blog-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 0; overflow: hidden;">
-            <div class="blog-image-wrap" style="width: 100%; aspect-ratio: 16/9; overflow: hidden; border-bottom: 1px solid var(--line);">
-              <img src="assets/blog-content.webp" alt="Content Marketing Strategy" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1;">
-              <span class="eyebrow" style="font-size: 0.7rem; margin: 0;">Content Marketing</span>
-              <h3 style="margin: 0; font-size: 1.2rem; line-height: 1.3;"><a href="#" style="color: var(--text-primary); transition: color 0.18s ease;">Building a Content Cluster Engine That Educates & Converts</a></h3>
-              <p style="font-size: 0.9rem; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; color: var(--text-secondary);">A blueprint for mapping informational, transactional, and comparative content pieces directly to your core business offers.</p>
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-              <a href="#" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1.25rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px;">Read More <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i></a>
-            </div>
-          </article>
+            <span id="chat-recipient-name" class="chat-conversation-title">Recipient Name</span>
+          </div>
+          <div id="chat-messages-feed" class="chat-messages-feed">
+            <!-- Messages render here -->
+          </div>
+          <form id="chat-input-form" class="chat-input-area">
+            <input id="chat-message-input" autocomplete="off" class="chat-input-field" placeholder="Type a message...">
+            <button type="submit" class="chat-send-btn" aria-label="Send message">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </form>
         </div>
       </div>
-    </section>
+    </div>
+
+    <!-- 4-STEP LOGOUT CONFIRMATION MODAL -->
+    <div id="logout-modal-backdrop" class="logout-modal-backdrop">
+      <div class="logout-modal-card">
+        <!-- Step Progress Indicator -->
+        <div class="logout-step-indicator">
+          <div class="logout-step-progress-line">
+            <div id="logout-progress-fill" class="logout-step-progress-fill"></div>
+          </div>
+          <div class="logout-step-dot active" data-step="1">1</div>
+          <div class="logout-step-dot" data-step="2">2</div>
+          <div class="logout-step-dot" data-step="3">3</div>
+          <div class="logout-step-dot" data-step="4">4</div>
+        </div>
+
+        <!-- Step Content Wizard -->
+        <div id="logout-step-content" class="logout-step-content">
+          <!-- Dynamically populated in script.js -->
+        </div>
+
+        <!-- Actions -->
+        <div class="logout-modal-actions">
+          <button id="logout-cancel-btn" class="btn btn-outline" style="border-radius: 30px; font-weight: 700; flex: 1;" type="button">Cancel</button>
+          <button id="logout-next-btn" class="btn btn-primary" style="border-radius: 30px; font-weight: 700; flex: 1;" type="button">Next Step</button>
+        </div>
+      </div>
+    </div>
   </main>
 """
     full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="blog") + body_html + HTML_FOOTER
@@ -711,7 +963,7 @@ def generate_contact_page():
           <h2>Direct Communication Channels For Rapid Scaling And Project Onboarding</h2>
           <p class="lead" style="text-align: left; margin-top: 1rem; color: var(--text-secondary);">We serve global clients with high-velocity marketing pipelines. Reach out via WhatsApp or submit the form for replies.</p>
           <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; color: var(--text-primary);">
-            <div><strong><i class="fa-solid fa-phone" style="color: var(--accent); margin-right: 8px;"></i> Phone / WhatsApp:</strong> <a href="https://wa.me/918840863659" style="color: var(--accent); font-weight: 700;">+91 88408 63659</a></div>
+            <div><strong><i class="fa-solid fa-phone" style="color: var(--accent); margin-right: 8px;"></i> Phone / WhatsApp:</strong> <a href="https://wa.me/91880863659" style="color: var(--accent); font-weight: 700;">+91 880863659</a></div>
             <div><strong><i class="fa-solid fa-envelope" style="color: var(--accent); margin-right: 8px;"></i> Email:</strong> info@jabzen.com</div>
             <div><strong><i class="fa-solid fa-location-dot" style="color: var(--accent); margin-right: 8px;"></i> Location:</strong> India (Global Delivery)</div>
           </div>
@@ -741,68 +993,164 @@ def generate_contact_page():
 
 def generate_about_page():
     filename = "about.html"
-    title = "About & Results | JABZEN | Premium Growth Partner"
-    desc = "Learn about JABZEN's philosophy, the team, and the verifiable growth metrics achieved across SEO, paid ads, and content systems."
+    title = "My Story & Jabzen | Abhishek Pratap Singh"
+    desc = "The honest story of Abhishek Pratap Singh, founder of Jabzen. How a college conversation in Lucknow survived detours, anxiety, and quiet failures to become a creative storytelling company."
     
     body_html = """  <main id="main">
-    <!-- Hero Section -->
-    <section class="page-hero" aria-labelledby="about-hero-title">
-      <div class="container reveal">
-        <span class="eyebrow">About JABZEN</span>
-        <h1 id="about-hero-title">A modern growth partner<br>with verifiable performance.</h1>
-        <p class="lead">We combine human-first positioning with rigorous analytics to build clean customer acquisition channels.</p>
+    <!-- Hero Section / Personal Letter Intro -->
+    <section class="about-story-hero" aria-labelledby="about-hero-title">
+      <div class="container about-hero-grid">
+        <div class="about-hero-copy reveal">
+          <span class="eyebrow">The Founder's Story</span>
+          <h1 id="about-hero-title">It started with a conversation between friends in Lucknow, back in 2012.</h1>
+          <p class="letter-intro">Hello. I'm Abhishek Pratap Singh. Jabzen isn't a massive corporate marketing agency, and it didn't start with a high-tech business roadmap. This is just the honest story of how a college dream survived years of detours, quiet failures, and starting over.</p>
+        </div>
+        <div class="reveal" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="about-hero-image-wrap">
+            <img src="assets/founder.png" alt="Abhishek Pratap Singh, Founder of JABZEN" fetchpriority="high">
+          </div>
+          <div class="handwritten-quote-card">
+            &ldquo;Jabzen is not the story of someone who had everything figured out. It is the story of someone who kept moving, even when he didn't.&rdquo;
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Section 2: Narrative -->
-    <section class="section" aria-labelledby="narrative-title">
+    <!-- The Personal Letter Section -->
+    <section class="personal-letter-section secondary-bg">
+      <div class="container letter-container reveal">
+        <div class="letter-body">
+          <p>Dear Friend,</p>
+          
+          <p>If I look back, the roots of Jabzen go back to the years between 2012 and 2015, during my college days at Shri Ramswaroop in Lucknow. Back then, there were three of us—three close friends, including myself—who would sit together and talk for hours about doing something of our own. We dreamed of building a creative space, designing, writing, and creating something that truly mattered. We didn't have a corporate roadmap or a business plan; we just had a shared enthusiasm. That conversation was the seed.</p>
+          
+          <p>The monogram logo we use today carries that memory. It is based on a picture taken with my two friends during those college days at Shri Ramswaroop. I designed the logo as a tribute to the three of us and those early dreams. Even though life took us in different directions and our paths evolved, the spirit of those conversations never left me. The logo is still there to remind me of where I started, and to keep that shared dream alive.</p>
+          
+          <p>After college, things got complicated. The dreams we had in college didn't match the reality of bills, jobs, and career detours. I went through years of uncertainty. I failed multiple times—not the kind of big, dramatic failures you read about in startup blogs, but the quiet, frustrating kind. Projects that quietly fizzled out, clients that walked away, and ideas that never got off the ground. The kind of setbacks many people experience but rarely talk about openly.</p>
+          
+          <p>There were months of feeling completely lost, struggling with anxiety, and wondering if I was just wasting my time. I lost my confidence more times than I care to admit. But through all those phases—the jobs I didn't want and the times I felt like giving up—the idea of Jabzen stayed in the back of my mind. It didn't shout for attention. It was just always there, refusing to go away.</p>
+          
+          <div class="letter-signature">
+            <span>Sincerely,</span>
+            <span class="handwritten-signature">Abhishek Pratap Singh</span>
+            <span class="role">Founder, Jabzen</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline of The Long Road -->
+    <section class="section" aria-labelledby="timeline-heading">
+      <div class="container" style="max-width: 900px;">
+        <div class="services-intro reveal" style="text-align: center; margin: 0 auto 3rem;">
+          <span class="eyebrow">The Timeline</span>
+          <h2 id="timeline-heading">A few milestones and failures along the way</h2>
+          <p style="color: var(--text-secondary); margin-top: 1rem;">Setbacks are the quieter parts of the journey that forge resilience.</p>
+        </div>
+        
+        <div class="timeline-container reveal">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2012 &ndash; 2015</div>
+            <div class="timeline-title">Lucknow College Days</div>
+            <div class="timeline-desc">Conversations with friends at Shri Ramswaroop, Lucknow, talking about starting something of our own. The monogram logo was created in memory of that time and that picture.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2016 &ndash; 2020</div>
+            <div class="timeline-title">The Detours &amp; Real Life</div>
+            <div class="timeline-desc">Trying different jobs, facing career setbacks, and learning how hard it is to build something from scratch. Quiet failures where plans simply didn't work out.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2021 &ndash; 2024</div>
+            <div class="timeline-title">Quiet Struggles &amp; Persistence</div>
+            <div class="timeline-desc">Dealing with anxiety, doubts, and quiet failures. The project remains alive, waiting in the background as a constant spark of hope.</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-year">2025 &ndash; Present</div>
+            <div class="timeline-title">Building Jabzen</div>
+            <div class="timeline-desc">Finally bringing the dream into the real world as a creative marketing and storytelling partner, helping other brands tell their stories honestly.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Belief Section -->
+    <section class="section secondary-bg" aria-labelledby="belief-heading" style="padding: 6rem 2rem;">
+      <div class="container reveal" style="text-align: center; max-width: 800px;">
+        <span class="eyebrow" id="belief-heading">Our Core Belief</span>
+        <blockquote style="font-family: var(--font-heading); font-style: italic; font-size: clamp(1.8rem, 3.5vw, 2.6rem); color: var(--text-primary); line-height: 1.35; margin-bottom: 2rem;">
+          &ldquo;Human beings connect through stories. Before technology, before algorithms, and before marketing, there were stories. Stories help us understand ourselves, understand each other, and help ideas survive.&rdquo;
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- What We Do Today -->
+    <section class="section" aria-labelledby="today-heading">
       <div class="container">
         <div class="philosophy-split reveal">
           <div class="philosophy-left">
-            <h2 id="narrative-title">Our Core<br>Belief.</h2>
+            <span class="eyebrow">Current Focus</span>
+            <h2 id="today-heading" style="font-size: clamp(2rem, 4vw, 3rem);">What Jabzen Is Today</h2>
           </div>
           <div class="philosophy-right">
-            <p style="font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--text-primary);">We believe digital growth shouldn't feel noisy, generic, or intrusive. The best marketing builds bridges of trust between exceptional companies and their future customers.</p>
-            <p>JABZEN operates as a premium consulting group rather than a high-volume agency. By limiting our client partnerships, we focus deeply on unit economics, attribution loops, and premium design standards.</p>
+            <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: var(--text-primary);">Today, Jabzen operates as a creative marketing and storytelling company. Our mission is not merely marketing, but helping ideas reach people through clear and aesthetic communication.</p>
+            <p>Our focus includes content creation, brand storytelling, digital growth, and educational blogs.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Section 3: Performance Case Audits (Original Results content) -->
-    <section class="section secondary-bg" aria-labelledby="results-grid-title">
+    <!-- The Future Is Open -->
+    <section class="section secondary-bg" aria-labelledby="future-heading">
       <div class="container">
-        <div class="services-intro reveal" style="text-align: center; margin-bottom: 4rem;">
-          <span class="eyebrow">Metrics Summary</span>
-          <h2 id="results-grid-title">Core Performance Metrics &amp; Case Audits</h2>
+        <div class="services-intro reveal" style="max-width: 700px; margin-bottom: 3rem;">
+          <span class="eyebrow">Possibilities</span>
+          <h2 id="future-heading" style="font-size: clamp(2rem, 4vw, 3rem);">The Future is Open</h2>
+          <p style="color: var(--text-secondary); margin-top: 1rem;">We don't describe our future plans as promises, but as possibilities. Creativity grows through exploration, and we intentionally keep the future open to new forms of expression:</p>
         </div>
         
-        <div class="grid grid-2">
-          <!-- Card 1 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Organic SEO Channel</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">+312% Search Volume</h3>
-            <p>We craft dense semantic clusters, technical structure, and programmatic pages for service providers to dominate target keywords and capture LLM citations.</p>
+        <div class="about-grid-3 reveal">
+          <div class="grid-card">
+            <h3 class="grid-card-title">Storytelling &amp; Media</h3>
+            <p class="grid-card-desc">Ventures into creative productions, short films, media projects, and digital ecosystems that explore storytelling.</p>
           </div>
-          <!-- Card 2 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Paid Campaigns</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">4.6x Meta &amp; Google ROAS</h3>
-            <p>We execute targeted ad creatives, direct-response copy variations, and custom landers that filter low-intent clicks and scale conversion rates.</p>
+          <div class="grid-card">
+            <h3 class="grid-card-title">Education &amp; Writing</h3>
+            <p class="grid-card-desc">Building platforms and content ecosystems designed to share what we have learned about writing and marketing.</p>
           </div>
-          <!-- Card 3 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">Creative Assets</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">5.8M Views &amp; Growth</h3>
-            <p>We script and produce educational concept Reels, short-form food videos, and vertical brand upgrades that convert visual hooks into booked consultations.</p>
-          </div>
-          <!-- Card 4 -->
-          <div class="card reveal">
-            <span class="eyebrow" style="margin-bottom: 0.5rem;">AI Systems</span>
-            <h3 style="font-size: 2rem; color: var(--brand-primary); margin-bottom: 1rem;">10x Content Velocity</h3>
-            <p>We build prompt workflows, text-to-video assets, and automated CRM follow-ups that keep operation overhead low and execution speed high.</p>
+          <div class="grid-card">
+            <h3 class="grid-card-title">Art &amp; Music</h3>
+            <p class="grid-card-desc">Music-related creative projects, digital products, and new forms of creative expression that do not yet exist today.</p>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Gratitude & Note of Thanks -->
+    <section class="section" aria-labelledby="gratitude-heading">
+      <div class="container">
+        <div class="gratitude-box reveal">
+          <span class="eyebrow" id="gratitude-heading">No Journey Is Built Alone</span>
+          <h3>A Note of Gratitude</h3>
+          <p>I don't believe in the myth of the 'self-made' person. I didn't get here alone. Every single step forward was possible because someone gave me a chance, offered advice, or simply stood by me. I am deeply grateful to my family, my college friends, my mentors, and the clients who trusted me when things were just starting.</p>
+          <p>I also acknowledge my deep gratitude toward God—not in a preachy way, but with a quiet sense of humility. Many things happened through grace, timing, and support beyond personal effort alone. Hard work matters, but many blessings cannot be earned alone.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Reflection Section -->
+    <section class="section secondary-bg" style="border-top: 1px solid var(--border-color); padding: 8rem 2rem;">
+      <div class="container reveal" style="text-align: center; max-width: 800px;">
+        <span class="eyebrow">Final Reflection</span>
+        <blockquote style="font-family: var(--font-heading); font-size: clamp(1.4rem, 2.5vw, 2rem); line-height: 1.5; color: var(--text-primary); margin-bottom: 3rem;">
+          &ldquo;Jabzen is not the story of someone who had everything figured out. It is the story of someone who kept moving, even when he didn't. A dream that began in a college conversation survived years of uncertainty and eventually found its way back into the real world. This is only the beginning. And for everyone who has been part of the journey &mdash; family, friends, mentors, supporters, and God &mdash; thank you.&rdquo;
+        </blockquote>
       </div>
     </section>
   </main>
@@ -863,7 +1211,8 @@ def generate_sitemap():
         ("ai-solutions", "0.9", "weekly"),
         ("about", "0.8", "weekly"),
         ("blog", "0.8", "weekly"),
-        ("contact", "0.8", "monthly")
+        ("contact", "0.8", "monthly"),
+        ("sitemap", "0.5", "monthly")
     ]
     
     xml = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -884,11 +1233,107 @@ def generate_sitemap():
         f.write("\n".join(xml) + "\n")
     print("Generated sitemap.xml")
 
+def generate_sitemap_page():
+    filename = "sitemap.html"
+    title = "Sitemap & Website Directory | JABZEN | Creative Marketing Freelancer"
+    desc = "A complete structural overview and index directory of the JABZEN website, luxury deliverables, and creator insights platform."
+    
+    body_html = """  <main id="main">
+    <section class="page-hero" style="padding: 120px 0 40px; text-align: center; background: var(--bg);">
+      <div class="container" style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 0 1.5rem;">
+        <span class="eyebrow" style="font-size: 0.82rem; letter-spacing: 0.15em; font-weight: 900; color: var(--accent);">Directory Index</span>
+        <h1 style="line-height: 1.15; font-size: clamp(2.2rem, 5.5vw, 3.8rem); font-weight: 800; font-family: Poppins, sans-serif; color: var(--text-primary); margin: 0;">Sitemap</h1>
+        <p class="lead" style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6; text-align: center; font-size: 1.05rem;">A complete structural overview and directory index of the JABZEN website, growth deliverables, and creator insights platform.</p>
+      </div>
+    </section>
+
+    <section class="section" style="padding: 40px 0 80px;">
+      <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+          
+          <!-- Category 1: Main Platform Pages -->
+          <div class="card" style="padding: 2.5rem; text-align: left; background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);">
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-compass"></i> Core Navigation
+            </h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+              <li>
+                <a href="./" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Home (Marketing)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Strategic client onboarding, premium case studies, testimonials, and FAQs.</p>
+              </li>
+              <li>
+                <a href="about" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">About (My Story)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">The personal letter, early Lucknow college memories, timeline, and company philosophy.</p>
+              </li>
+              <li>
+                <a href="contact" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Contact (Strategy Booking)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Lead capture consult bookings and direct WhatsApp communication links.</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Category 2: Premium Services -->
+          <div class="card" style="padding: 2.5rem; text-align: left; background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);">
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-cubes"></i> Growth Services
+            </h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+              <li>
+                <a href="search-marketing" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Search Marketing (SEO)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Technical SEO, Answer Engine (AEO) and Generative Search (GEO) optimization.</p>
+              </li>
+              <li>
+                <a href="performance-marketing" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Performance Ads</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">High-converting ad funnels, Meta Ads, and dynamic pixel flows.</p>
+              </li>
+              <li>
+                <a href="creative-services" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Creative Production</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Video editing, Reels, brand monographs, and typography guidelines.</p>
+              </li>
+              <li>
+                <a href="ai-solutions" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">AI Marketing Solutions</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Virtual guide presenters, voice cloning, and workflow automations.</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Category 3: Insights & Platform -->
+          <div class="card" style="padding: 2.5rem; text-align: left; background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);">
+            <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-feather-pointed"></i> Creator Insights
+            </h3>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+              <li>
+                <a href="blog" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Creator Feed (Blog)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Public feed of marketing updates, story articles, and creative poetry drafts.</p>
+              </li>
+              <li>
+                <a href="blog#write" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Write Article (Dashboard)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Publisher tab, settings options, privacy/visibility settings, and edit actions.</p>
+              </li>
+              <li>
+                <a href="blog#messages" style="font-weight: 700; color: var(--text-primary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 0.25rem;">Peer Messenger (Chat)</a>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Direct messaging capabilities to chat with other creator authors inline.</p>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+"""
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="sitemap") + body_html + HTML_FOOTER
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(full_content)
+    print("Generated sitemap.html")
+
 def main():
     generate_service_pages()
     generate_blog_page()
     generate_contact_page()
     generate_about_page()
+    generate_sitemap_page()
     generate_sitemap()
     minify_css("styles.css", "styles.min.css")
     minify_js("script.js", "script.min.js")
