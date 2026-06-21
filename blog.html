@@ -648,6 +648,35 @@
         </div>
       </div>
     </div>
+
+    <!-- PROFILE VIEW MODAL -->
+    <div id="profile-modal-backdrop" class="profile-modal-backdrop" onclick="window.closeProfileModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box;">
+      <div class="profile-modal-card" onclick="event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); width: 440px; max-width: 100%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; flex-direction: column; position: relative;">
+        <!-- Close Button -->
+        <button class="profile-modal-close" onclick="window.closeProfileModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; line-height: 1; transition: var(--transition-smooth); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;" onmouseover="this.style.background='var(--soft)'" onmouseout="this.style.background='none'">&times;</button>
+        
+        <!-- Header background / design -->
+        <div style="height: 100px; background: linear-gradient(135deg, var(--brand-primary) 0%, #121212 100%); opacity: 0.85;"></div>
+        
+        <!-- User Info Card content -->
+        <div style="padding: 0 2rem 2rem 2rem; margin-top: -50px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+          <img id="profile-modal-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--bg-secondary); background: var(--bg-secondary); object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 1rem;">
+          
+          <h3 id="profile-modal-name" style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--text-primary); font-weight: 700; margin: 0 0 0.25rem 0;">Creator Name</h3>
+          <p id="profile-modal-email" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 1.25rem 0; font-family: var(--font-body); font-weight: 500; word-break: break-all; opacity: 0.8;"></p>
+          
+          <div id="profile-modal-bio-container" style="border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 1.25rem 0; width: 100%; margin-bottom: 1.5rem; text-align: left;">
+            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); display: block; margin-bottom: 0.35rem; font-weight: 700;">Bio &amp; Interests</span>
+            <div id="profile-modal-bio" style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.5; font-style: italic;">No bio written.</div>
+          </div>
+          
+          <!-- Actions Container -->
+          <div id="profile-modal-actions" style="width: 100%;">
+            <!-- Loaded dynamically in script.js -->
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Floating social FAB menu bottom right -->

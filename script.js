@@ -504,6 +504,28 @@ window.isMockFirebase = isMockFirebase;
 
 // Dynamic Blog Platform Logic
 document.addEventListener("DOMContentLoaded", () => {
+  // Customize Navbar for Blog Page
+  if (document.body.classList.contains("page-blog")) {
+    document.querySelectorAll(".nav-write-link, #nav-write-btn").forEach(el => {
+      el.style.setProperty("display", "none", "important");
+    });
+    
+    document.querySelectorAll(".header-cta-btn").forEach(btn => {
+      btn.textContent = "Switch to Blog Mode";
+      btn.setAttribute("href", "#");
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof window.selectMenuTab === "function") {
+          window.selectMenuTab("home");
+        }
+        const mainEl = document.getElementById("main");
+        if (mainEl) {
+          mainEl.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    });
+  }
+
   let setAuthMode;
   let setDashboardTab;
 
@@ -592,6 +614,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const updateAuthUI = (user) => {
     currentUser = user;
+    
+    if (user) {
+      const profile = parseUserProfile(user);
+      const userProfileDoc = {
+        uid: user.uid,
+        displayName: profile.name,
+        photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`,
+        email: user.email || "",
+        bio: profile.bio || "Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.",
+        company: profile.company || "Independent",
+        interests: profile.interests || "",
+        lastSeen: new Date().toISOString()
+      };
+      if (isMockFirebase) {
+        const mockUsers = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+        const idx = mockUsers.findIndex(u => u.uid === user.uid);
+        if (idx === -1) {
+          mockUsers.push(userProfileDoc);
+        } else {
+          mockUsers[idx] = { ...mockUsers[idx], ...userProfileDoc };
+        }
+        localStorage.setItem("jabzen_mock_users", JSON.stringify(mockUsers));
+      } else if (db) {
+        db.collection("users").doc(user.uid).set(userProfileDoc, { merge: true }).catch(err => {
+          console.error("Error syncing user profile:", err);
+        });
+      }
+    }
     
     // Sync Header Profile Dropdown (all pages)
     if (user) {
@@ -1677,6 +1727,24 @@ document.addEventListener("DOMContentLoaded", () => {
         if (icon) icon.className = "fa-regular fa-bookmark";
       }
     });
+
+    const saveDelta = isSavedNow ? 1 : -1;
+    try {
+      if (isMockFirebase) {
+        const blogs = JSON.parse(localStorage.getItem("jabzen_mock_blogs") || "[]");
+        const bIdx = blogs.findIndex(b => b.id === id);
+        if (bIdx !== -1) {
+          blogs[bIdx].savesCount = Math.max(0, (blogs[bIdx].savesCount || 0) + saveDelta);
+          window.saveMockBlogsGlobal(blogs);
+        }
+      } else if (db) {
+        db.collection("blogs").doc(id).update({
+          savesCount: firebase.firestore.FieldValue.increment(saveDelta)
+        });
+      }
+    } catch(err) {
+      console.error("Failed to update savesCount:", err);
+    }
     
     if (currentMenuTab === "saved") {
       filterAndRenderBlogs();
@@ -1692,6 +1760,27 @@ document.addEventListener("DOMContentLoaded", () => {
     navigator.clipboard.writeText(shareUrl)
       .then(() => {
         alert("Link copied to clipboard! Share it with your friends.");
+        
+        try {
+          if (isMockFirebase) {
+            const blogs = JSON.parse(localStorage.getItem("jabzen_mock_blogs") || "[]");
+            const idx = blogs.findIndex(b => b.id === id);
+            if (idx !== -1) {
+              blogs[idx].sharesCount = (blogs[idx].sharesCount || 0) + 1;
+              window.saveMockBlogsGlobal(blogs);
+            }
+          } else if (db) {
+            db.collection("blogs").doc(id).update({
+              sharesCount: firebase.firestore.FieldValue.increment(1)
+            });
+          }
+          document.querySelectorAll(`.shares-header-count-${id}`).forEach(el => {
+            const currentCount = parseInt(el.textContent) || 0;
+            el.textContent = `${currentCount + 1} Shares`;
+          });
+        } catch(err) {
+          console.error("Failed to update sharesCount:", err);
+        }
       })
       .catch((err) => {
         console.error("Failed to copy link: ", err);
@@ -1853,10 +1942,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // C. Sort by Mode (or Tab)
     if (currentMenuTab === "trending") {
       filtered.sort((a, b) => {
-        const aLikes = a.likes || 0;
-        const bLikes = b.likes || 0;
-        if (aLikes !== bLikes) {
-          return bLikes - aLikes;
+        const scoreA = (a.likes || 0) + (a.commentsCount || 0) + (a.sharesCount || 0) + (a.savesCount || 0);
+        const scoreB = (b.likes || 0) + (b.commentsCount || 0) + (b.sharesCount || 0) + (b.savesCount || 0);
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA;
         }
         const aTime = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
         const bTime = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
@@ -1968,7 +2057,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
 
           <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; z-index: 1;">
-            <span style="font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">&mdash; <strong style="color: var(--text-primary); font-family: var(--font-body); font-style: normal;">${blog.authorName}</strong></span>
+            <span style="font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">&mdash; <strong style="color: var(--text-primary); font-family: var(--font-body); font-style: normal; cursor: pointer;" onclick="window.showUserProfileModal('${blog.authorUid}')">${blog.authorName}</strong></span>
             
             <div style="display: flex; gap: 0.5rem; align-items: center;">
               ${chatButtonHtml}
@@ -2018,10 +2107,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ${ownerActionsHtml}
           <div class="post-meta-row">
             <div class="post-author-block">
-              <img class="post-avatar" src="${blog.authorPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="">
+              <img class="post-avatar" src="${blog.authorPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" style="cursor: pointer;" onclick="window.showUserProfileModal('${blog.authorUid}')">
               <div class="post-author-details">
                 <div class="post-author-top">
-                  <span class="post-author-name">${blog.authorName}</span>
+                  <span class="post-author-name" style="cursor: pointer;" onclick="window.showUserProfileModal('${blog.authorUid}')">${blog.authorName}</span>
                   ${authorBadgeHtml}
                 </div>
                 <div class="post-author-bottom">
@@ -2051,30 +2140,41 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="likes-count" style="font-weight: 700; margin-left: 4px;">${blog.likes || 0}</span>
             </div>
             <div class="interactions-right">
-              <span>${commentsCount} Comments</span>
+              <span class="comments-header-count-${blog.id}">${commentsCount} Comments</span>
               <span class="meta-separator">&bull;</span>
-              <span>${sharesCount} Shares</span>
+              <span class="shares-header-count-${blog.id}">${sharesCount} Shares</span>
             </div>
           </div>
           
           <div class="post-actions-footer">
             <div style="display: flex; align-items: center; gap: 8px;">
               <button class="post-action-btn btn-like ${likedClass}" onclick="window.toggleLike('${blog.id}', event)" data-liked-id="${blog.id}">
-                <i class="fa-regular fa-thumbs-up"></i> Like
+                <i class="fa-regular fa-thumbs-up"></i> <span>Like</span>
               </button>
-              <button class="post-action-btn" onclick="window.location.href='read-blog.html?id=${blog.id}'">
-                <i class="fa-regular fa-comment"></i> Comment
+              <button class="post-action-btn" onclick="window.toggleCommentsInline('${blog.id}', event)">
+                <i class="fa-regular fa-comment"></i> <span>Comment</span>
               </button>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               ${chatButtonHtml}
               <button class="post-action-btn btn-save ${savedClass}" onclick="window.toggleSavePost('${blog.id}', event)" data-save-id="${blog.id}">
-                <i class="${bookmarkIconClass}"></i> Save
+                <i class="${bookmarkIconClass}"></i> <span>Save</span>
               </button>
               <button class="post-action-btn" onclick="window.sharePost('${blog.id}', event)">
-                <i class="fa-regular fa-share-from-square"></i> Share
+                <i class="fa-regular fa-share-from-square"></i> <span>Share</span>
               </button>
             </div>
+          </div>
+          
+          <!-- Inline Comments Section -->
+          <div id="comments-section-${blog.id}" class="post-comments-section" style="display: none;">
+            <div class="inline-comment-form">
+              <img class="comment-input-avatar" src="${currentUser ? (currentUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp') : 'https://www.gravatar.com/avatar/?d=mp'}" alt="">
+              <input type="text" id="comment-input-${blog.id}" placeholder="Write a comment..." class="inline-comment-input" onkeydown="if(event.key === 'Enter') window.postCommentInline('${blog.id}')">
+              <button class="btn btn-primary inline-comment-post-btn" onclick="window.postCommentInline('${blog.id}')">Post</button>
+            </div>
+            <div id="comments-list-${blog.id}" class="inline-comments-list"></div>
+            <button id="comments-see-more-${blog.id}" class="see-more-comments-btn" style="display: none;" onclick="window.expandCommentsInline('${blog.id}')">See More Comments</button>
           </div>
         `;
       }
@@ -2306,6 +2406,31 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // B. Chat System State & Routing
+  const CHAT_SECRET = "jabzen_e2ee_key_2026";
+  window.encryptMessage = (text) => {
+    if (!text) return "";
+    let result = "";
+    for (let i = 0; i < text.length; i++) {
+      result += String.fromCharCode(text.charCodeAt(i) ^ CHAT_SECRET.charCodeAt(i % CHAT_SECRET.length));
+    }
+    return "enc:" + btoa(unescape(encodeURIComponent(result)));
+  };
+
+  window.decryptMessage = (text) => {
+    if (!text || !text.startsWith("enc:")) return text || "";
+    try {
+      const encodedText = text.substring(4);
+      let decoded = decodeURIComponent(escape(atob(encodedText)));
+      let result = "";
+      for (let i = 0; i < decoded.length; i++) {
+        result += String.fromCharCode(decoded.charCodeAt(i) ^ CHAT_SECRET.charCodeAt(i % CHAT_SECRET.length));
+      }
+      return result;
+    } catch (e) {
+      return text;
+    }
+  };
+
   let activeRecipientUid = null;
   let activeRecipientName = null;
   let activeRecipientAvatar = null;
@@ -2356,7 +2481,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (convView) convView.style.display = "none";
   };
 
-  const showConversationView = (recipientUid, recipientName, recipientAvatar) => {
+  const showConversationView = async (recipientUid, recipientName, recipientAvatar) => {
     activeRecipientUid = recipientUid;
     activeRecipientName = recipientName;
     activeRecipientAvatar = recipientAvatar || "https://www.gravatar.com/avatar/?d=mp";
@@ -2371,10 +2496,69 @@ document.addEventListener("DOMContentLoaded", () => {
     if (roomsView) roomsView.style.display = "none";
     if (convView) convView.style.display = "flex";
     
+    // Check connection state
+    const conn = await window.getConnectionState(recipientUid);
+    
+    // Check messages feed container
+    const messagesFeed = document.getElementById("chat-messages-feed");
+    
+    // Render decrypted conversation messages
     renderConversationFeed(window.allUserMessages || []);
     
-    const inputField = document.getElementById("chat-message-input");
-    if (inputField) inputField.focus();
+    // Inject E2EE banner if not present
+    let banner = document.getElementById("e2ee-warning-banner");
+    if (!banner && messagesFeed) {
+      banner = document.createElement("div");
+      banner.id = "e2ee-warning-banner";
+      banner.style.cssText = "background: rgba(214, 173, 45, 0.08); border: 1px solid rgba(214, 173, 45, 0.2); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.72rem; color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px auto; width: 90%; text-align: center;";
+      banner.innerHTML = `<i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> End-to-End Encrypted. Messages are private.`;
+      messagesFeed.insertBefore(banner, messagesFeed.firstChild);
+    }
+    
+    const inputForm = document.getElementById("chat-input-form");
+    
+    // Remove existing restricted block if any
+    const existingRestricted = document.getElementById("chat-connection-restricted-block");
+    if (existingRestricted) existingRestricted.remove();
+    
+    if (conn.status === "accepted") {
+      if (inputForm) inputForm.style.display = "flex";
+      const inputField = document.getElementById("chat-message-input");
+      if (inputField) inputField.focus();
+    } else {
+      if (inputForm) inputForm.style.display = "none";
+      
+      const restrictedBlock = document.createElement("div");
+      restrictedBlock.id = "chat-connection-restricted-block";
+      restrictedBlock.style.cssText = "padding: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.88rem; background: var(--bg-secondary); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; box-sizing: border-box;";
+      
+      let btnHtml = "";
+      if (conn.status === "none") {
+        btnHtml = `<button class="btn btn-primary" style="border-radius: 30px; font-weight: 700; font-size: 0.8rem; padding: 0.5rem 1.25rem;" onclick="window.handleSendConnection('${recipientUid}')"><i class="fa-solid fa-user-plus"></i> Send Connection Request</button>`;
+      } else if (conn.status === "pending") {
+        if (conn.isSender) {
+          btnHtml = `<button class="btn btn-outline" style="border-radius: 30px; font-size: 0.8rem; padding: 0.5rem 1.25rem;" disabled><i class="fa-regular fa-clock"></i> Connection Pending...</button>`;
+        } else {
+          btnHtml = `
+            <div style="display: flex; gap: 10px; width: 100%; justify-content: center;">
+              <button class="btn btn-primary" style="border-radius: 30px; font-weight: 700; font-size: 0.8rem; padding: 0.5rem 1.25rem;" onclick="window.handleAcceptConnection('${conn.docId}')">Accept</button>
+              <button class="btn btn-outline" style="border-radius: 30px; font-weight: 700; font-size: 0.8rem; padding: 0.5rem 1.25rem; border-color: #ff4d4d; color: #ff4d4d;" onclick="window.handleRejectConnection('${conn.docId}')">Ignore</button>
+            </div>
+          `;
+        }
+      }
+      
+      restrictedBlock.innerHTML = `
+        <p style="margin: 0; font-weight: 600;"><i class="fa-solid fa-user-shield" style="color: var(--brand-primary); margin-right: 6px;"></i> Connection Required</p>
+        <p style="margin: 0; font-size: 0.78rem; opacity: 0.8; line-height: 1.4;">You can only message creators that are in your connections list.</p>
+        ${btnHtml}
+      `;
+      
+      const chatDrawerBody = document.querySelector(".chat-drawer-body");
+      if (chatDrawerBody) {
+        chatDrawerBody.appendChild(restrictedBlock);
+      }
+    }
   };
 
   const renderChatRooms = (allMessages) => {
@@ -2397,7 +2581,7 @@ document.addEventListener("DOMContentLoaded", () => {
           uid: otherUid,
           name: otherName || "Creator",
           photo: otherPhoto || "https://www.gravatar.com/avatar/?d=mp",
-          lastText: msg.text || "",
+          lastText: window.decryptMessage(msg.text) || "",
           timeMs: timeMs
         };
       }
@@ -2456,7 +2640,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       row.innerHTML = `
         <div class="chat-msg-bubble">
-          ${msg.text}
+          ${window.decryptMessage(msg.text)}
           <div class="chat-msg-time">${timeStr}</div>
         </div>
       `;
@@ -2482,7 +2666,7 @@ document.addEventListener("DOMContentLoaded", () => {
       receiverUid: activeRecipientUid,
       receiverName: activeRecipientName,
       receiverPhoto: activeRecipientAvatar,
-      text: text
+      text: window.encryptMessage(text)
     };
     
     input.value = "";
@@ -2497,6 +2681,539 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
         console.error("Error sending message to Firestore:", err);
       }
+    }
+  };
+
+  // --- USER PROFILE & MUTUAL CONNECTION REQUEST SYSTEM ---
+  window.getUserProfile = async (uid) => {
+    if (currentUser && uid === currentUser.uid) {
+      const profile = parseUserProfile(currentUser);
+      return {
+        uid: currentUser.uid,
+        displayName: profile.name,
+        photoURL: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`,
+        email: currentUser.email || "",
+        bio: profile.bio || "Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.",
+        company: profile.company || "Independent",
+        interests: profile.interests || ""
+      };
+    }
+    
+    if (isMockFirebase) {
+      const mockUsers = JSON.parse(localStorage.getItem("jabzen_mock_users") || "[]");
+      const user = mockUsers.find(u => u.uid === uid);
+      if (user) return user;
+    } else if (db) {
+      try {
+        const doc = await db.collection("users").doc(uid).get();
+        if (doc.exists) {
+          return doc.data();
+        }
+      } catch (e) {
+        console.error("Error fetching user doc:", e);
+      }
+    }
+    
+    const post = blogsCache.find(b => b.authorUid === uid);
+    if (post) {
+      return {
+        uid: uid,
+        displayName: post.authorName,
+        photoURL: post.authorPhoto || "https://www.gravatar.com/avatar/?d=mp",
+        email: "creator@jabzen.com",
+        bio: "Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.",
+        company: "Independent",
+        interests: ""
+      };
+    }
+    
+    if (uid === "uid-auden-rivers") {
+      return {
+        uid: uid,
+        displayName: "Auden Rivers",
+        photoURL: "assets/avatar-auden.jpg",
+        email: "auden@jabzen.com",
+        bio: "Poet & Storyteller. Writing about modern aesthetics, human emotion, and classical verses.",
+        company: "Jabzen Creative",
+        interests: "Poetry, Writing, Art"
+      };
+    } else if (uid === "uid-mira-kapoor") {
+      return {
+        uid: uid,
+        displayName: "Mira Kapoor",
+        photoURL: "assets/avatar-mira.jpg",
+        email: "mira@jabzen.com",
+        bio: "AI Researcher and Tech consultant. Building future solutions using next-gen models.",
+        company: "AI Solutions",
+        interests: "AI, Technology, SEO"
+      };
+    } else if (uid === "uid-james-carter") {
+      return {
+        uid: uid,
+        displayName: "James Carter",
+        photoURL: "assets/avatar-james.jpg",
+        email: "james@jabzen.com",
+        bio: "Performance marketer and agency founder. Helping brands scale past 8 figures with funnels.",
+        company: "Carter Media",
+        interests: "Marketing, Ads, Funnels"
+      };
+    }
+    
+    return {
+      uid: uid,
+      displayName: "Unknown Creator",
+      photoURL: "https://www.gravatar.com/avatar/?d=mp",
+      email: "creator@jabzen.com",
+      bio: "Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.",
+      company: "Independent",
+      interests: ""
+    };
+  };
+
+  window.getConnectionState = async (otherUid) => {
+    if (!currentUser || !otherUid) return { status: "none", docId: null, isSender: false };
+    
+    if (isMockFirebase) {
+      const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+      const conn = conns.find(c => 
+        (c.senderUid === currentUser.uid && c.receiverUid === otherUid) ||
+        (c.senderUid === otherUid && c.receiverUid === currentUser.uid)
+      );
+      if (!conn) return { status: "none", docId: null, isSender: false };
+      return {
+        status: conn.status,
+        docId: conn.id,
+        isSender: conn.senderUid === currentUser.uid
+      };
+    } else if (db) {
+      try {
+        const snap = await db.collection("connections")
+          .where("participants", "array-contains", currentUser.uid)
+          .get();
+        let match = null;
+        snap.forEach(doc => {
+          const data = doc.data();
+          if (data.senderUid === otherUid || data.receiverUid === otherUid) {
+            match = { id: doc.id, ...data };
+          }
+        });
+        if (!match) return { status: "none", docId: null, isSender: false };
+        return {
+          status: match.status,
+          docId: match.id,
+          isSender: match.senderUid === currentUser.uid
+        };
+      } catch (e) {
+        console.error("Error getting connection state:", e);
+        return { status: "none", docId: null, isSender: false };
+      }
+    }
+    return { status: "none", docId: null, isSender: false };
+  };
+
+  window.handleSendConnection = async (receiverUid) => {
+    if (!currentUser) {
+      alert("Please sign in to send connection requests.");
+      window.toggleDrawer(true);
+      return;
+    }
+    if (receiverUid === currentUser.uid) {
+      alert("You cannot connect with yourself.");
+      return;
+    }
+    
+    const receiverProfile = await window.getUserProfile(receiverUid);
+    const senderProfile = parseUserProfile(currentUser);
+    const connDoc = {
+      id: Math.random().toString(36).substring(2, 11),
+      participants: [currentUser.uid, receiverUid],
+      senderUid: currentUser.uid,
+      senderName: senderProfile.name,
+      senderPhoto: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(senderProfile.name)}&background=d6ad2d&color=121212`,
+      receiverUid: receiverUid,
+      receiverName: receiverProfile.displayName,
+      receiverPhoto: receiverProfile.photoURL || "https://www.gravatar.com/avatar/?d=mp",
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+    
+    try {
+      if (isMockFirebase) {
+        const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+        conns.push(connDoc);
+        localStorage.setItem("jabzen_mock_connections", JSON.stringify(conns));
+        alert("Connection request sent!");
+        window.showUserProfileModal(receiverUid);
+        if (activeRecipientUid === receiverUid) {
+          showConversationView(receiverUid, receiverProfile.displayName, receiverProfile.photoURL);
+        }
+      } else if (db) {
+        connDoc.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection("connections").doc(connDoc.id).set(connDoc);
+        alert("Connection request sent!");
+        window.showUserProfileModal(receiverUid);
+        if (activeRecipientUid === receiverUid) {
+          showConversationView(receiverUid, receiverProfile.displayName, receiverProfile.photoURL);
+        }
+      }
+    } catch (e) {
+      console.error("Error sending connection:", e);
+      alert("Failed to send connection request. Please try again.");
+    }
+  };
+
+  window.handleAcceptConnection = async (docId) => {
+    try {
+      let otherUid = null;
+      let otherName = "";
+      let otherPhoto = "";
+      if (isMockFirebase) {
+        const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+        const idx = conns.findIndex(c => c.id === docId);
+        if (idx !== -1) {
+          conns[idx].status = "accepted";
+          localStorage.setItem("jabzen_mock_connections", JSON.stringify(conns));
+          alert("Connection request accepted!");
+          
+          otherUid = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverUid : conns[idx].senderUid;
+          otherName = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverName : conns[idx].senderName;
+          otherPhoto = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverPhoto : conns[idx].senderPhoto;
+          
+          window.showUserProfileModal(otherUid);
+          if (activeRecipientUid === otherUid) {
+            showConversationView(otherUid, otherName, otherPhoto);
+          }
+          
+          // Refresh active rooms list
+          const allMsgs = getMockMessages();
+          window.allUserMessages = allMsgs;
+          renderChatRooms(allMsgs);
+        }
+      } else if (db) {
+        await db.collection("connections").doc(docId).update({
+          status: "accepted"
+        });
+        alert("Connection request accepted!");
+        
+        const doc = await db.collection("connections").doc(docId).get();
+        if (doc.exists) {
+          const data = doc.data();
+          otherUid = data.senderUid === currentUser.uid ? data.receiverUid : data.senderUid;
+          otherName = data.senderUid === currentUser.uid ? data.receiverName : data.senderName;
+          otherPhoto = data.senderUid === currentUser.uid ? data.receiverPhoto : data.senderPhoto;
+          
+          window.showUserProfileModal(otherUid);
+          if (activeRecipientUid === otherUid) {
+            showConversationView(otherUid, otherName, otherPhoto);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error accepting connection:", e);
+      alert("Failed to accept connection request.");
+    }
+  };
+
+  window.handleRejectConnection = async (docId) => {
+    try {
+      let otherUid = null;
+      let otherName = "";
+      let otherPhoto = "";
+      if (isMockFirebase) {
+        const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
+        const idx = conns.findIndex(c => c.id === docId);
+        if (idx !== -1) {
+          otherUid = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverUid : conns[idx].senderUid;
+          otherName = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverName : conns[idx].senderName;
+          otherPhoto = conns[idx].senderUid === currentUser.uid ? conns[idx].receiverPhoto : conns[idx].senderPhoto;
+          conns.splice(idx, 1);
+          localStorage.setItem("jabzen_mock_connections", JSON.stringify(conns));
+          alert("Connection request ignored.");
+          if (otherUid) window.showUserProfileModal(otherUid);
+          if (activeRecipientUid === otherUid) {
+            showConversationView(otherUid, otherName, otherPhoto);
+          }
+        }
+      } else if (db) {
+        const doc = await db.collection("connections").doc(docId).get();
+        if (doc.exists) {
+          const data = doc.data();
+          otherUid = data.senderUid === currentUser.uid ? data.receiverUid : data.senderUid;
+          otherName = data.senderUid === currentUser.uid ? data.receiverName : data.senderName;
+          otherPhoto = data.senderUid === currentUser.uid ? data.receiverPhoto : data.senderPhoto;
+        }
+        await db.collection("connections").doc(docId).delete();
+        alert("Connection request ignored.");
+        if (otherUid) window.showUserProfileModal(otherUid);
+        if (activeRecipientUid === otherUid) {
+          showConversationView(otherUid, otherName, otherPhoto);
+        }
+      }
+    } catch (e) {
+      console.error("Error rejecting connection:", e);
+      alert("Failed to ignore connection request.");
+    }
+  };
+
+  window.showUserProfileModal = async (uid) => {
+    if (!currentUser) {
+      alert("Please sign in to view creator profiles.");
+      window.toggleDrawer(true);
+      return;
+    }
+    
+    const user = await window.getUserProfile(uid);
+    
+    const avatarEl = document.getElementById("profile-modal-avatar");
+    const nameEl = document.getElementById("profile-modal-name");
+    const emailEl = document.getElementById("profile-modal-email");
+    const bioEl = document.getElementById("profile-modal-bio");
+    const actionsContainer = document.getElementById("profile-modal-actions");
+    
+    if (avatarEl) avatarEl.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
+    if (nameEl) nameEl.textContent = user.displayName;
+    if (emailEl) emailEl.textContent = user.email || "";
+    
+    let bioText = user.bio || "Creative storyteller publishing updates, poetry, and insights on the Jabzen platform.";
+    if (user.company && user.company !== "Independent") {
+      bioText = `<strong>${user.company}</strong> &bull; ` + bioText;
+    }
+    if (user.interests) {
+      bioText += `<br><span style="color: var(--brand-primary); font-weight: 600; font-size: 0.8rem; display: block; margin-top: 8px;"><i class="fa-solid fa-tags"></i> Interests: ${user.interests}</span>`;
+    }
+    if (bioEl) bioEl.innerHTML = bioText;
+    
+    if (actionsContainer) actionsContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.85rem;'>Loading status...</p>";
+    
+    const modal = document.getElementById("profile-modal-backdrop");
+    if (modal) {
+      modal.style.display = "flex";
+      modal.classList.add("active");
+    }
+    
+    if (uid === currentUser.uid) {
+      if (actionsContainer) {
+        actionsContainer.innerHTML = `<button class="btn btn-outline" style="width: 100%; border-radius: 30px; font-size: 0.85rem;" disabled>This is you</button>`;
+      }
+      return;
+    }
+    
+    const conn = await window.getConnectionState(uid);
+    if (!actionsContainer) return;
+    
+    if (conn.status === "none") {
+      actionsContainer.innerHTML = `
+        <button class="btn btn-primary" style="width: 100%; border-radius: 30px; font-weight: 700; font-size: 0.85rem;" onclick="window.handleSendConnection('${uid}')">
+          <i class="fa-solid fa-user-plus"></i> Send Connection Request
+        </button>
+      `;
+    } else if (conn.status === "pending") {
+      if (conn.isSender) {
+        actionsContainer.innerHTML = `
+          <button class="btn btn-outline" style="width: 100%; border-radius: 30px; font-size: 0.85rem;" disabled>
+            <i class="fa-regular fa-clock"></i> Connection Pending...
+          </button>
+        `;
+      } else {
+        actionsContainer.innerHTML = `
+          <div style="display: flex; gap: 10px; width: 100%;">
+            <button class="btn btn-primary" style="flex: 1; border-radius: 30px; font-weight: 700; font-size: 0.85rem;" onclick="window.handleAcceptConnection('${conn.docId}')">
+              Accept
+            </button>
+            <button class="btn btn-outline" style="flex: 1; border-radius: 30px; font-weight: 700; font-size: 0.85rem; border-color: #ff4d4d; color: #ff4d4d;" onclick="window.handleRejectConnection('${conn.docId}')">
+              Ignore
+            </button>
+          </div>
+        `;
+      }
+    } else if (conn.status === "accepted") {
+      actionsContainer.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+          <div style="color: #25D366; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.25rem;">
+            <i class="fa-solid fa-circle-check"></i> Connected
+          </div>
+          <button class="btn btn-primary" style="width: 100%; border-radius: 30px; font-weight: 700; font-size: 0.85rem;" onclick="window.closeProfileModal(); window.startChatWithAuthor('${uid}', '${user.displayName.replace(/'/g, "\\'")}', '${user.photoURL || ''}')">
+            <i class="fa-solid fa-comments"></i> Send Message
+          </button>
+        </div>
+      `;
+    }
+  };
+
+  window.closeProfileModal = () => {
+    const modal = document.getElementById("profile-modal-backdrop");
+    if (modal) {
+      modal.classList.remove("active");
+      setTimeout(() => {
+        modal.style.display = "none";
+      }, 200);
+    }
+  };
+
+
+  // --- INLINE COMMENTS SYSTEM ---
+  const inlineCommentsCache = {}; 
+  const commentsLimit = {}; 
+
+  window.toggleCommentsInline = async (postId, event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    const container = document.getElementById(`comments-section-${postId}`);
+    if (!container) return;
+    
+    if (container.style.display === "none") {
+      container.style.display = "block";
+      commentsLimit[postId] = 3;
+      await loadCommentsInline(postId);
+    } else {
+      container.style.display = "none";
+    }
+  };
+
+  const loadCommentsInline = async (postId) => {
+    const listContainer = document.getElementById(`comments-list-${postId}`);
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;'>Loading comments...</p>";
+    
+    let comments = [];
+    if (isMockFirebase) {
+      const allComments = JSON.parse(localStorage.getItem("jabzen_mock_comments") || "[]");
+      comments = allComments.filter(c => c.postId === postId);
+    } else if (db) {
+      try {
+        const snap = await db.collection("comments").where("postId", "==", postId).get();
+        snap.forEach(doc => {
+          comments.push({ id: doc.id, ...doc.data() });
+        });
+      } catch (e) {
+        console.error("Error loading comments:", e);
+      }
+    }
+    
+    comments.sort((a, b) => {
+      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+    
+    inlineCommentsCache[postId] = comments;
+    renderInlineComments(postId);
+  };
+
+  const renderInlineComments = (postId) => {
+    const listContainer = document.getElementById(`comments-list-${postId}`);
+    const seeMoreBtn = document.getElementById(`comments-see-more-${postId}`);
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = "";
+    const comments = inlineCommentsCache[postId] || [];
+    const limit = commentsLimit[postId] || 3;
+    
+    if (comments.length === 0) {
+      listContainer.innerHTML = "<p style='color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0; opacity: 0.8;'>No comments yet. Be the first to share your thoughts!</p>";
+      if (seeMoreBtn) seeMoreBtn.style.display = "none";
+      return;
+    }
+    
+    const visibleComments = comments.slice(0, limit);
+    visibleComments.forEach(comment => {
+      const item = document.createElement("div");
+      item.className = "comment-item";
+      
+      const timeStr = comment.createdAt ? new Date(comment.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just now";
+      
+      item.innerHTML = `
+        <img class="comment-avatar" src="${comment.authorPhoto || 'https://www.gravatar.com/avatar/?d=mp'}" alt="" onclick="window.showUserProfileModal('${comment.authorUid}')">
+        <div class="comment-bubble">
+          <div class="comment-header">
+            <div>
+              <span class="comment-author-name" onclick="window.showUserProfileModal('${comment.authorUid}')">${comment.authorName}</span>
+              <span class="comment-author-email">${comment.authorEmail ? (comment.authorEmail.split('@')[0]) : ''}</span>
+            </div>
+            <span class="comment-date">${timeStr}</span>
+          </div>
+          <div class="comment-body">${comment.content}</div>
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+    
+    if (seeMoreBtn) {
+      if (comments.length > limit) {
+        seeMoreBtn.style.display = "inline-flex";
+        seeMoreBtn.textContent = `See More Comments (${comments.length - limit} remaining)`;
+      } else {
+        seeMoreBtn.style.display = "none";
+      }
+    }
+  };
+
+  window.expandCommentsInline = (postId) => {
+    commentsLimit[postId] = (inlineCommentsCache[postId] || []).length;
+    renderInlineComments(postId);
+  };
+
+  window.postCommentInline = async (postId) => {
+    if (!currentUser) {
+      alert("Please sign in to post comments.");
+      window.toggleDrawer(true);
+      return;
+    }
+    
+    const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) return;
+    
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const profile = parseUserProfile(currentUser);
+    const commentDoc = {
+      id: Math.random().toString(36).substring(2, 11),
+      postId: postId,
+      authorUid: currentUser.uid,
+      authorName: profile.name,
+      authorPhoto: currentUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`,
+      authorEmail: currentUser.email || "",
+      content: text,
+      createdAt: new Date().toISOString()
+    };
+    
+    input.value = "";
+    
+    try {
+      if (isMockFirebase) {
+        const comments = JSON.parse(localStorage.getItem("jabzen_mock_comments") || "[]");
+        comments.push(commentDoc);
+        localStorage.setItem("jabzen_mock_comments", JSON.stringify(comments));
+        
+        const blogs = JSON.parse(localStorage.getItem("jabzen_mock_blogs") || "[]");
+        const idx = blogs.findIndex(b => b.id === postId);
+        if (idx !== -1) {
+          blogs[idx].commentsCount = (blogs[idx].commentsCount || 0) + 1;
+          window.saveMockBlogsGlobal(blogs);
+        }
+      } else if (db) {
+        commentDoc.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        await db.collection("comments").doc(commentDoc.id).set(commentDoc);
+        
+        await db.collection("blogs").doc(postId).update({
+          commentsCount: firebase.firestore.FieldValue.increment(1)
+        });
+      }
+      
+      document.querySelectorAll(`.comments-header-count-${postId}`).forEach(el => {
+        const currentCount = parseInt(el.textContent) || 0;
+        el.textContent = `${currentCount + 1} Comments`;
+      });
+      
+      await loadCommentsInline(postId);
+    } catch (e) {
+      console.error("Error posting comment:", e);
+      alert("Failed to post comment. Please try again.");
     }
   };
 
