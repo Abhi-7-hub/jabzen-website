@@ -3236,6 +3236,38 @@ body.page-read-blog .header-cta-btn {
   display: none !important;
 }
 
+/* Blog Navigation Icons */
+.blog-nav-icons {
+  display: none;
+  align-items: center;
+  gap: 1.5rem;
+  margin-right: 1.5rem;
+}
+.blog-nav-icon-link {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.blog-nav-icon-link:hover {
+  color: var(--brand-primary);
+}
+body.page-blog .blog-nav-icons,
+body.page-read-blog .blog-nav-icons {
+  display: flex !important;
+}
+
+@media (max-width: 991px) {
+  .blog-nav-icons {
+    margin-right: 1rem;
+    gap: 1.25rem;
+  }
+}
+
 /* SPA loading progress bar */
 #spa-loading-bar {
   position: fixed;

@@ -62,6 +62,11 @@
         <a href="blog#blog-auth-section" id="mobile-login-btn" class="mobile-only btn btn-outline" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Sign In / Join Blog</a>
         <a class="btn btn-primary header-cta-btn mobile-only" href="blog" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Blog</a>
       </div>
+      <div class="blog-nav-icons">
+        <a href="#" onclick="window.selectMenuTab('home'); window.toggleDrawer(false); window.toggleChatDrawer(false); return false;" class="blog-nav-icon-link" title="Home Feed"><i class="fa-solid fa-house"></i></a>
+        <a href="#" onclick="window.toggleChatDrawer(true); window.toggleDrawer(false); return false;" class="blog-nav-icon-link" title="Messages"><i class="fa-solid fa-comments"></i></a>
+        <a href="#" onclick="window.toggleDrawer(true, 'manage'); window.toggleChatDrawer(false); return false;" class="blog-nav-icon-link" title="Profile Dashboard"><i class="fa-solid fa-user"></i></a>
+      </div>
       <div class="nav-actions">
         <a href="blog#write" id="nav-write-btn" class="nav-write-link">
           <i class="fa-solid fa-pen-to-square"></i> Write
