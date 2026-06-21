@@ -87,6 +87,30 @@ HTML_HEADER = """<!doctype html>
         </div>
         <a href="about" class="nav-normal-link">About</a>
         <a href="contact" class="nav-normal-link">Contact</a>
+        
+        <!-- Mobile Drawer Action Buttons -->
+        <a href="blog#write" class="nav-write-link mobile-only">
+          <i class="fa-solid fa-pen-to-square"></i> Write
+        </a>
+        
+        <div id="mobile-user-profile" class="mobile-only mobile-profile-container" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 0.5rem; width: 100%;">
+          <div class="mobile-profile-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+            <img id="mobile-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--brand-primary); object-fit: cover;">
+            <div>
+              <div id="mobile-profile-name" style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">User Name</div>
+              <div id="mobile-profile-email" style="font-size: 0.75rem; color: var(--text-secondary); word-break: break-all;">email@example.com</div>
+            </div>
+          </div>
+          <div class="mobile-profile-menu" style="display: flex; flex-direction: column; gap: 0.75rem; padding-left: 0.25rem;">
+            <a href="blog#blog-auth-section" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-gauge" style="width: 16px;"></i> Dashboard</a>
+            <a href="blog#settings" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-gear" style="width: 16px;"></i> Settings</a>
+            <a href="blog#privacy" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-shield-halved" style="width: 16px;"></i> Privacy &amp; Security</a>
+            <button id="mobile-logout-btn" type="button" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2); margin-top: 0.5rem;"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+        
+        <a href="blog#blog-auth-section" id="mobile-login-btn" class="mobile-only btn btn-outline" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Sign In / Join Blog</a>
+        <a class="btn btn-primary header-cta-btn mobile-only" href="blog" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Blog</a>
       </div>
       <div class="nav-actions">
         <a href="blog#write" id="nav-write-btn" class="nav-write-link">
@@ -393,6 +417,12 @@ def generate_blog_page():
           
           <!-- LEFT COLUMN: Navigation & Profile -->
           <aside class="blog-left-sidebar">
+            <!-- Mobile Sidebar Header -->
+            <div class="mobile-sidebar-header mobile-only" style="display: none; justify-content: space-between; align-items: center; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+              <h3 style="font-family: var(--font-body); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Blog Menu</h3>
+              <button id="blog-sidebar-close" style="background: none; border: none; font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+
             <!-- Profile Card -->
             <div class="sidebar-profile-card">
               <img id="sidebar-user-avatar" class="sidebar-user-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Avatar">
@@ -425,6 +455,10 @@ def generate_blog_page():
           
           <!-- CENTER COLUMN: Feed & Composer -->
           <div class="blog-center-feed">
+            <!-- Mobile Feed Controls -->
+            <div class="mobile-feed-controls mobile-only" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem;">
+              <button class="btn btn-outline" id="blog-sidebar-toggle" style="flex: 1; justify-content: center; font-weight: 700; border-radius: 30px; font-size: 0.85rem; padding: 0.6rem 1.25rem; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-filter"></i> Categories &amp; Feed Menu</button>
+            </div>
             <!-- Composer Card -->
             <div class="feed-composer-card" id="feed-composer-card">
               <div class="composer-top-row">

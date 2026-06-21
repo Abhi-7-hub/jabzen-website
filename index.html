@@ -43,6 +43,30 @@
         </div>
         <a href="about" class="nav-normal-link">About</a>
         <a href="contact" class="nav-normal-link">Contact</a>
+        
+        <!-- Mobile Drawer Action Buttons -->
+        <a href="blog#write" class="nav-write-link mobile-only">
+          <i class="fa-solid fa-pen-to-square"></i> Write
+        </a>
+        
+        <div id="mobile-user-profile" class="mobile-only mobile-profile-container" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 0.5rem; width: 100%;">
+          <div class="mobile-profile-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;">
+            <img id="mobile-profile-avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="Profile" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--brand-primary); object-fit: cover;">
+            <div>
+              <div id="mobile-profile-name" style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">User Name</div>
+              <div id="mobile-profile-email" style="font-size: 0.75rem; color: var(--text-secondary); word-break: break-all;">email@example.com</div>
+            </div>
+          </div>
+          <div class="mobile-profile-menu" style="display: flex; flex-direction: column; gap: 0.75rem; padding-left: 0.25rem;">
+            <a href="blog#blog-auth-section" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-gauge" style="width: 16px;"></i> Dashboard</a>
+            <a href="blog#settings" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-gear" style="width: 16px;"></i> Settings</a>
+            <a href="blog#privacy" style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-shield-halved" style="width: 16px;"></i> Privacy &amp; Security</a>
+            <button id="mobile-logout-btn" type="button" class="btn btn-outline" style="padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.2); margin-top: 0.5rem;"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+        
+        <a href="blog#blog-auth-section" id="mobile-login-btn" class="mobile-only btn btn-outline" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Sign In / Join Blog</a>
+        <a class="btn btn-primary header-cta-btn mobile-only" href="blog" style="width: 100%; margin-top: 0.5rem; justify-content: center; display: none;">Blog</a>
       </div>
       <div class="nav-actions">
         <a href="blog#write" id="nav-write-btn" class="nav-write-link">

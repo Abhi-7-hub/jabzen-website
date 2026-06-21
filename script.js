@@ -517,6 +517,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const headerProfileEmail = document.getElementById("header-profile-email");
   const headerLogoutBtn = document.getElementById("header-logout-btn");
 
+  const mobileUserProfile = document.getElementById("mobile-user-profile");
+  const mobileProfileAvatar = document.getElementById("mobile-profile-avatar");
+  const mobileProfileName = document.getElementById("mobile-profile-name");
+  const mobileProfileEmail = document.getElementById("mobile-profile-email");
+  const mobileLogoutBtn = document.getElementById("mobile-logout-btn");
+  const mobileLoginBtn = document.getElementById("mobile-login-btn");
+
   if (headerProfileBtn && headerProfileDropdown) {
     headerProfileBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -572,6 +579,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (mobileLogoutBtn) {
+    mobileLogoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (typeof window.startLogoutWizard === "function") {
+        window.startLogoutWizard();
+      } else {
+        logoutUser();
+      }
+    });
+  }
+
   const updateAuthUI = (user) => {
     currentUser = user;
     
@@ -585,8 +603,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (headerProfileName) headerProfileName.textContent = profile.name;
       if (headerProfileDisplayName) headerProfileDisplayName.textContent = profile.name;
       if (headerProfileEmail) headerProfileEmail.textContent = user.email;
+
+      // Sync Mobile Profile
+      if (mobileUserProfile) mobileUserProfile.style.display = "block";
+      if (mobileProfileAvatar) {
+        mobileProfileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
+      }
+      if (mobileProfileName) mobileProfileName.textContent = profile.name;
+      if (mobileProfileEmail) mobileProfileEmail.textContent = user.email;
+      if (mobileLoginBtn) mobileLoginBtn.style.display = "none";
     } else {
       if (headerUserProfile) headerUserProfile.style.display = "none";
+      if (mobileUserProfile) mobileUserProfile.style.display = "none";
+      if (mobileLoginBtn) mobileLoginBtn.style.display = ""; // falls back to CSS mobile display
     }
 
     // Sync Left Sidebar Profile & Composer Greeting (all pages/blog page)
@@ -722,6 +751,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else {
       drawer.classList.remove("active");
+      const blogLeftSidebar = document.querySelector(".blog-left-sidebar");
+      if (blogLeftSidebar) {
+        blogLeftSidebar.classList.remove("active");
+      }
       backdrop.classList.remove("active");
       document.body.style.overflow = ""; // Re-enable background scrolling
       
@@ -740,12 +773,38 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", handleHashRouting);
   setTimeout(handleHashRouting, 200);
 
-  const navWriteBtn = document.getElementById("nav-write-btn");
-  if (navWriteBtn) {
-    navWriteBtn.addEventListener("click", (e) => {
+  document.querySelectorAll(".nav-write-link").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       if (window.location.pathname.includes("blog") || document.getElementById("editor-drawer")) {
         e.preventDefault();
         window.toggleDrawer(true, "write");
+      }
+    });
+  });
+
+  const blogSidebarToggle = document.getElementById("blog-sidebar-toggle");
+  const blogSidebarClose = document.getElementById("blog-sidebar-close");
+  const blogLeftSidebar = document.querySelector(".blog-left-sidebar");
+  const drawerBackdrop = document.getElementById("drawer-backdrop");
+
+  if (blogSidebarToggle && blogLeftSidebar) {
+    blogSidebarToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      blogLeftSidebar.classList.add("active");
+      if (drawerBackdrop) {
+        drawerBackdrop.classList.add("active");
+        document.body.style.overflow = "hidden"; // Prevent scrolling behind drawer
+      }
+    });
+  }
+
+  if (blogSidebarClose && blogLeftSidebar) {
+    blogSidebarClose.addEventListener("click", (e) => {
+      e.preventDefault();
+      blogLeftSidebar.classList.remove("active");
+      if (drawerBackdrop && (!document.getElementById("editor-drawer") || !document.getElementById("editor-drawer").classList.contains("active"))) {
+        drawerBackdrop.classList.remove("active");
+        document.body.style.overflow = ""; // Re-enable background scrolling
       }
     });
   }
