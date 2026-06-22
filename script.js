@@ -181,6 +181,7 @@ try {
   localLikesOverrides = JSON.parse(localStorage.getItem("jabzen_local_likes_overrides") || "{}");
 } catch (e) {}
 
+console.log("DEBUG: firebase type is", typeof firebase, "isMockFirebase is", isMockFirebase);
 if (typeof firebase !== "undefined" && !isMockFirebase) {
   try {
     firebase.initializeApp(firebaseConfig);
@@ -189,7 +190,12 @@ if (typeof firebase !== "undefined" && !isMockFirebase) {
     if (typeof firebase.storage === "function") {
       storage = firebase.storage();
     }
-    console.log("Firebase initialized successfully.");
+    console.log("Firebase initialized successfully. db is", !!db);
+    // Auto-seed default data if Firestore database is empty
+    setTimeout(() => {
+      if (typeof seedDefaultBlogs === "function") seedDefaultBlogs();
+      if (typeof seedDefaultUsers === "function") seedDefaultUsers();
+    }, 1000);
   } catch (error) {
     console.error("Firebase init failed:", error);
   }
@@ -610,6 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let setAuthMode;
   let setDashboardTab;
+  let dynamicBlogsContainer = null;
 
   // 1. Global Header Profile Dropdown & Auth UI Updating (Runs on all pages)
   const headerUserProfile = document.getElementById("header-user-profile");
@@ -1194,8 +1201,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  let followsSyncInitialized = false;
-
   function updateUserProfileModalFollowers() {
     const modal = document.getElementById("profile-modal-backdrop");
     if (modal && modal.classList.contains("active") && modal.dataset.activeUid) {
@@ -1638,7 +1643,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const imagePreview = document.getElementById("image-preview");
     const cancelWriteBtn = document.getElementById("cancel-write-btn");
     const submitBlogBtn = document.getElementById("submit-blog-btn");
-    const dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
+    dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
 
     let base64ImageString = "";
     let selectedImageFile = null;
@@ -2978,6 +2983,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const filterAndRenderBlogs = () => {
+    console.log("DEBUG: filterAndRenderBlogs called. blogsCache size:", blogsCache.length, "container:", !!dynamicBlogsContainer);
+    if (!dynamicBlogsContainer) {
+      dynamicBlogsContainer = document.getElementById("dynamic-blogs-container");
+    }
+    console.log("DEBUG: container after resolution:", !!dynamicBlogsContainer);
     if (!dynamicBlogsContainer) return;
     dynamicBlogsContainer.innerHTML = "";
 
@@ -3382,14 +3392,22 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.unsubscribeBlogs) {
     window.unsubscribeBlogs();
   }
+  console.log("DEBUG: registering blogs snapshot listener. db is", !!db);
   if (db) {
-    window.unsubscribeBlogs = db.collection("blogs").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+    window.unsubscribeBlogs = db.collection("blogs").onSnapshot((snapshot) => {
+      console.log("DEBUG: blogs onSnapshot fired. Empty:", snapshot.empty, "size:", snapshot.size);
       blogsCache = [];
       if (!snapshot.empty) {
         snapshot.forEach((doc) => {
           blogsCache.push({ id: doc.id, ...doc.data() });
         });
       }
+      // Sort client-side by createdAt desc to avoid composite/single-field index queries issues
+      blogsCache.sort((a, b) => {
+        const timeA = a.createdAt ? (a.createdAt.seconds || new Date(a.createdAt).getTime() / 1000) : 0;
+        const timeB = b.createdAt ? (b.createdAt.seconds || new Date(b.createdAt).getTime() / 1000) : 0;
+        return timeB - timeA;
+      });
       filterAndRenderBlogs();
       renderSidebarCategories();
       updateFollowButtonsUI();
@@ -3929,32 +3947,32 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-    window.getConnectionState = async (otherUid) => {
+  window.getConnectionState = async (otherUid) => {
     if (!currentUser || !otherUid) return { status: "none", docId: null, isSender: false };
     
     const conn = allConnectionsCache.find(c => 
       c.participants && c.participants.includes(currentUser.uid) && c.participants.includes(otherUid)
     );
     
-    if (!conn) return { status: "none", docId: null, isSender: false };
-    return {
-      status: conn.status,
-      docId: conn.id || conn.docId,
-      isSender: conn.senderUid === currentUser.uid
-    };
-  };
+    if (conn) {
+      return {
+        status: conn.status,
+        docId: conn.id || conn.docId,
+        isSender: conn.senderUid === currentUser.uid
+      };
+    }
     
     if (isMockFirebase) {
       const conns = JSON.parse(localStorage.getItem("jabzen_mock_connections") || "[]");
-      const conn = conns.find(c => 
-        (c.senderUid === currentUser.uid && c.receiverUid === otherUid) ||
-        (c.senderUid === otherUid && c.receiverUid === currentUser.uid)
+      const c = conns.find(item => 
+        (item.senderUid === currentUser.uid && item.receiverUid === otherUid) ||
+        (item.senderUid === otherUid && item.receiverUid === currentUser.uid)
       );
-      if (!conn) return { status: "none", docId: null, isSender: false };
+      if (!c) return { status: "none", docId: null, isSender: false };
       return {
-        status: conn.status,
-        docId: conn.id,
-        isSender: conn.senderUid === currentUser.uid
+        status: c.status,
+        docId: c.id,
+        isSender: c.senderUid === currentUser.uid
       };
     } else if (db) {
       try {
@@ -5340,5 +5358,136 @@ document.addEventListener("DOMContentLoaded", () => {
   window.initCountUpMetrics();
   window.initCallNowButtons();
 });
+
+async function seedDefaultBlogs() {
+  if (!db) return;
+  if (window.alreadySeededBlogs) return;
+  window.alreadySeededBlogs = true;
+  try {
+    const snap = await db.collection("blogs").limit(1).get();
+    if (snap.empty) {
+      console.log("Firestore blogs collection is empty. Seeding default blogs...");
+      const defaultBlogs = [
+        {
+          title: "Fake Numbers. Zero Impact? It's Time to Change the Game.",
+          content: "Stop chasing vanity metrics and start building authentic influence with creators who actually move audiences. From real engagement to measurable ROI, results speak louder than follower counts.",
+          category: "Marketing",
+          authorName: "Auden Rivers",
+          authorUid: "uid-auden-rivers",
+          authorPhoto: "https://ui-avatars.com/api/?name=Auden+Rivers&background=6f8f72&color=fff",
+          company: "JABZEN Agency",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          likes: 23,
+          commentsCount: 7,
+          sharesCount: 4,
+          visibility: "Public",
+          image: "assets/performance-marketing-banner.webp"
+        },
+        {
+          title: "The Future of AI in Marketing: Trends to Watch",
+          content: "AI is changing the marketing landscape faster than ever. Here are the top trends that brands and marketers should keep an eye on in 2026 and beyond, from conversational answer engines to dynamic content synthesis.",
+          category: "AI & Tech",
+          authorName: "Mira Kapoor",
+          authorUid: "uid-mira-kapoor",
+          authorPhoto: "https://ui-avatars.com/api/?name=Mira+Kapoor&background=d6ad2d&color=121212",
+          company: "TechPulse",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          likes: 15,
+          commentsCount: 3,
+          sharesCount: 2,
+          visibility: "Public",
+          image: "assets/blog-ai.webp"
+        },
+        {
+          title: "The Ultimate SEO Strategy Guide for Scaling Startups",
+          content: "Organic search is still the most cost-effective channel for sustainable growth. In this comprehensive guide, we cover the exact frameworks we use to rank our startup clients for high-intent keywords.",
+          category: "SEO",
+          authorName: "James Carter",
+          authorUid: "uid-james-carter",
+          authorPhoto: "https://ui-avatars.com/api/?name=James+Carter&background=64748b&color=fff",
+          company: "Independent",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          likes: 8,
+          commentsCount: 1,
+          sharesCount: 1,
+          visibility: "Public",
+          image: "assets/search-marketing-banner.webp"
+        },
+        {
+          title: "Whispers of the Wind",
+          content: "The wind sings a song of ancient days,\nOf forest paths and starry nights,\nGuiding travelers on their ways,\nUnderneath the pale moonlight.\n\nListen closely, hear it sigh,\nA gentle breath across the sky.",
+          category: "Poetry",
+          authorName: "Mira Kapoor",
+          authorUid: "uid-mira-kapoor",
+          authorPhoto: "https://ui-avatars.com/api/?name=Mira+Kapoor&background=d6ad2d&color=121212",
+          company: "TechPulse",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          likes: 34,
+          commentsCount: 12,
+          sharesCount: 8,
+          visibility: "Public"
+        }
+      ];
+      const batch = db.batch();
+      defaultBlogs.forEach(blog => {
+        const docRef = db.collection("blogs").doc();
+        batch.set(docRef, blog);
+      });
+      await batch.commit();
+      console.log("Successfully seeded default blogs to Firestore.");
+    }
+  } catch (error) {
+    console.error("Error seeding default blogs:", error);
+  }
+}
+
+async function seedDefaultUsers() {
+  if (!db) return;
+  if (window.alreadySeededUsers) return;
+  window.alreadySeededUsers = true;
+  try {
+    const defaultUsers = [
+      {
+        uid: "uid-auden-rivers",
+        displayName: "Auden Rivers",
+        photoURL: "https://ui-avatars.com/api/?name=Auden+Rivers&background=6f8f72&color=fff",
+        email: "auden@jabzen.com",
+        bio: "Creative Growth Strategist at JABZEN. Passionate about direct-response campaigns and organic scaling.",
+        company: "JABZEN Agency",
+        interests: "Marketing, Copywriting, Ads",
+        lastSeen: new Date().toISOString()
+      },
+      {
+        uid: "uid-mira-kapoor",
+        displayName: "Mira Kapoor",
+        photoURL: "https://ui-avatars.com/api/?name=Mira+Kapoor&background=d6ad2d&color=121212",
+        email: "mira@techpulse.com",
+        bio: "AI researcher and technology writer. Exploring the intersection of human language and generative algorithms.",
+        company: "TechPulse",
+        interests: "AI, Technology, Poetry",
+        lastSeen: new Date().toISOString()
+      },
+      {
+        uid: "uid-james-carter",
+        displayName: "James Carter",
+        photoURL: "https://ui-avatars.com/api/?name=James+Carter&background=64748b&color=fff",
+        email: "james@independent.io",
+        bio: "Independent SEO consultant with 8+ years experience. Helping SaaS startups claim category dominance on Google.",
+        company: "Independent",
+        interests: "SEO, Analytics, Strategy",
+        lastSeen: new Date().toISOString()
+      }
+    ];
+    const batch = db.batch();
+    for (const u of defaultUsers) {
+      const docRef = db.collection("users").doc(u.uid);
+      batch.set(docRef, u, { merge: true });
+    }
+    await batch.commit();
+    console.log("Successfully seeded default users to Firestore.");
+  } catch (error) {
+    console.error("Error seeding default users:", error);
+  }
+}
 
 
