@@ -4985,6 +4985,16 @@ window.initScrollReveal = () => {
       el.classList.remove("active", "is-visible");
       revealObserver.observe(el);
     });
+    
+    // Fallback: Reveal all elements after 1.5 seconds if they haven't been revealed yet
+    setTimeout(() => {
+      revealElements.forEach((el) => {
+        if (!el.classList.contains("is-visible")) {
+          el.classList.add("active");
+          el.classList.add("is-visible");
+        }
+      });
+    }, 1500);
   }
 };
 
