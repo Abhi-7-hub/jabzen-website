@@ -542,30 +542,40 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.setProperty("display", "none", "important");
     });
     
-    // Desktop Profile dropdown
+    // Desktop Profile dropdown (all pages if logged in)
     const headerUserProfile = document.getElementById("header-user-profile");
     if (headerUserProfile) {
-      if (currentUser && isBlogPage) {
+      if (currentUser) {
         headerUserProfile.style.setProperty("display", "block", "important");
       } else {
         headerUserProfile.style.setProperty("display", "none", "important");
       }
     }
     
-    // Mobile Profile container
+    // Mobile Profile container (all pages if logged in)
     const mobileUserProfile = document.getElementById("mobile-user-profile");
     if (mobileUserProfile) {
-      if (currentUser && isBlogPage) {
+      if (currentUser) {
         mobileUserProfile.style.setProperty("display", "block", "important");
       } else {
         mobileUserProfile.style.setProperty("display", "none", "important");
       }
     }
     
-    // Mobile login button
+    // Desktop login button (all pages if not logged in)
+    const headerLoginBtn = document.getElementById("header-login-btn");
+    if (headerLoginBtn) {
+      if (!currentUser) {
+        headerLoginBtn.style.setProperty("display", "", "important");
+      } else {
+        headerLoginBtn.style.setProperty("display", "none", "important");
+      }
+    }
+    
+    // Mobile login button (all pages if not logged in)
     const mobileLoginBtn = document.getElementById("mobile-login-btn");
     if (mobileLoginBtn) {
-      if (!currentUser && isBlogPage) {
+      if (!currentUser) {
         mobileLoginBtn.style.setProperty("display", "", "important");
       } else {
         mobileLoginBtn.style.setProperty("display", "none", "important");
