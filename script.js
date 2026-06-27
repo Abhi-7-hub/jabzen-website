@@ -573,6 +573,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (headerLoginBtn) {
       if (!currentUser) {
         headerLoginBtn.style.setProperty("display", "", "important");
+        headerLoginBtn.onclick = (e) => {
+          if (window.location.pathname.includes("blog") || document.getElementById("editor-drawer")) {
+            e.preventDefault();
+            window.toggleDrawer(true);
+          }
+        };
       } else {
         headerLoginBtn.style.setProperty("display", "none", "important");
       }
@@ -583,6 +589,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mobileLoginBtn) {
       if (!currentUser) {
         mobileLoginBtn.style.setProperty("display", "", "important");
+        mobileLoginBtn.onclick = (e) => {
+          if (window.location.pathname.includes("blog") || document.getElementById("editor-drawer")) {
+            e.preventDefault();
+            window.toggleDrawer(true);
+          }
+        };
       } else {
         mobileLoginBtn.style.setProperty("display", "none", "important");
       }
@@ -594,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.style.setProperty("display", "none", "important");
       } else {
         btn.textContent = "Blog";
-        btn.setAttribute("href", "blog");
+        btn.setAttribute("href", "blog.html");
         btn.onclick = null;
         btn.style.setProperty("display", "", "important");
       }
@@ -1593,6 +1605,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const handleHashRouting = () => {
     if (window.location.hash === "#write") {
       window.toggleDrawer(true, "write");
+    } else if (window.location.hash === "#login" || window.location.hash === "#blog-auth-section" || window.location.hash === "#signin") {
+      window.toggleDrawer(true);
     }
   };
   window.addEventListener("hashchange", handleHashRouting);
@@ -1603,6 +1617,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window.location.pathname.includes("blog") || document.getElementById("editor-drawer")) {
         e.preventDefault();
         window.toggleDrawer(true, "write");
+      }
+    });
+  });
+
+  document.querySelectorAll(".header-login-btn, #mobile-login-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      if (window.location.pathname.includes("blog") || document.getElementById("editor-drawer")) {
+        e.preventDefault();
+        window.toggleDrawer(true);
       }
     });
   });
