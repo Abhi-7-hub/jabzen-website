@@ -5290,6 +5290,7 @@ document.addEventListener("click", (e) => {
 
   const href = link.getAttribute("href");
   if (!href) return;
+  if (href.includes("read-blog.html")) return;
 
   if (href.startsWith("http") && !href.startsWith(window.location.origin)) return;
   if (href.startsWith("tel:") || href.startsWith("mailto:") || href.startsWith("javascript:")) return;
