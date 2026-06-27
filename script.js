@@ -1822,18 +1822,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper to sync authenticated user to Firestore 'users' collection
+  const syncUserToFirestore = async (user) => {
+    if (!user || !db) return;
+    const userRef = db.collection("users").doc(user.uid);
+    const userDoc = {
+      uid: user.uid,
+      displayName: user.displayName || user.email?.split('@')[0] || "Jabzen User",
+      email: user.email || "",
+      photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || "User")}&background=d6ad2d&color=121212`,
+      lastSeen: new Date().toISOString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    try {
+      await userRef.set(userDoc, { merge: true });
+      console.log("Successfully synced OAuth user to Firestore 'users' collection:", user.uid);
+    } catch (e) {
+      console.error("Firestore user sync error:", e);
+    }
+  };
+
   // Auth Flow Trigger Actions
   const loginWithGoogle = () => {
-    const fallbackUser = {
-      uid: "google-user-" + Math.random().toString(36).substring(2, 9),
-      displayName: "Abhishek Pratap Singh|JABZEN",
-      email: "info@jabzen.com",
-      photoURL: "assets/founder.png"
-    };
-
-    if (!auth || isMockFirebase || !window.firebase || !window.firebase.auth || !window.firebase.auth.GoogleAuthProvider) {
-      if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-      if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+    if (!auth || !window.firebase || !window.firebase.auth || !window.firebase.auth.GoogleAuthProvider) {
+      alert("Firebase Auth module is initializing. Please try again in a moment.");
       return;
     }
     
@@ -1842,50 +1854,54 @@ document.addEventListener("DOMContentLoaded", () => {
       provider.addScope("profile");
       provider.addScope("email");
       auth.signInWithPopup(provider)
-        .then(() => {
+        .then(async (result) => {
+          if (result && result.user) {
+            await syncUserToFirestore(result.user);
+            if (typeof updateAuthUI === "function") updateAuthUI(result.user);
+          }
           if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
         })
         .catch((err) => {
-          console.warn("Google Auth popup handled with instant session fallback:", err);
-          if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-          if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+          console.error("Google Auth popup error:", err);
+          if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
+            auth.signInWithRedirect(provider);
+          } else {
+            alert("Google Sign In Notice: " + (err.message || "Could not authenticate with Google. Ensure domain is authorized in Firebase Console."));
+          }
         });
     } catch (err) {
-      console.warn("Google Auth exception handled with fallback:", err);
-      if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-      if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+      console.error("Google Auth exception:", err);
+      alert("Google Auth Error: " + err.message);
     }
   };
 
   const loginWithFacebook = () => {
-    const fallbackUser = {
-      uid: "facebook-user-" + Math.random().toString(36).substring(2, 9),
-      displayName: "Abhishek Pratap Singh|JABZEN",
-      email: "info@jabzen.com",
-      photoURL: "assets/founder.png"
-    };
-
-    if (!auth || isMockFirebase || !window.firebase || !window.firebase.auth || !window.firebase.auth.FacebookAuthProvider) {
-      if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-      if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+    if (!auth || !window.firebase || !window.firebase.auth || !window.firebase.auth.FacebookAuthProvider) {
+      alert("Firebase Auth module is initializing. Please try again in a moment.");
       return;
     }
     
     try {
       const provider = new firebase.auth.FacebookAuthProvider();
       auth.signInWithPopup(provider)
-        .then(() => {
+        .then(async (result) => {
+          if (result && result.user) {
+            await syncUserToFirestore(result.user);
+            if (typeof updateAuthUI === "function") updateAuthUI(result.user);
+          }
           if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
         })
         .catch((err) => {
-          console.warn("Facebook Auth popup handled with instant session fallback:", err);
-          if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-          if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+          console.error("Facebook Auth popup error:", err);
+          if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
+            auth.signInWithRedirect(provider);
+          } else {
+            alert("Facebook Sign In Notice: " + (err.message || "Could not authenticate with Facebook. Ensure app domain is authorized."));
+          }
         });
     } catch (err) {
-      console.warn("Facebook Auth exception handled with fallback:", err);
-      if (typeof updateAuthUI === "function") updateAuthUI(fallbackUser);
-      if (typeof window.toggleDrawer === "function") window.toggleDrawer(false);
+      console.error("Facebook Auth exception:", err);
+      alert("Facebook Auth Error: " + err.message);
     }
   };
 
@@ -4724,6 +4740,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Register state changed listener for all pages after everything is initialized
   const handleInitialAuthState = (firebaseUser) => {
     if (firebaseUser) {
+      syncUserToFirestore(firebaseUser);
       updateAuthUI(firebaseUser);
     } else {
       let savedSession = null;
