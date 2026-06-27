@@ -2,25 +2,19 @@ import http.server
 import socketserver
 import os
 
-PORT = 32415
+PORT = 32419
 
 class CleanURLHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        # Get translate path
-        filepath = self.translate_path(self.path.split('?')[0].split('#')[0])
+    def translate_path(self, path):
+        # Strip query parameters and fragment
+        path_clean = path.split('?')[0].split('#')[0]
+        translated = super().translate_path(path_clean)
         
-        # If the file does not exist but file.html does, rewrite path
-        if not os.path.exists(filepath) and os.path.exists(filepath + ".html"):
-            # If path ends in /, remove it
-            p = self.path
-            query = ""
-            if "?" in p:
-                p, query = p.split("?", 1)
-                query = "?" + query
+        # If path points to a file/directory that doesn't exist, check if adding .html exists
+        if not os.path.exists(translated) and os.path.exists(translated + ".html"):
+            return translated + ".html"
             
-            self.path = p + ".html" + query
-            
-        return super().do_GET()
+        return translated
 
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
