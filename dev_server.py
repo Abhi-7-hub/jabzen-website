@@ -2,7 +2,7 @@ import http.server
 import socketserver
 import os
 
-PORT = 32419
+PORT = 5502
 
 class CleanURLHandler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
@@ -23,6 +23,7 @@ class CleanURLHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), CleanURLHandler) as httpd:
         print(f"Dev server running at http://localhost:{PORT}")

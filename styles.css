@@ -316,12 +316,13 @@ img {
 
 /* Section 1: Hero (Split 100vh) */
 .hero {
-  height: 100vh;
-  min-height: 700px;
+  min-height: 100vh;
+  height: auto;
   display: flex;
   align-items: center;
   position: relative;
-  padding: 0 2rem;
+  padding: 130px 2rem 60px;
+  box-sizing: border-box;
   overflow: hidden;
 }
 

@@ -552,44 +552,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     
-    // Direct Sign Out button in header nav (prominent for logged in users)
+    // Remove duplicate direct logout button if present
     let directLogoutBtn = document.getElementById("nav-direct-logout-btn");
-    const navActions = document.querySelector(".nav-actions");
-    if (navActions && !directLogoutBtn) {
-      directLogoutBtn = document.createElement("button");
-      directLogoutBtn.id = "nav-direct-logout-btn";
-      directLogoutBtn.type = "button";
-      directLogoutBtn.className = "btn btn-outline";
-      directLogoutBtn.style.cssText = "padding: 0.35rem 0.85rem; font-size: 0.8rem; min-height: unset; border-radius: 20px; font-weight: 600; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); margin-right: 0.5rem; cursor: pointer; display: none;";
-      directLogoutBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Sign Out';
-      directLogoutBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (typeof window.startLogoutWizard === "function") {
-          window.startLogoutWizard();
-        } else if (typeof logoutUser === "function") {
-          logoutUser();
-        }
-      });
-      const headerCta = navActions.querySelector(".header-cta-btn");
-      if (headerCta) {
-        navActions.insertBefore(directLogoutBtn, headerCta);
-      } else {
-        navActions.appendChild(directLogoutBtn);
-      }
-    }
     if (directLogoutBtn) {
-      if (currentUser) {
-        directLogoutBtn.style.setProperty("display", "inline-flex", "important");
-      } else {
-        directLogoutBtn.style.setProperty("display", "none", "important");
-      }
+      directLogoutBtn.style.setProperty("display", "none", "important");
     }
     
-    // Mobile Profile container (all pages if logged in)
+    // Mobile Profile container (all pages if logged in - respects .mobile-only CSS)
     const mobileUserProfile = document.getElementById("mobile-user-profile");
     if (mobileUserProfile) {
       if (currentUser) {
-        mobileUserProfile.style.setProperty("display", "block", "important");
+        mobileUserProfile.style.removeProperty("display");
       } else {
         mobileUserProfile.style.setProperty("display", "none", "important");
       }
@@ -803,7 +776,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (headerProfileEmail) headerProfileEmail.textContent = user.email;
 
       // Sync Mobile Profile
-      if (mobileUserProfile) mobileUserProfile.style.display = "block";
+      if (mobileUserProfile) mobileUserProfile.style.display = "";
       if (mobileProfileAvatar) {
         mobileProfileAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=d6ad2d&color=121212`;
       }
@@ -4278,12 +4251,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.showUserProfileModal = async (uid) => {
-    if (!currentUser) {
-      alert("Please sign in to view creator profiles.");
-      window.toggleDrawer(true);
-      return;
-    }
-    
     const user = await window.getUserProfile(uid);
     
     const avatarEl = document.getElementById("profile-modal-avatar");
@@ -4341,7 +4308,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modal.classList.add("active");
     }
     
-    if (uid === currentUser.uid) {
+    if (currentUser && uid === currentUser.uid) {
       if (actionsContainer) {
         actionsContainer.innerHTML = `<button class="btn btn-outline" style="width: 100%; border-radius: 30px; font-size: 0.85rem;" disabled>This is you</button>`;
       }
