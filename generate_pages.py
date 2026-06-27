@@ -1,4 +1,12 @@
 import os
+import re
+from datetime import datetime
+
+BUILD_VERSION = datetime.now().strftime("%Y%m%d%H%M")
+
+def apply_cache_busting(content):
+    pattern = r'((?:[a-zA-Z0-9_-]+\.)+(?:css|js|png|jpg|webp))\?v=[^\s"\'`>]+'
+    return re.sub(pattern, rf'\1?v={BUILD_VERSION}', content)
 
 # Define revised consolidated pages to generate
 pages_data = {
@@ -1356,7 +1364,26 @@ def main():
     generate_sitemap()
     minify_css("styles.css", "styles.min.css")
     minify_js("script.js", "script.min.js")
+    minify_js("main.js", "main.min.js")
     
+    # DevOps Cache-Busting Sweep: Inject dynamic version timestamp into all HTML files
+    html_files = [
+        "index.html", "search-marketing.html", "performance-marketing.html",
+        "creative-services.html", "ai-solutions.html", "about.html",
+        "contact.html", "sitemap.html", "blog.html", "read-blog.html"
+    ]
+    for html_file in html_files:
+        if os.path.exists(html_file):
+            try:
+                with open(html_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                updated = apply_cache_busting(content)
+                with open(html_file, "w", encoding="utf-8") as f:
+                    f.write(updated)
+                print(f"Cache-busted assets in {html_file} (v={BUILD_VERSION})")
+            except Exception as e:
+                print(f"Cache busting failed for {html_file}: {e}")
+
     # Cleanup obsolete files that are removed from nav/layout
     old_files = [
         "results.html", "book-strategy-call.html", "services.html",
