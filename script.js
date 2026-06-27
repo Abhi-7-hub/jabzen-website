@@ -773,7 +773,10 @@ document.addEventListener("DOMContentLoaded", () => {
         db.collection("users").doc(user.uid).set(userProfileDoc, { merge: true }).catch(err => {
           console.error("Error syncing user profile:", err);
         });
-      }
+      if (typeof window.setupRealtimeMessages === "function") window.setupRealtimeMessages();
+      if (typeof window.updateChatBadge === "function") window.updateChatBadge();
+    } else {
+      if (typeof window.updateChatBadge === "function") window.updateChatBadge();
     }
     
     // Sync Header Profile Dropdown (all pages)
@@ -1313,23 +1316,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.updateChatBadge = function() {
-    const badge = document.getElementById("chat-badge-count");
-    if (!badge) return;
+    const badges = document.querySelectorAll("#chat-badge-count, .chat-badge-count");
+    if (!badges || badges.length === 0) return;
     if (!currentUser) {
-      badge.style.display = "none";
+      badges.forEach(b => b.style.display = "none");
       return;
     }
     const msgs = window.allUserMessages || [];
     const unreadCount = msgs.filter(m => m.receiverUid === currentUser.uid && !m.read).length;
-    if (unreadCount > 0) {
-      badge.style.display = "inline-block";
-      badge.textContent = unreadCount;
-      badge.style.background = "#ff4d4d";
-      badge.style.color = "#ffffff";
-    } else {
-      badge.style.display = "none";
-    }
-  }
+    badges.forEach(badge => {
+      if (unreadCount > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+        badge.style.background = "#ff4d4d";
+        badge.style.color = "#ffffff";
+      } else {
+        badge.style.display = "none";
+      }
+    });
+  };
 
   window.markChatMessagesAsRead = async (senderUid) => {
     if (!currentUser || !senderUid) return;
@@ -4577,6 +4582,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Messages sync error:", err);
       });
   };
+  window.setupRealtimeMessages = setupRealtimeMessages;
 
   // Mock messaging subscriber event
   window.addEventListener("mock_msg_update", () => {

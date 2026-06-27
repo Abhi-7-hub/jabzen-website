@@ -122,7 +122,7 @@ HTML_HEADER = """<!doctype html>
       </div>
       <div class="blog-nav-icons">
         <a href="#" onclick="window.selectMenuTab('home'); window.toggleDrawer(false); window.toggleChatDrawer(false); return false;" class="blog-nav-icon-link" title="Home Feed"><i class="fa-solid fa-house"></i></a>
-        <a href="#" onclick="window.toggleChatDrawer(true); window.toggleDrawer(false); return false;" class="blog-nav-icon-link" title="Messages"><i class="fa-solid fa-comments"></i></a>
+        <a href="#" onclick="window.toggleChatDrawer(true); window.toggleDrawer(false); return false;" class="blog-nav-icon-link" title="Messages" style="position: relative;"><i class="fa-solid fa-comments"></i><span id="chat-badge-count" class="chat-badge-count" style="display: none; position: absolute; top: -5px; right: -8px; background: #ff4d4d; color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 10px; min-width: 16px; text-align: center; line-height: 1; border: 1.5px solid var(--bg-primary);"></span></a>
         <a href="#" onclick="window.toggleDrawer(true, 'manage'); window.toggleChatDrawer(false); return false;" class="blog-nav-icon-link" title="Profile Dashboard"><i class="fa-solid fa-user"></i></a>
       </div>
       <div class="nav-actions">
