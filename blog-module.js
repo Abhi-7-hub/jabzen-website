@@ -1,7 +1,7 @@
 /**
- * JABZEN Blog Dashboard Engine (blog-module.js)
- * Architecture: Firebase v9/v10 Modular SDK, Zero-Reload State, Free-Tier Optimized
- * Role: Principal Software Engineer & Google DSA Expert Specification
+ * JABZEN Blog Engine (blog-module.js) - Enterprise Upgrade v2.0
+ * Architecture: Firebase v9/v10 Modular SDK, Zero-Blink Hydration, Free-Tier Chat Engine, DocumentFragment DOM Rendering
+ * Role: Principal Software Engineer & System Architect Specification
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -18,6 +18,7 @@ import {
   getFirestore, 
   doc, 
   collection, 
+  addDoc,
   updateDoc, 
   arrayUnion, 
   arrayRemove, 
@@ -26,7 +27,8 @@ import {
   query, 
   where, 
   orderBy,
-  setDoc
+  setDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { 
   getStorage, 
@@ -40,15 +42,38 @@ let auth, db, storage;
 let currentUser = null;
 let postsCache = [];
 let notificationUnsubscribe = null;
+let activeChatUnsubscribe = null;
+let activePostUnsubscribe = null;
 
 const STORAGE_KEYS = {
   USER_META: "jabzen_user_meta_cache",
-  CHAT_CACHE: "jabzen_chat_threads_cache"
+  CHAT_PREFIX: "jabzen_chat_msgs_"
 };
+
+/* ==========================================================================
+   MODULE 2: IMMEDIATE HYDRATION & STATE PROTECTION (ZERO-BLINK UI)
+   ========================================================================== */
+(function hydrateEarlyState() {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      const cached = localStorage.getItem(STORAGE_KEYS.USER_META);
+      if (cached) {
+        currentUser = JSON.parse(cached);
+        // Instant non-blocking DOM paint before Firebase network handshakes
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", () => updateNavbarUI(true));
+        } else {
+          updateNavbarUI(true);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[Early Hydration Warning]:", e);
+  }
+})();
 
 /**
  * Initialize Platform Engine
- * @param {Object} firebaseConfig 
  */
 export function initBlogEngine(firebaseConfig) {
   try {
@@ -64,7 +89,7 @@ export function initBlogEngine(firebaseConfig) {
 }
 
 /* ==========================================================================
-   1. AUTHENTICATION & NAVBAR (SINGLE EVENT LISTENER & CACHING)
+   1. AUTHENTICATION & NAVBAR MANAGEMENT
    ========================================================================== */
 
 function initAuth() {
@@ -78,15 +103,14 @@ function initAuth() {
           photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || "Author")}&background=6F8F72&color=fff`
         };
 
-        // Cache user metadata to minimize Firestore reads
         localStorage.setItem(STORAGE_KEYS.USER_META, JSON.stringify(currentUser));
-
         updateNavbarUI(true);
         initNotifications();
       } else {
         currentUser = null;
         localStorage.removeItem(STORAGE_KEYS.USER_META);
         if (notificationUnsubscribe) notificationUnsubscribe();
+        if (activeChatUnsubscribe) activeChatUnsubscribe();
 
         updateNavbarUI(false);
       }
@@ -131,7 +155,6 @@ export async function loginWithProvider(providerName) {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    // Sync User Document atomically
     const userRef = doc(db, "users", user.uid);
     await setDoc(userRef, {
       uid: user.uid,
@@ -164,13 +187,9 @@ export async function updateProfilePicture(file) {
     await uploadBytes(fileRef, file);
     const downloadURL = await getDownloadURL(fileRef);
 
-    // 1. Update Auth Profile
     await updateProfile(auth.currentUser, { photoURL: downloadURL });
-    
-    // 2. Update Firestore User Doc
     await updateDoc(doc(db, "users", currentUser.uid), { photoURL: downloadURL });
 
-    // 3. Sync Memory & UI
     currentUser.photoURL = downloadURL;
     localStorage.setItem(STORAGE_KEYS.USER_META, JSON.stringify(currentUser));
     updateNavbarUI(true);
@@ -183,7 +202,257 @@ export async function updateProfilePicture(file) {
 }
 
 /* ==========================================================================
-   2. REAL-TIME INTERACTION & ATOMIC COUNTERS (FREE TIER OPTIMIZED)
+   MODULE 1: REAL-TIME CHAT & MESSAGES (FREE-TIER OPTIMIZED WITH DELTA CACHING)
+   ========================================================================== */
+
+function getDeterministicChatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
+
+export async function sendMessage(receiverId, text) {
+  if (!currentUser) return toggleAuthModal(true);
+  if (!text || !text.trim()) return;
+
+  try {
+    const chatId = getDeterministicChatId(currentUser.uid, receiverId);
+    const timestamp = new Date().toISOString();
+
+    const messageData = {
+      senderId: currentUser.uid,
+      senderName: currentUser.displayName,
+      senderPhoto: currentUser.photoURL,
+      receiverId: receiverId,
+      text: text.trim(),
+      createdAt: timestamp
+    };
+
+    // 1. Add message document to subcollection
+    const messagesRef = collection(db, "chats", chatId, "messages");
+    await addDoc(messagesRef, messageData);
+
+    // 2. Update parent chat room summary
+    const chatDocRef = doc(db, "chats", chatId);
+    await setDoc(chatDocRef, {
+      lastMessage: text.trim(),
+      updatedAt: timestamp,
+      participants: [currentUser.uid, receiverId]
+    }, { merge: true });
+
+    // 3. Send notification trigger to receiver
+    await addDoc(collection(db, "notifications"), {
+      recipientId: receiverId,
+      senderId: currentUser.uid,
+      senderName: currentUser.displayName,
+      senderPhoto: currentUser.photoURL,
+      type: "chat",
+      text: "sent you a message.",
+      read: false,
+      createdAt: timestamp
+    });
+
+  } catch (error) {
+    console.error("[Send Message Error]:", error);
+    alert("Failed to send message.");
+  }
+}
+
+export function listenToMessages(chatId, renderCallback) {
+  if (activeChatUnsubscribe) activeChatUnsubscribe();
+
+  const cacheKey = STORAGE_KEYS.CHAT_PREFIX + chatId;
+  let cachedMessages = [];
+  let lastTimestamp = null;
+
+  // Hydrate local cache first
+  try {
+    const localData = localStorage.getItem(cacheKey);
+    if (localData) {
+      cachedMessages = JSON.parse(localData);
+      if (cachedMessages.length > 0) {
+        lastTimestamp = cachedMessages[cachedMessages.length - 1].createdAt;
+      }
+    }
+  } catch (e) {
+    console.warn("[Chat Cache Hydration Error]:", e);
+  }
+
+  // Initial render from local cache (Instant 0ms UI Response)
+  if (typeof renderCallback === "function") {
+    renderCallback(cachedMessages);
+  }
+
+  // Delta Query for Free-Tier Optimization: Only fetch new messages > lastTimestamp
+  const messagesRef = collection(db, "chats", chatId, "messages");
+  let q;
+  if (lastTimestamp) {
+    q = query(messagesRef, where("createdAt", ">", lastTimestamp), orderBy("createdAt", "asc"));
+  } else {
+    q = query(messagesRef, orderBy("createdAt", "asc"));
+  }
+
+  activeChatUnsubscribe = onSnapshot(q, (snapshot) => {
+    if (snapshot.empty) return;
+
+    const newMessages = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      data.id = docSnap.id;
+      newMessages.push(data);
+    });
+
+    // Merge & Deduplicate
+    const combined = [...cachedMessages];
+    newMessages.forEach(msg => {
+      if (!combined.some(m => m.id === msg.id || (m.createdAt === msg.createdAt && m.senderId === msg.senderId))) {
+        combined.push(msg);
+      }
+    });
+
+    // Persist to localStorage
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(combined));
+    } catch (e) {}
+
+    cachedMessages = combined;
+    if (typeof renderCallback === "function") {
+      renderCallback(combined);
+    }
+  }, (error) => {
+    console.error("[Chat Listener Error]:", error);
+  });
+}
+
+window.startConversationWith = function(senderId, senderName, senderPhoto) {
+  if (!currentUser) return toggleAuthModal(true);
+
+  const drawer = document.getElementById("chat-drawer");
+  if (drawer) {
+    drawer.classList.add("active");
+  }
+
+  const titleEl = document.getElementById("chat-active-title");
+  if (titleEl) titleEl.textContent = senderName || "Conversation";
+
+  const chatId = getDeterministicChatId(currentUser.uid, senderId);
+
+  listenToMessages(chatId, (messages) => {
+    const feed = document.getElementById("chat-messages-feed");
+    if (!feed) return;
+
+    feed.innerHTML = messages.map(msg => {
+      const isSent = msg.senderId === currentUser.uid;
+      return `
+        <div class="chat-msg-row ${isSent ? 'sent' : 'received'}">
+          <div class="chat-msg-bubble">${msg.text}</div>
+          <span class="chat-msg-time">${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+      `;
+    }).join("");
+    feed.scrollTop = feed.scrollHeight;
+  });
+
+  // Wire send button
+  const sendBtn = document.getElementById("chat-send-btn");
+  const inputField = document.getElementById("chat-input-field");
+  if (sendBtn && inputField) {
+    sendBtn.onclick = () => {
+      sendMessage(senderId, inputField.value);
+      inputField.value = "";
+    };
+    inputField.onkeypress = (e) => {
+      if (e.key === "Enter") {
+        sendMessage(senderId, inputField.value);
+        inputField.value = "";
+      }
+    };
+  }
+};
+
+/* ==========================================================================
+   MODULE 3: DYNAMIC CONTENT INSERTION & DOCUMENT FRAGMENT (read-blog.html)
+   ========================================================================== */
+
+export function loadFullPostContent(postId) {
+  if (activePostUnsubscribe) activePostUnsubscribe();
+
+  const postDocRef = doc(db, "posts", postId);
+
+  activePostUnsubscribe = onSnapshot(postDocRef, (docSnap) => {
+    if (!docSnap.exists()) {
+      console.warn("[Post Not Found]:", postId);
+      return;
+    }
+
+    const post = docSnap.data();
+    post.id = docSnap.id;
+
+    // 1. DOM Title, Content, Meta Updates
+    const titleEl = document.getElementById("read-post-title");
+    const contentEl = document.getElementById("read-post-content");
+    const authorNameEl = document.getElementById("read-post-author-name");
+    const authorAvatarEl = document.getElementById("read-post-author-avatar");
+    const dateEl = document.getElementById("read-post-date");
+
+    if (titleEl) titleEl.textContent = post.title || "Untitled Article";
+    if (contentEl) contentEl.innerHTML = post.content || "<p>No content available.</p>";
+    if (authorNameEl) authorNameEl.textContent = post.authorName || "Author";
+    if (authorAvatarEl) authorAvatarEl.src = post.authorPhoto || "https://ui-avatars.com/api/?name=Author";
+    if (dateEl) dateEl.textContent = post.createdAt ? new Date(post.createdAt).toLocaleDateString() : "Recently";
+
+    // 2. High-Performance Comments Rendering via DocumentFragment
+    renderCommentsWithFragment(post.comments || []);
+  }, (error) => {
+    console.error("[Load Post Content Error]:", error);
+  });
+}
+
+function renderCommentsWithFragment(comments) {
+  const container = document.getElementById("read-post-comments-container");
+  if (!container) return;
+
+  container.innerHTML = ""; // Clear wrapper once
+
+  if (comments.length === 0) {
+    container.innerHTML = `<p style="color: var(--text-secondary); font-style: italic;">No comments yet. Be the first to start the conversation!</p>`;
+    return;
+  }
+
+  // DocumentFragment prevents multiple reflows and browser layout thrashing
+  const fragment = document.createDocumentFragment();
+
+  comments.forEach(c => {
+    const item = document.createElement("div");
+    item.className = "comment-item-card";
+    item.style.cssText = "display: flex; gap: 12px; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);";
+
+    const img = document.createElement("img");
+    img.src = c.authorPhoto || "https://ui-avatars.com/api/?name=User";
+    img.style.cssText = "width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color);";
+
+    const body = document.createElement("div");
+    body.style.cssText = "flex: 1; display: flex; flex-direction: column;";
+
+    const meta = document.createElement("div");
+    meta.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;";
+    meta.innerHTML = `<strong style="font-size: 0.9rem; color: var(--text-primary);">${c.authorName || 'User'}</strong><span style="font-size: 0.75rem; color: var(--text-secondary);">${c.createdAt ? new Date(c.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</span>`;
+
+    const textP = document.createElement("p");
+    textP.style.cssText = "font-size: 0.88rem; color: var(--text-secondary); margin: 0; line-height: 1.5;";
+    textP.textContent = c.text;
+
+    body.appendChild(meta);
+    body.appendChild(textP);
+    item.appendChild(img);
+    item.appendChild(body);
+
+    fragment.appendChild(item);
+  });
+
+  container.appendChild(fragment);
+}
+
+/* ==========================================================================
+   REAL-TIME INTERACTIONS & IN-MEMORY FEED FILTERS
    ========================================================================== */
 
 export async function handleLike(postId) {
@@ -194,7 +463,6 @@ export async function handleLike(postId) {
     const post = postsCache.find(p => p.id === postId);
     const isLiked = post && post.likes && post.likes.includes(currentUser.uid);
 
-    // Optimistic UI Update in Memory Array
     if (post) {
       if (!post.likes) post.likes = [];
       if (isLiked) {
@@ -204,10 +472,9 @@ export async function handleLike(postId) {
         post.likes.push(currentUser.uid);
         post.likesCount = (post.likesCount || 0) + 1;
       }
-      renderFeedDOM(postsCache); // Instant feedback
+      renderFeedDOM(postsCache);
     }
 
-    // Atomic Single-Write Operation (No extra reads!)
     await updateDoc(postRef, {
       likes: isLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid),
       likesCount: increment(isLiked ? -1 : 1)
@@ -232,8 +499,6 @@ export async function handleComment(postId, commentText) {
     };
 
     const postRef = doc(db, "posts", postId);
-
-    // Atomic Append & Increment
     await updateDoc(postRef, {
       comments: arrayUnion(commentObj),
       commentsCount: increment(1)
@@ -243,10 +508,6 @@ export async function handleComment(postId, commentText) {
     console.error("[Comment Error]:", error);
   }
 }
-
-/* ==========================================================================
-   3. DYNAMIC NOTIFICATIONS & ZERO-RELOAD ROUTING
-   ========================================================================== */
 
 function initNotifications() {
   if (!currentUser) return;
@@ -269,7 +530,6 @@ function initNotifications() {
     });
 
     updateNotificationBadgeUI(unreadCount);
-    renderNotificationsListUI(notifications);
   }, (error) => {
     console.error("[Notifications Listener Error]:", error);
   });
@@ -282,76 +542,6 @@ function updateNotificationBadgeUI(count) {
     badge.style.display = count > 0 ? "inline-flex" : "none";
   }
 }
-
-function renderNotificationsListUI(notifications) {
-  const container = document.getElementById("notifications-dropdown-list");
-  if (!container) return;
-
-  if (notifications.length === 0) {
-    container.innerHTML = `<p class="empty-notif">No new notifications</p>`;
-    return;
-  }
-
-  container.innerHTML = notifications.map(n => `
-    <div class="notif-item ${n.read ? 'read' : 'unread'}" data-id="${n.id}">
-      <img src="${n.senderPhoto || 'https://ui-avatars.com/api/?name=User'}" class="notif-avatar" />
-      <div class="notif-content">
-        <p><strong>${n.senderName}</strong> ${n.text}</p>
-        <span class="notif-time">${new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-      </div>
-    </div>
-  `).join("");
-
-  // Attach click delegate
-  container.querySelectorAll(".notif-item").forEach(item => {
-    item.addEventListener("click", () => {
-      const notifId = item.dataset.id;
-      const notifObj = notifications.find(n => n.id === notifId);
-      if (notifObj) routeNotification(notifObj);
-    });
-  });
-}
-
-export async function routeNotification(notification) {
-  try {
-    // 1. Mark as read in Firestore
-    if (!notification.read) {
-      await updateDoc(doc(db, "notifications", notification.id), { read: true });
-    }
-
-    // 2. Programmatic Routing without Page Reload
-    if (notification.type === "chat") {
-      openChatSidebar(notification.senderId, notification.senderName, notification.senderPhoto);
-    } else if (notification.type === "post" && notification.postId) {
-      highlightPostCard(notification.postId);
-    }
-  } catch (error) {
-    console.error("[Notification Route Error]:", error);
-  }
-}
-
-function openChatSidebar(senderId, senderName, senderPhoto) {
-  const chatSidebar = document.getElementById("chat-drawer");
-  if (chatSidebar) {
-    chatSidebar.classList.add("active");
-    if (typeof window.startConversationWith === "function") {
-      window.startConversationWith(senderId, senderName, senderPhoto);
-    }
-  }
-}
-
-function highlightPostCard(postId) {
-  const card = document.querySelector(`[data-post-id="${postId}"]`);
-  if (card) {
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
-    card.classList.add("highlight-pulse");
-    setTimeout(() => card.classList.remove("highlight-pulse"), 2500);
-  }
-}
-
-/* ==========================================================================
-   4. IN-MEMORY FEED FILTERS (ZERO DB QUERY COST)
-   ========================================================================== */
 
 export function setFeedPostsData(postsArray) {
   postsCache = [...postsArray];
@@ -368,7 +558,6 @@ export function filterPostsByCategory(category) {
 }
 
 export function sortPostsByTrending() {
-  // In-memory DSA QuickSort / Built-in Sort by highest likes
   const sorted = [...postsCache].sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
   renderFeedDOM(sorted);
 }
@@ -382,7 +571,6 @@ function renderFeedDOM(posts) {
     return;
   }
 
-  // Efficient DOM rendering
   container.innerHTML = posts.map(post => `
     <article class="feed-post-card" data-post-id="${post.id}">
       <div class="post-meta-row">
@@ -405,7 +593,7 @@ function renderFeedDOM(posts) {
   `).join("");
 }
 
-// Attach to Window for global inline button accessibility
+// Global window bindings
 if (typeof window !== "undefined") {
   window.blogEngine = {
     initBlogEngine,
@@ -415,7 +603,9 @@ if (typeof window !== "undefined") {
     updateProfilePicture,
     handleLike,
     handleComment,
-    routeNotification,
+    sendMessage,
+    listenToMessages,
+    loadFullPostContent,
     filterPostsByCategory,
     sortPostsByTrending,
     setFeedPostsData
