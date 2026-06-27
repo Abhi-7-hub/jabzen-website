@@ -230,6 +230,16 @@ HTML_FOOTER = """
 </html>
 """
 
+BLOG_HTML_FOOTER = """  <!-- Firebase Compatibility SDK for App, Auth, Firestore and Storage -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+  <script src="script.min.js?v=18" defer></script>
+</body>
+</html>
+"""
+
 def generate_service_pages():
     for slug, info in pages_data.items():
         filename = f"{slug}.html"
@@ -265,25 +275,32 @@ def generate_service_pages():
             <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">{card_desc}</p>
           </div>"""
 
+        hero_image_map = {
+            "search-marketing": "assets/search-marketing-hero.png",
+            "performance-marketing": "assets/performance-marketing-hero.png",
+            "creative-services": "assets/creative-services-hero.png",
+            "ai-solutions": "assets/ai-solutions-hero.png"
+        }
+        hero_img = hero_image_map.get(slug, f"assets/{slug}-hero.png")
+
+        formatted_heading = heading.replace('SEO & Search Engine Optimization:', '<span class="text-gradient">SEO &amp; Search Optimization:</span>').replace('Performance Ads & Funnel Optimization:', '<span class="text-gradient">Performance Ads &amp; Funnels:</span>').replace('Creative Production & Visual Branding:', '<span class="text-gradient">Creative Production &amp; Branding:</span>').replace('AI Marketing Solutions & Automation:', '<span class="text-gradient">AI Marketing Solutions:</span>')
+
         body_html = f"""  <main id="main">
     <!-- Hero Section -->
-    <section class="page-hero" style="padding: 100px 0 60px; position: relative; overflow: hidden;">
-      <div class="container" style="text-align: center; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;">
-        <span class="eyebrow" style="font-size: 0.82rem; letter-spacing: 0.15em; font-weight: 900; color: var(--accent);">Premium Service Offering</span>
-        <h1 style="max-width: 900px; line-height: 1.12; font-size: clamp(2.2rem, 5.5vw, 4rem); font-weight: 800; font-family: Poppins, sans-serif; color: var(--text-primary); margin: 0;">{heading}</h1>
-        <p class="lead" style="margin: 0.5rem auto 0; font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--text-secondary); max-width: 750px; line-height: 1.6; text-align: center;">{desc}</p>
-        <div class="cta-row" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
-          <a class="btn btn-primary" href="#contact" style="padding: 0.75rem 1.75rem; font-weight: 900;"><i class="fa-solid fa-calendar-check" style="margin-right: 8px;"></i> Book Consultation</a>
-          <a class="btn btn-secondary" href="#deliverables" style="padding: 0.75rem 1.75rem; font-weight: 900;"><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> View Scope & Deliverables</a>
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Premium Service Offering</span>
+          <h1>{formatted_heading}</h1>
+          <div class="hero-divider"></div>
+          <p class="lead">{desc}</p>
+          <div class="cta-row" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a class="btn btn-primary" href="#contact"><i class="fa-solid fa-calendar-check" style="margin-right: 8px;"></i> Book Consultation</a>
+            <a class="btn btn-outline" href="#deliverables"><i class="fa-solid fa-list-check" style="margin-right: 8px;"></i> View Scope &amp; Deliverables</a>
+          </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Visual Banner Section -->
-    <section class="section" style="padding: 20px 0 40px;">
-      <div class="container" style="max-width: 960px; margin: 0 auto;">
-        <div style="width: 100%; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow);">
-          <img src="assets/{slug}-banner.webp" alt="{heading} Banner" style="width: 100%; height: auto; display: block; object-fit: cover; aspect-ratio: 16/9;">
+        <div class="hero-image-wrap">
+          <img src="{hero_img}" alt="{heading}">
         </div>
       </div>
     </section>
@@ -371,11 +388,11 @@ def generate_service_pages():
           <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">Our client engagements target core revenue and visibility improvements rather than simple raw clicks.</p>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 0.5rem;">
             <div>
-              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">4.2x</strong>
+              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">2.4x</strong>
               <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">Average ROAS</span>
             </div>
             <div>
-              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">312%</strong>
+              <strong style="color: var(--accent); font-size: 1.8rem; display: block; font-family: Poppins, sans-serif; font-weight: 800; line-height: 1;">75%</strong>
               <span style="font-size: 0.78rem; color: var(--text-secondary); display: block; margin-top: 4px;">Search Visibility Increase</span>
             </div>
           </div>
@@ -962,7 +979,7 @@ def generate_blog_page():
     </div>
   </main>
 """
-    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="blog") + body_html + HTML_FOOTER
+    full_content = HTML_HEADER.format(title=title, description=desc, canonical_slug="blog") + body_html + BLOG_HTML_FOOTER
     with open(filename, "w", encoding="utf-8") as f:
         f.write(full_content)
     print("Generated blog.html")
