@@ -712,14 +712,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let unsubscribeMyPosts = null;
 
   const logoutUser = () => {
-    if (!auth) return;
+    localStorage.removeItem("jabzen_active_user_session");
     if (unsubscribeMyPosts) {
       unsubscribeMyPosts();
       unsubscribeMyPosts = null;
     }
-    auth.signOut().then(() => {
-      console.log("Logged out.");
-    });
+    if (auth && typeof auth.signOut === "function") {
+      auth.signOut().catch(() => {});
+    }
+    updateAuthUI(null);
+    console.log("Logged out cleanly.");
   };
 
   if (headerLogoutBtn) {
@@ -746,6 +748,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateAuthUI(user) {
     currentUser = user;
+    if (user) {
+      try {
+        localStorage.setItem("jabzen_active_user_session", JSON.stringify(user));
+      } catch(e){}
+    } else {
+      localStorage.removeItem("jabzen_active_user_session");
+    }
     
     if (user) {
       const profile = parseUserProfile(user);
@@ -4768,10 +4777,23 @@ document.addEventListener("DOMContentLoaded", () => {
   setupActiveCommunitySync();
 
   // Register state changed listener for all pages after everything is initialized
-  if (auth) {
-    auth.onAuthStateChanged(updateAuthUI);
+  const handleInitialAuthState = (firebaseUser) => {
+    if (firebaseUser) {
+      updateAuthUI(firebaseUser);
+    } else {
+      let savedSession = null;
+      try {
+        const str = localStorage.getItem("jabzen_active_user_session");
+        if (str) savedSession = JSON.parse(str);
+      } catch(e){}
+      updateAuthUI(savedSession || null);
+    }
+  };
+
+  if (auth && typeof auth.onAuthStateChanged === "function") {
+    auth.onAuthStateChanged(handleInitialAuthState);
   } else {
-    updateAuthUI(null);
+    handleInitialAuthState(null);
   }
 
   // Periodically update lastSeen for online status (runs every 30 seconds if user is logged in)
