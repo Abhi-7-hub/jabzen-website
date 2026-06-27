@@ -712,7 +712,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let unsubscribeMyPosts = null;
 
   const logoutUser = () => {
-    localStorage.removeItem("jabzen_active_user_session");
     if (unsubscribeMyPosts) {
       unsubscribeMyPosts();
       unsubscribeMyPosts = null;
@@ -720,7 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (auth && typeof auth.signOut === "function") {
       auth.signOut().catch(() => {});
     }
-    updateAuthUI(null);
+    updateAuthUI(null, true);
     console.log("Logged out cleanly.");
   };
 
@@ -746,14 +745,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function updateAuthUI(user) {
+  function updateAuthUI(user, isExplicitLogout = false) {
+    if (isExplicitLogout) {
+      localStorage.removeItem("jabzen_active_user_session");
+      user = null;
+    } else if (!user) {
+      try {
+        const saved = localStorage.getItem("jabzen_active_user_session");
+        if (saved) user = JSON.parse(saved);
+      } catch(e){}
+    }
+
     currentUser = user;
     if (user) {
       try {
         localStorage.setItem("jabzen_active_user_session", JSON.stringify(user));
       } catch(e){}
-    } else {
-      localStorage.removeItem("jabzen_active_user_session");
     }
     
     if (user) {
