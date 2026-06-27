@@ -1226,23 +1226,10 @@ def minify_js(src, dest):
         return
     with open(src, "r", encoding="utf-8") as f:
         content = f.read()
-    # Remove block comments
-    content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
-    # Strip line comments safely
-    lines = []
-    for line in content.splitlines():
-        trimmed = line.strip()
-        if not trimmed or trimmed.startswith("//"):
-            continue
-        if " //" in line:
-            line = line.split(" //")[0]
-        lines.append(line.strip())
-    # Join and condense spacing
-    minified = " ".join(lines)
-    minified = re.sub(r'\s+', ' ', minified)
+    # Safely write src content to dest without destroying Automatic Semicolon Insertion (ASI)
     with open(dest, "w", encoding="utf-8") as f:
-        f.write(minified.strip())
-    print(f"Minified {src} to {dest}")
+        f.write(content)
+    print(f"Synced {src} to {dest}")
 
 def generate_sitemap():
     from datetime import datetime
