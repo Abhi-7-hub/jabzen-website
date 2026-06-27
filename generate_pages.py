@@ -464,9 +464,6 @@ def generate_blog_page():
               <a href="#" id="menu-trending" class="menu-item" onclick="window.selectMenuTab('trending'); return false;"><i class="fa-solid fa-chart-line"></i> Trending</a>
               <a href="#" id="menu-myposts" class="menu-item" onclick="window.selectMenuTab('myposts'); return false;"><i class="fa-solid fa-file-invoice"></i> My Posts</a>
               <a href="#" id="menu-saved" class="menu-item" onclick="window.selectMenuTab('saved'); return false;"><i class="fa-solid fa-bookmark"></i> Saved Articles</a>
-              <a href="#" id="menu-messages" class="menu-item" onclick="window.toggleChatDrawer(true); return false;"><i class="fa-solid fa-comments"></i> Messages <span class="badge" id="chat-badge-count">0</span></a>
-              <a href="#" id="menu-following" class="menu-item" onclick="window.selectMenuTab('following'); return false;"><i class="fa-solid fa-user-group"></i> Following</a>
-              <a href="#" id="menu-notifications" class="menu-item" onclick="window.showNotifications(); return false;"><i class="fa-solid fa-bell"></i> Notifications <span class="badge badge-accent" style="display: none;">0</span></a>
             </div>
 
             <!-- Categories Section -->
@@ -497,7 +494,6 @@ def generate_blog_page():
               <div class="composer-actions-row">
                 <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-pen-to-square"></i> Write Article</button>
                 <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-arrow-up-from-bracket"></i> Upload</button>
-                <button class="composer-action-btn" onclick="window.toggleDrawer(true, 'write')"><i class="fa-solid fa-square-poll-horizontal"></i> Poll</button>
               </div>
             </div>
 
@@ -552,17 +548,6 @@ def generate_blog_page():
               </div>
             </div>
 
-            <!-- Top Writers -->
-            <div class="right-widget-card">
-              <div class="widget-header">
-                <h3 class="widget-title"><i class="fa-solid fa-star" style="color: var(--brand-cta);"></i> Top Writers</h3>
-                <a href="#" class="widget-link">View all</a>
-              </div>
-              <div class="top-writers-list">
-                <p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;">Available Soon (Count: 0)</p>
-              </div>
-            </div>
-
             <!-- Popular Posts -->
             <div class="right-widget-card">
               <div class="widget-header">
@@ -572,19 +557,6 @@ def generate_blog_page():
               <div class="popular-posts-list">
                 <p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; margin: 10px 0;">Available Soon (Count: 0)</p>
               </div>
-            </div>
-
-            <!-- Active Community -->
-            <div class="right-widget-card">
-              <div class="widget-header">
-                <h3 class="widget-title"><i class="fa-solid fa-user-group" style="color: var(--brand-primary);"></i> Active Community</h3>
-              </div>
-              <div class="active-community-status">
-                <span class="online-indicator-dot" style="display: none;"></span> 0 online now
-              </div>
-              <div class="active-community-avatars">
-              </div>
-              <button class="btn btn-primary btn-open-chat-large" onclick="window.toggleChatDrawer(true); return false;" style="width: 100%; border-radius: 30px; margin-top: 1rem; font-weight:700;"><i class="fa-solid fa-comments"></i> Open Chat</button>
             </div>
           </aside>
           

@@ -3255,15 +3255,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span style="font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">&mdash; <strong style="color: var(--text-primary); font-family: var(--font-body); font-style: normal; cursor: pointer;" onclick="window.showUserProfileModal('${blog.authorUid}')">${blog.authorName}</strong></span>
             
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              ${chatButtonHtml}
-              <button class="btn-like ${likedClass}" onclick="window.toggleLike('${blog.id}', event)" style="background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--text-secondary); transition: var(--transition-smooth);" data-liked-id="${blog.id}">
-                <svg class="heart-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="transition: fill 0.3s ease, stroke 0.3s ease;">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span class="likes-count" style="font-weight: 700; color: var(--text-primary);">${(blog.likes || 0) + (localLikesOverrides[blog.id] || 0)}</span>
-              </button>
-              
-              <a href="read-blog.html?id=${blog.id}" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 1rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 4px; border-color: var(--border-color);">Read Poem</a>
+              <a href="read-blog.html?id=${blog.id}" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.35rem 1rem; min-height: unset; border-radius: 30px; display: inline-flex; align-items: center; gap: 4px; border-color: var(--border-color);">Read Piece <i class="fa-solid fa-arrow-right" style="font-size: 0.7rem;"></i></a>
             </div>
           </div>
         `;
@@ -3326,32 +3318,11 @@ document.addEventListener("DOMContentLoaded", () => {
           
           ${imageHtml}
           
-          <div class="post-interactions-bar">
-            <div class="reactions-left">
-              <span class="reaction-badge-icons">
-                <i class="fa-solid fa-thumbs-up" style="color: #3b82f6; font-size: 0.75rem;"></i>
-                <i class="fa-solid fa-heart" style="color: #ef4444; font-size: 0.75rem; margin-left: -4px;"></i>
-              </span>
-              <span class="likes-count" style="font-weight: 700; margin-left: 4px;">${(blog.likes || 0) + (localLikesOverrides[blog.id] || 0)}</span>
-            </div>
-            <div class="interactions-right">
-              <span class="comments-header-count-${blog.id}">${commentsCount} Comments</span>
-              <span class="meta-separator">&bull;</span>
-              <span class="shares-header-count-${blog.id}">${sharesCount} Shares</span>
-            </div>
-          </div>
-          
-          <div class="post-actions-footer">
+          <div class="post-actions-footer" style="padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
+            <a href="read-blog.html?id=${blog.id}" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 1.2rem; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;">
+              Read Article <i class="fa-solid fa-arrow-right" style="font-size: 0.75rem;"></i>
+            </a>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <button class="post-action-btn btn-like ${likedClass}" onclick="window.toggleLike('${blog.id}', event)" data-liked-id="${blog.id}">
-                <i class="fa-regular fa-thumbs-up"></i> <span>Like</span>
-              </button>
-              <button class="post-action-btn" onclick="window.toggleCommentsInline('${blog.id}', event)">
-                <i class="fa-regular fa-comment"></i> <span>Comment</span>
-              </button>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              ${chatButtonHtml}
               <button class="post-action-btn btn-save ${savedClass}" onclick="window.toggleSavePost('${blog.id}', event)" data-save-id="${blog.id}">
                 <i class="${bookmarkIconClass}"></i> <span>Save</span>
               </button>
@@ -3392,89 +3363,13 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       event.stopPropagation();
     }
-
-    if (!currentUser) {
-      alert("Please Sign In or Register to like articles.");
-      if (typeof window.toggleDrawer === "function") window.toggleDrawer(true);
-      return;
-    }
-
-    let likedPosts = [];
-    try {
-      likedPosts = JSON.parse(localStorage.getItem("jabzen_liked_posts") || "[]");
-    } catch(e){}
-
-    const hasLiked = likedPosts.includes(id);
-    const likeDelta = hasLiked ? -1 : 1;
-
-    try {
-      let authorUid = null;
-      let title = "";
-      
-      // Save locally first
-      if (hasLiked) {
-        likedPosts = likedPosts.filter(pid => pid !== id);
-      } else {
-        likedPosts.push(id);
-      }
-      localStorage.setItem("jabzen_liked_posts", JSON.stringify(likedPosts));
-
-      // Check if it's default post
-      if (id.startsWith("default-pop-")) {
-        localLikesOverrides[id] = (localLikesOverrides[id] || 0) + likeDelta;
-        localStorage.setItem("jabzen_local_likes_overrides", JSON.stringify(localLikesOverrides));
-      } else if (db) {
-        try {
-          const increment = firebase.firestore.FieldValue.increment(likeDelta);
-          await db.collection("blogs").doc(id).update({
-            likes: increment
-          });
-          const doc = await db.collection("blogs").doc(id).get();
-          if (doc.exists) {
-            authorUid = doc.data().authorUid;
-            title = doc.data().title;
-          }
-          // Success: clear local override for this ID
-          delete localLikesOverrides[id];
-          localStorage.setItem("jabzen_local_likes_overrides", JSON.stringify(localLikesOverrides));
-        } catch (dbErr) {
-          console.warn("Firestore like write failed (falling back to local):", dbErr);
-          // Apply local override
-          localLikesOverrides[id] = (localLikesOverrides[id] || 0) + likeDelta;
-          localStorage.setItem("jabzen_local_likes_overrides", JSON.stringify(localLikesOverrides));
-        }
-      } else {
-        localLikesOverrides[id] = (localLikesOverrides[id] || 0) + likeDelta;
-        localStorage.setItem("jabzen_local_likes_overrides", JSON.stringify(localLikesOverrides));
-      }
-
-      if (likeDelta > 0 && authorUid && currentUser && authorUid !== currentUser.uid) {
-        window.createNotification(authorUid, `liked your post "${title}"`, "like");
-      }
-
-      // Local state sync
-      const idx = blogsCache.findIndex(b => b.id === id);
-      if (idx !== -1) {
-        blogsCache[idx].likes = Math.max(0, (blogsCache[idx].likes || 0) + likeDelta);
-      }
-
-      // Rerender
-      filterAndRenderBlogs();
-      renderRightSidebarWidgets();
-
-      // Instant UI update
-      document.querySelectorAll(`[data-liked-id="${id}"]`).forEach((btn) => {
-        btn.classList.toggle("liked", !hasLiked);
-        const countSpan = btn.querySelector(".likes-count");
-        if (countSpan) {
-          let countVal = parseInt(countSpan.textContent) || 0;
-          countSpan.textContent = Math.max(0, countVal + likeDelta);
-        }
-      });
-    } catch (err) {
-      console.error("Failed to toggle like:", err);
-    }
   };
+
+  window.toggleLike = () => {};
+  window.toggleChatDrawer = () => {};
+  window.startChatWithAuthor = () => {};
+  window.showNotifications = () => {};
+  window.toggleCommentsInline = () => {};
 
   // Load snapshot to local cache
   if (window.unsubscribeBlogs) {
