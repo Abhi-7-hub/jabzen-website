@@ -2112,9 +2112,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  document.getElementById("google-login-btn").addEventListener("click", loginWithGoogle);
-  dashboardLogoutBtn.addEventListener("click", (e) => { e.preventDefault(); window.startLogoutWizard(); });
-  emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);  // Manual Database Mode Switcher Toggle
+  const googleBtn = document.getElementById("google-login-btn");
+  if (googleBtn) googleBtn.addEventListener("click", loginWithGoogle);
+  if (dashboardLogoutBtn) dashboardLogoutBtn.addEventListener("click", (e) => { e.preventDefault(); window.startLogoutWizard(); });
+  if (emailAuthForm) emailAuthForm.addEventListener("submit", handleEmailAuthSubmit);
+  
   const dbModeSelectorWrap = document.getElementById("db-mode-selector-wrap");
   if (dbModeSelectorWrap) {
     dbModeSelectorWrap.style.display = "none";
@@ -2123,90 +2125,96 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Tab Navigation Handlers
   setDashboardTab = (activeTab) => {
     if (activeTab === "write") {
-      tabBtnWrite.className = "btn btn-primary";
-      tabBtnWrite.style.background = "";
-      tabBtnWrite.style.borderColor = "";
-      tabBtnWrite.style.color = "";
-      
-      tabBtnManage.className = "btn btn-secondary";
-      tabBtnManage.style.background = "var(--soft)";
-      tabBtnManage.style.borderColor = "var(--line)";
-      tabBtnManage.style.color = "var(--text-secondary)";
-      
-      tabContentWrite.style.display = "block";
-      tabContentManage.style.display = "none";
+      if (tabBtnWrite) {
+        tabBtnWrite.className = "btn btn-primary";
+        tabBtnWrite.style.background = "";
+        tabBtnWrite.style.borderColor = "";
+        tabBtnWrite.style.color = "";
+      }
+      if (tabBtnManage) {
+        tabBtnManage.className = "btn btn-secondary";
+        tabBtnManage.style.background = "var(--soft)";
+        tabBtnManage.style.borderColor = "var(--line)";
+        tabBtnManage.style.color = "var(--text-secondary)";
+      }
+      if (tabContentWrite) tabContentWrite.style.display = "block";
+      if (tabContentManage) tabContentManage.style.display = "none";
     } else {
-      tabBtnManage.className = "btn btn-primary";
-      tabBtnManage.style.background = "";
-      tabBtnManage.style.borderColor = "";
-      tabBtnManage.style.color = "";
-      
-      tabBtnWrite.className = "btn btn-secondary";
-      tabBtnWrite.style.background = "var(--soft)";
-      tabBtnWrite.style.borderColor = "var(--line)";
-      tabBtnWrite.style.color = "var(--text-secondary)";
-      
-      tabContentWrite.style.display = "none";
-      tabContentManage.style.display = "block";
-      loadUserBlogsList();
+      if (tabBtnManage) {
+        tabBtnManage.className = "btn btn-primary";
+        tabBtnManage.style.background = "";
+        tabBtnManage.style.borderColor = "";
+        tabBtnManage.style.color = "";
+      }
+      if (tabBtnWrite) {
+        tabBtnWrite.className = "btn btn-secondary";
+        tabBtnWrite.style.background = "var(--soft)";
+        tabBtnWrite.style.borderColor = "var(--line)";
+        tabBtnWrite.style.color = "var(--text-secondary)";
+      }
+      if (tabContentWrite) tabContentWrite.style.display = "none";
+      if (tabContentManage) tabContentManage.style.display = "block";
+      if (typeof loadUserBlogsList === "function") loadUserBlogsList();
     }
   };
 
-  tabBtnWrite.addEventListener("click", () => setDashboardTab("write"));
-  tabBtnManage.addEventListener("click", () => setDashboardTab("manage"));
-
-  // (Removed redundant updateAuthUI & parseUserProfile helper declarations)
+  if (tabBtnWrite) tabBtnWrite.addEventListener("click", () => setDashboardTab("write"));
+  if (tabBtnManage) tabBtnManage.addEventListener("click", () => setDashboardTab("manage"));
 
   // 6. Image Picker & Processing
-  blogImageInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  if (blogImageInput) {
+    blogImageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    if (file.size > 1024 * 1024) {
-      imageSizeError.style.display = "block";
-      blogImageInput.value = "";
-      imagePreviewWrap.style.display = "none";
-      base64ImageString = "";
-      selectedImageFile = null;
-      return;
-    }
+      if (file.size > 1024 * 1024) {
+        if (imageSizeError) imageSizeError.style.display = "block";
+        blogImageInput.value = "";
+        if (imagePreviewWrap) imagePreviewWrap.style.display = "none";
+        base64ImageString = "";
+        selectedImageFile = null;
+        return;
+      }
 
-    imageSizeError.style.display = "none";
-    selectedImageFile = file;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      base64ImageString = event.target.result;
-      imagePreview.src = base64ImageString;
-      imagePreviewWrap.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  });
+      if (imageSizeError) imageSizeError.style.display = "none";
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        base64ImageString = event.target.result;
+        if (imagePreview) imagePreview.src = base64ImageString;
+        if (imagePreviewWrap) imagePreviewWrap.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   const clearEditor = () => {
-    writeBlogForm.reset();
-    editingDocIdInput.value = "";
-    formHeading.textContent = "Publish a New Post";
-    submitBlogBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Publish Post';
-    imagePreviewWrap.style.display = "none";
+    if (writeBlogForm) writeBlogForm.reset();
+    if (editingDocIdInput) editingDocIdInput.value = "";
+    if (formHeading) formHeading.textContent = "Publish a New Post";
+    if (submitBlogBtn) submitBlogBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Publish Post';
+    if (imagePreviewWrap) imagePreviewWrap.style.display = "none";
     if (document.getElementById("blog-visibility")) {
       document.getElementById("blog-visibility").value = "Public";
     }
-    imageSizeError.style.display = "none";
+    if (imageSizeError) imageSizeError.style.display = "none";
     base64ImageString = "";
     selectedImageFile = null;
-    blogImageInput.required = false;
+    if (blogImageInput) blogImageInput.required = false;
     
     // Restore default company autofill if logged in
     if (currentUser) {
       const profile = parseUserProfile(currentUser);
-      blogCompanyInput.value = profile.company;
+      if (blogCompanyInput) blogCompanyInput.value = profile.company;
     }
   };
 
-  cancelWriteBtn.addEventListener("click", () => {
-    clearEditor();
-    window.toggleDrawer(false);
-  });
+  if (cancelWriteBtn) {
+    cancelWriteBtn.addEventListener("click", () => {
+      clearEditor();
+      window.toggleDrawer(false);
+    });
+  }
 
   // 7. Write/Update Submit Handler
   writeBlogForm.addEventListener("submit", async (e) => {
